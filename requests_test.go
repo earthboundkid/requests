@@ -41,7 +41,10 @@ func Example() {
 
 	// Expect a specific status code
 	err = requests.URL("https://jsonplaceholder.typicode.com/posts/9001").
-		CheckStatus(404).
+		Validate(requests.ChainHandlers(
+			requests.CheckStatus(404),
+			requests.MatchContentType("application/json; charset=utf-8"),
+		)).
 		Do(context.Background())
 	if err != nil {
 		fmt.Println("should be a 404:", err)
@@ -64,10 +67,37 @@ func Example() {
 	}
 	fmt.Println(res)
 
-	// Submit form values
-	echo := struct {
+	// Examples with the Postman echo server
+	type postman struct {
+		Args map[string]string `json:"args"`
+		Data string            `json:"data"`
 		JSON map[string]string `json:"json"`
-	}{}
+	}
+
+	// Set a query parameter
+	var params postman
+	err = requests.URL("https://postman-echo.com/get?hello=world").
+		Param("param", "value").
+		JSONUnmarshal(&params).
+		Do(context.Background())
+	if err != nil {
+		fmt.Println("problem with postman:", err)
+	}
+	fmt.Println(params.Args)
+
+	// Post a raw body
+	var data postman
+	err = requests.URL("https://postman-echo.com/post").
+		Bytes([]byte(`hello, world`), "text/plain").
+		JSONUnmarshal(&data).
+		Do(context.Background())
+	if err != nil {
+		fmt.Println("problem with postman:", err)
+	}
+	fmt.Println(data.Data)
+
+	// Submit form values
+	var echo postman
 	err = requests.URL("https://postman-echo.com/put").
 		Put().
 		Form(url.Values{
@@ -76,12 +106,14 @@ func Example() {
 		JSONUnmarshal(&echo).
 		Do(context.Background())
 	if err != nil {
-		fmt.Println("problem with postman", err)
+		fmt.Println("problem with postman:", err)
 	}
 	fmt.Println(echo.JSON)
 	// Output:
 	// true
 	// sunt aut facere repellat provident occaecati excepturi optio reprehenderit
 	// {101 foo baz 1}
+	// map[hello:world param:value]
+	// hello, world
 	// map[hello:world]
 }
