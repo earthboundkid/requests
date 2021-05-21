@@ -27,6 +27,7 @@ type Builder struct {
 	handler    ResponseHandler
 }
 
+// URL creates a new Builder suitable for method chaining.
 func URL(u string) *Builder {
 	var rb Builder
 	rb.url, rb.err = url.Parse(u)
@@ -36,26 +37,31 @@ func URL(u string) *Builder {
 	return &rb
 }
 
+// Client sets the http.Client to use for requests. If nil, it uses http.DefaultClient.
 func (rb *Builder) Client(cl *http.Client) *Builder {
 	rb.cl = cl
 	return rb
 }
 
+// Host sets the host for a request. It overrides the URL function.
 func (rb *Builder) Host(host string) *Builder {
 	rb.host = host
 	return rb
 }
 
+// Path sets the path for a request. It overrides the URL function.
 func (rb *Builder) Path(path string) *Builder {
 	rb.path = path
 	return rb
 }
 
+// Param adds a query parameter to a request. It does not remove existing parameters.
 func (rb *Builder) Param(key, value string) *Builder {
 	rb.params = append(rb.params, [2]string{key, value})
 	return rb
 }
 
+// Method sets the HTTP method for a request.
 func (rb *Builder) Method(method string) *Builder {
 	rb.method = method
 	return rb
@@ -73,8 +79,10 @@ func (rb *Builder) Put() *Builder {
 	return rb.Method(http.MethodPut)
 }
 
+// BodySource provides a builder with a source for a request body.
 type BodySource = func() (io.ReadCloser, string, error)
 
+// Body sets the BodySource for a request. It implicitly sets method to POST.
 func (rb *Builder) Body(src BodySource) *Builder {
 	rb.body = src
 	return rb
@@ -130,8 +138,10 @@ func (rb *Builder) Form(data url.Values) *Builder {
 	return rb.Body(Form(data))
 }
 
+// ResponseHandler is used to validate or handle the response to a request.
 type ResponseHandler = func(*http.Response) error
 
+// ChainHandlers allows for the composing of validators or response handlers.
 func ChainHandlers(handlers ...ResponseHandler) ResponseHandler {
 	return func(r *http.Response) error {
 		for _, h := range handlers {
@@ -151,6 +161,7 @@ func (rb *Builder) Validate(h ResponseHandler) *Builder {
 	return rb
 }
 
+// CheckStatus validates the response has an acceptable status code.
 func CheckStatus(acceptStatuses ...int) ResponseHandler {
 	return func(resp *http.Response) error {
 		for _, code := range acceptStatuses {
@@ -166,10 +177,12 @@ func CheckStatus(acceptStatuses ...int) ResponseHandler {
 		}
 	}
 }
+
 func (rb *Builder) CheckStatus(acceptStatuses ...int) *Builder {
 	return rb.Validate(CheckStatus(acceptStatuses...))
 }
 
+// DefaultValidator is the status check applied by Builder unless otherwise specified.
 var DefaultValidator ResponseHandler = CheckStatus(
 	http.StatusOK,
 	http.StatusCreated,
@@ -178,17 +191,19 @@ var DefaultValidator ResponseHandler = CheckStatus(
 	http.StatusNoContent,
 )
 
-
+// StatusError is the error type produced by CheckStatus.
 type StatusError struct {
 	URL, Status string
 	StatusCode  int
 }
 
+// Error fulfills the error interface.
 func (se StatusError) Error() string {
 	return fmt.Sprintf("unexpected status for %s: %s",
 		se.URL, se.Status)
 }
 
+// HasStatusErr returns true if err is a StatusError caused by any of the code given.
 func HasStatusErr(err error, codes ...int) bool {
 	if se := (StatusError{}); errors.As(err, &se) {
 		for _, code := range codes {
