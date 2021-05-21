@@ -54,3 +54,12 @@ HTTP requests for Gophers.
 		Header("martini", "shaken").
 		Fetch(context.Background())
 ```
+```go
+	var params postman
+	err := requests.
+		URL("https://postman-echo.com/get?a=1&b=2").
+		Param("b", "3").
+		Param("c", "4").
+		Fetch(context.Background())
+        // URL is https://postman-echo.com/get?a=1&b=3&c=4
+```
