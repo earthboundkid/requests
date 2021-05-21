@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -59,6 +60,29 @@ func (rb *Builder) Path(path string) *Builder {
 func (rb *Builder) Param(key, value string) *Builder {
 	rb.params = append(rb.params, [2]string{key, value})
 	return rb
+}
+
+// Header adds a header parameter to a request. It does not remove existing headers.
+func (rb *Builder) Header(key, value string) *Builder {
+	rb.headers = append(rb.headers, [2]string{key, value})
+	return rb
+}
+
+// ContentType sets the Content-Type header.
+func (rb *Builder) ContentType(ct string) *Builder {
+	return rb.Header("Content-Type", ct)
+}
+
+// UserAgent sets the User-Agent header.
+func (rb *Builder) UserAgent(s string) *Builder {
+	return rb.Header("User-Agent", s)
+}
+
+// BasicAuth sets the Authorization header to a basic auth credential.
+func (rb *Builder) BasicAuth(username, password string) *Builder {
+	auth := username + ":" + password
+	v := base64.StdEncoding.EncodeToString([]byte(auth))
+	return rb.Header("Authorization", "Basic "+v)
 }
 
 // Method sets the HTTP method for a request.
