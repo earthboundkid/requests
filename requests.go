@@ -227,8 +227,11 @@ func (se StatusError) Error() string {
 		se.URL, se.Status)
 }
 
-// HasStatusErr returns true if err is a StatusError caused by any of the code given.
+// HasStatusErr returns true if err is a StatusError caused by any of the codes given.
 func HasStatusErr(err error, codes ...int) bool {
+	if err == nil {
+		return false
+	}
 	if se := (StatusError{}); errors.As(err, &se) {
 		for _, code := range codes {
 			if se.StatusCode == code {
