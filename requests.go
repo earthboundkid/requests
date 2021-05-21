@@ -348,7 +348,7 @@ func ToBufioReader(f func(r *bufio.Reader) error) ResponseHandler {
 	}
 }
 
-// ToBytesBuffer sets the Builder to call a callback with the response body wrapped in a bufio.Reader.
+// ToBufioReader sets the Builder to call a callback with the response body wrapped in a bufio.Reader.
 func (rb *Builder) ToBufioReader(f func(r *bufio.Reader) error) *Builder {
 	return rb.Handle(ToBufioReader(f))
 }
