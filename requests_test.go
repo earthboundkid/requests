@@ -123,8 +123,9 @@ func Example_queryParam() {
 	// Set a query parameter
 	var params postman
 	err := requests.
-		URL("https://postman-echo.com/get?hello=world").
-		Param("param", "value").
+		URL("https://postman-echo.com/get?a=1&b=2").
+		Param("b", "3").
+		Param("c", "4").
 		ToJSON(&params).
 		Fetch(context.Background())
 	if err != nil {
@@ -132,7 +133,7 @@ func Example_queryParam() {
 	}
 	fmt.Println(params.Args)
 	// Output:
-	// map[hello:world param:value]
+	// map[a:1 b:3 c:4]
 }
 
 func Example_header() {

@@ -56,13 +56,13 @@ func (rb *Builder) Path(path string) *Builder {
 	return rb
 }
 
-// Param adds a query parameter to a request. It does not remove existing parameters.
+// Param sets a query parameter on a request. It overwrites the value of existing keys.
 func (rb *Builder) Param(key, value string) *Builder {
 	rb.params = append(rb.params, [2]string{key, value})
 	return rb
 }
 
-// Header adds a header parameter to a request. It does not remove existing headers.
+// Header sets a header on a request. It overwrites the value of existing keys.
 func (rb *Builder) Header(key, value string) *Builder {
 	rb.headers = append(rb.headers, [2]string{key, value})
 	return rb
@@ -351,7 +351,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	if len(rb.params) > 0 {
 		q := rb.url.Query()
 		for _, kv := range rb.params {
-			q.Add(kv[0], kv[1])
+			q.Set(kv[0], kv[1])
 		}
 		rb.url.RawQuery = q.Encode()
 	}
@@ -375,7 +375,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	}
 
 	for _, pair := range rb.headers {
-		req.Header.Add(pair[0], pair[1])
+		req.Header.Set(pair[0], pair[1])
 	}
 	if req.Header.Get("Content-Type") == "" && ct != "" {
 		req.Header.Set("Content-Type", ct)
