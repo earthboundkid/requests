@@ -279,9 +279,11 @@ func (rb *Builder) BufioReader(f func(r *bufio.Reader) error) *Builder {
 	return rb.Handle(BufioReader(f))
 }
 
+// Clone creates a new Builder suitable for independent mutation.
 func (rb *Builder) Clone() *Builder {
 	rb2 := *rb
 	rb2.headers = rb2.headers[0:len(rb2.headers):len(rb2.headers)]
+	rb2.params = rb2.params[0:len(rb2.params):len(rb2.params)]
 	u := *rb.url
 	rb2.url = &u
 	return &rb2
