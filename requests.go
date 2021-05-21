@@ -24,7 +24,7 @@ type Builder struct {
 	err        error
 	method     string
 	body       BodySource
-	validator  ResponseHandler
+	validators []ResponseHandler
 	handler    ResponseHandler
 }
 
@@ -180,8 +180,11 @@ func ChainHandlers(handlers ...ResponseHandler) ResponseHandler {
 	}
 }
 
-func (rb *Builder) Validate(h ResponseHandler) *Builder {
-	rb.validator = h
+// AddValidator adds a response validator to the Builder.
+// Adding a validator disables DefaultValidator.
+// To disable all validation, just add nil.
+func (rb *Builder) AddValidator(h ResponseHandler) *Builder {
+	rb.validators = append(rb.validators, h)
 	return rb
 }
 
@@ -203,10 +206,10 @@ func CheckStatus(acceptStatuses ...int) ResponseHandler {
 }
 
 func (rb *Builder) CheckStatus(acceptStatuses ...int) *Builder {
-	return rb.Validate(CheckStatus(acceptStatuses...))
+	return rb.AddValidator(CheckStatus(acceptStatuses...))
 }
 
-// DefaultValidator is the status check applied by Builder unless otherwise specified.
+// DefaultValidator is the validator applied by Builder unless otherwise specified.
 var DefaultValidator ResponseHandler = CheckStatus(
 	http.StatusOK,
 	http.StatusCreated,
@@ -312,6 +315,7 @@ func (rb *Builder) Clone() *Builder {
 	rb2 := *rb
 	rb2.headers = rb2.headers[0:len(rb2.headers):len(rb2.headers)]
 	rb2.params = rb2.params[0:len(rb2.params):len(rb2.params)]
+	rb2.validators = rb2.validators[0:len(rb2.validators):len(rb2.validators)]
 	u := *rb.url
 	rb2.url = &u
 	return &rb2
@@ -379,7 +383,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	return req, nil
 }
 
-// Do calls the underlying http.Client and handles any resulting response.
+// Do calls the underlying http.Client and validates and handles any resulting response.
 func (rb *Builder) Do(req *http.Request) (err error) {
 	cl := http.DefaultClient
 	if rb.cl != nil {
@@ -391,14 +395,14 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	defer res.Body.Close()
 
-	h := DefaultValidator
-	if rb.validator != nil {
-		h = rb.validator
+	validators := rb.validators
+	if len(validators) == 0 {
+		validators = []ResponseHandler{DefaultValidator}
 	}
-	if err = h(res); err != nil {
+	if err = ChainHandlers(validators...)(res); err != nil {
 		return err
 	}
-	h = consumeBody
+	h := consumeBody
 	if rb.handler != nil {
 		h = rb.handler
 	}
