@@ -300,6 +300,21 @@ func (rb *Builder) ToJSON(v interface{}) *Builder {
 	return rb.Handle(ToJSON(v))
 }
 
+func ToString(sp *string) ResponseHandler {
+	return func(res *http.Response) error {
+		var buf strings.Builder
+		_, err := io.Copy(&buf, res.Body)
+		if err == nil {
+			*sp = buf.String()
+		}
+		return err
+	}
+}
+
+func (rb *Builder) ToString(sp *string) *Builder {
+	return rb.Handle(ToString(sp))
+}
+
 func ToBytesBuffer(buf *bytes.Buffer) ResponseHandler {
 	return func(res *http.Response) error {
 		_, err := io.Copy(buf, res.Body)

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/url"
 	"strings"
 
@@ -12,6 +13,21 @@ import (
 )
 
 func Example() {
+	// Simple GET into a string
+	var s string
+	err := requests.
+		URL("http://example.com").
+		ToString(&s).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("could not connect to example.com:", err)
+	}
+	fmt.Println(strings.Contains(s, "Example Domain"))
+	// Output:
+	// true
+}
+
+func Example_bytesBuffer() {
 	// Simple GET into a buffer
 	var buf bytes.Buffer
 	err := requests.
@@ -38,7 +54,11 @@ func Example_bufio() {
 					found = true
 					return nil
 				}
+				// read one line from response
 				s, err = r.ReadString('\n')
+			}
+			if err == io.EOF {
+				return nil
 			}
 			return err
 		}).
