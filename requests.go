@@ -112,7 +112,7 @@ func (rb *Builder) Body(src BodySource) *Builder {
 	return rb
 }
 
-func Reader(r io.Reader, contentType string) BodySource {
+func BodyReader(r io.Reader, contentType string) BodySource {
 	return func() (io.ReadCloser, string, error) {
 		if rc, ok := r.(io.ReadCloser); ok {
 			return rc, contentType, nil
@@ -121,21 +121,21 @@ func Reader(r io.Reader, contentType string) BodySource {
 	}
 }
 
-func (rb *Builder) Reader(r io.Reader, contentType string) *Builder {
-	return rb.Body(Reader(r, contentType))
+func (rb *Builder) BodyReader(r io.Reader, contentType string) *Builder {
+	return rb.Body(BodyReader(r, contentType))
 }
 
-func Bytes(b []byte, contentType string) BodySource {
+func BodyBytes(b []byte, contentType string) BodySource {
 	return func() (io.ReadCloser, string, error) {
 		return io.NopCloser(bytes.NewReader(b)), contentType, nil
 	}
 }
 
-func (rb *Builder) Bytes(b []byte, contentType string) *Builder {
-	return rb.Body(Bytes(b, contentType))
+func (rb *Builder) BodyBytes(b []byte, contentType string) *Builder {
+	return rb.Body(BodyBytes(b, contentType))
 }
 
-func JSONMarshal(v interface{}) BodySource {
+func BodyJSON(v interface{}) BodySource {
 	return func() (r io.ReadCloser, contentType string, err error) {
 		contentType = "application/json"
 		b, err := json.Marshal(v)
@@ -147,19 +147,19 @@ func JSONMarshal(v interface{}) BodySource {
 	}
 }
 
-func (rb *Builder) JSONMarshal(v interface{}) *Builder {
-	return rb.Body(JSONMarshal(v))
+func (rb *Builder) BodyJSON(v interface{}) *Builder {
+	return rb.Body(BodyJSON(v))
 }
 
-func Form(data url.Values) BodySource {
+func BodyForm(data url.Values) BodySource {
 	return func() (r io.ReadCloser, contentType string, err error) {
 		return io.NopCloser(strings.NewReader(data.Encode())),
 			"application/x-www-form-urlencoded", nil
 	}
 }
 
-func (rb *Builder) Form(data url.Values) *Builder {
-	return rb.Body(Form(data))
+func (rb *Builder) BodyForm(data url.Values) *Builder {
+	return rb.Body(BodyForm(data))
 }
 
 // ResponseHandler is used to validate or handle the response to a request.
@@ -272,7 +272,7 @@ func consumeBody(res *http.Response) (err error) {
 	return err
 }
 
-func JSONUnmarshal(v interface{}) ResponseHandler {
+func ToJSON(v interface{}) ResponseHandler {
 	return func(res *http.Response) error {
 		data, err := io.ReadAll(res.Body)
 		if err != nil {
@@ -285,29 +285,29 @@ func JSONUnmarshal(v interface{}) ResponseHandler {
 	}
 }
 
-func (rb *Builder) JSONUnmarshal(v interface{}) *Builder {
-	return rb.Handle(JSONUnmarshal(v))
+func (rb *Builder) ToJSON(v interface{}) *Builder {
+	return rb.Handle(ToJSON(v))
 }
 
-func Buffer(buf *bytes.Buffer) ResponseHandler {
+func ToBytesBuffer(buf *bytes.Buffer) ResponseHandler {
 	return func(res *http.Response) error {
 		_, err := io.Copy(buf, res.Body)
 		return err
 	}
 }
 
-func (rb *Builder) Buffer(buf *bytes.Buffer) *Builder {
-	return rb.Handle(Buffer(buf))
+func (rb *Builder) ToBytesBuffer(buf *bytes.Buffer) *Builder {
+	return rb.Handle(ToBytesBuffer(buf))
 }
 
-func BufioReader(f func(r *bufio.Reader) error) ResponseHandler {
+func ToBufioReader(f func(r *bufio.Reader) error) ResponseHandler {
 	return func(res *http.Response) error {
 		return f(bufio.NewReader(res.Body))
 	}
 }
 
-func (rb *Builder) BufioReader(f func(r *bufio.Reader) error) *Builder {
-	return rb.Handle(BufioReader(f))
+func (rb *Builder) ToBufioReader(f func(r *bufio.Reader) error) *Builder {
+	return rb.Handle(ToBufioReader(f))
 }
 
 // Clone creates a new Builder suitable for independent mutation.

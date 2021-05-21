@@ -14,8 +14,9 @@ import (
 func Example() {
 	// Simple GET into a buffer
 	var buf bytes.Buffer
-	err := requests.URL("http://example.com").
-		Buffer(&buf).
+	err := requests.
+		URL("http://example.com").
+		ToBytesBuffer(&buf).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("could not connect to example.com:", err)
@@ -28,8 +29,9 @@ func Example() {
 func Example_bufio() {
 	// read a response line by line for a sentinel
 	found := false
-	err := requests.URL("http://example.com").
-		BufioReader(func(r *bufio.Reader) error {
+	err := requests.
+		URL("http://example.com").
+		ToBufioReader(func(r *bufio.Reader) error {
 			var err error
 			for s := ""; err == nil; {
 				if strings.Contains(s, "Example Domain") {
@@ -59,9 +61,10 @@ type placeholder struct {
 func Example_getJSON() {
 	// GET a JSON object
 	var post placeholder
-	err := requests.URL("https://jsonplaceholder.typicode.com").
+	err := requests.
+		URL("https://jsonplaceholder.typicode.com").
 		Path("/posts/1").
-		JSONUnmarshal(&post).
+		ToJSON(&post).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("could not connect to jsonplaceholder.typicode.com:", err)
@@ -73,7 +76,8 @@ func Example_getJSON() {
 
 func Example_expectStatus() {
 	// Expect a specific status code
-	err := requests.URL("https://jsonplaceholder.typicode.com/posts/9001").
+	err := requests.
+		URL("https://jsonplaceholder.typicode.com/posts/9001").
 		AddValidator(requests.CheckStatus(404)).
 		AddValidator(requests.MatchContentType("application/json")).
 		Fetch(context.Background())
@@ -93,10 +97,11 @@ func Example_postJSON() {
 		Body:   "baz",
 		UserID: 1,
 	}
-	err := requests.URL("/posts").
+	err := requests.
+		URL("/posts").
 		Host("jsonplaceholder.typicode.com").
-		JSONMarshal(&req).
-		JSONUnmarshal(&res).
+		BodyJSON(&req).
+		ToJSON(&res).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("could not connect to jsonplaceholder.typicode.com:", err)
@@ -117,9 +122,10 @@ type postman struct {
 func Example_queryParam() {
 	// Set a query parameter
 	var params postman
-	err := requests.URL("https://postman-echo.com/get?hello=world").
+	err := requests.
+		URL("https://postman-echo.com/get?hello=world").
 		Param("param", "value").
-		JSONUnmarshal(&params).
+		ToJSON(&params).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("problem with postman:", err)
@@ -132,11 +138,12 @@ func Example_queryParam() {
 func Example_header() {
 	// Set a query parameter
 	var params postman
-	err := requests.URL("https://postman-echo.com/get?hello=world").
+	err := requests.
+		URL("https://postman-echo.com/get?hello=world").
 		UserAgent("bond/james-bond").
 		ContentType("secret").
 		Header("martini", "shaken").
-		JSONUnmarshal(&params).
+		ToJSON(&params).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("problem with postman:", err)
@@ -153,9 +160,10 @@ func Example_header() {
 func Example_rawBody() {
 	// Post a raw body
 	var data postman
-	err := requests.URL("https://postman-echo.com/post").
-		Bytes([]byte(`hello, world`), "text/plain").
-		JSONUnmarshal(&data).
+	err := requests.
+		URL("https://postman-echo.com/post").
+		BodyBytes([]byte(`hello, world`), "text/plain").
+		ToJSON(&data).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("problem with postman:", err)
@@ -168,12 +176,13 @@ func Example_rawBody() {
 func Example_formValue() {
 	// Submit form values
 	var echo postman
-	err := requests.URL("https://postman-echo.com/put").
+	err := requests.
+		URL("https://postman-echo.com/put").
 		Put().
-		Form(url.Values{
+		BodyForm(url.Values{
 			"hello": []string{"world"},
 		}).
-		JSONUnmarshal(&echo).
+		ToJSON(&echo).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("problem with postman:", err)
