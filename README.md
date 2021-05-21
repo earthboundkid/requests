@@ -1,5 +1,7 @@
 # Requests [![GoDoc](https://godoc.org/github.com/carlmjohnson/requests?status.svg)](https://godoc.org/github.com/carlmjohnson/requests) [![Go Report Card](https://goreportcard.com/badge/github.com/carlmjohnson/requests)](https://goreportcard.com/report/github.com/carlmjohnson/requests)
 
+![Requests logo](/img/gopher-web.png)
+
 HTTP requests for Gophers.
 
 ## Examples
