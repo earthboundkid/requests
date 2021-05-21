@@ -163,7 +163,8 @@ func Example_rawBody() {
 	var data postman
 	err := requests.
 		URL("https://postman-echo.com/post").
-		BodyBytes([]byte(`hello, world`), "text/plain").
+		BodyBytes([]byte(`hello, world`)).
+		ContentType("text/plain").
 		ToJSON(&data).
 		Fetch(context.Background())
 	if err != nil {

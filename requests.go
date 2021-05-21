@@ -23,7 +23,7 @@ type Builder struct {
 	url        *url.URL
 	err        error
 	method     string
-	body       BodySource
+	body       BodyGetter
 	validators []ResponseHandler
 	handler    ResponseHandler
 }
@@ -103,63 +103,74 @@ func (rb *Builder) Put() *Builder {
 	return rb.Method(http.MethodPut)
 }
 
-// BodySource provides a builder with a source for a request body.
-type BodySource = func() (io.ReadCloser, string, error)
+// BodyGetter provides a Builder with a source for a request body.
+type BodyGetter = func() (io.ReadCloser, error)
 
-// Body sets the BodySource for a request. It implicitly sets method to POST.
-func (rb *Builder) Body(src BodySource) *Builder {
+// GetBody sets the BodySource for a request. It implicitly sets method to POST.
+func (rb *Builder) GetBody(src BodyGetter) *Builder {
 	rb.body = src
 	return rb
 }
 
-func BodyReader(r io.Reader, contentType string) BodySource {
-	return func() (io.ReadCloser, string, error) {
+// BodyReader is a BodyGetter that returns an io.Reader.
+func BodyReader(r io.Reader) BodyGetter {
+	return func() (io.ReadCloser, error) {
 		if rc, ok := r.(io.ReadCloser); ok {
-			return rc, contentType, nil
+			return rc, nil
 		}
-		return io.NopCloser(r), contentType, nil
+		return io.NopCloser(r), nil
 	}
 }
 
-func (rb *Builder) BodyReader(r io.Reader, contentType string) *Builder {
-	return rb.Body(BodyReader(r, contentType))
+// BodyReader sets the Builder's request body to r.
+func (rb *Builder) BodyReader(r io.Reader) *Builder {
+	return rb.GetBody(BodyReader(r))
 }
 
-func BodyBytes(b []byte, contentType string) BodySource {
-	return func() (io.ReadCloser, string, error) {
-		return io.NopCloser(bytes.NewReader(b)), contentType, nil
+// BodyBytes is a BodyGetter that returns the provided raw bytes.
+func BodyBytes(b []byte) BodyGetter {
+	return func() (io.ReadCloser, error) {
+		return io.NopCloser(bytes.NewReader(b)), nil
 	}
 }
 
-func (rb *Builder) BodyBytes(b []byte, contentType string) *Builder {
-	return rb.Body(BodyBytes(b, contentType))
+// BodyBytes sets the Builder's request body to b.
+func (rb *Builder) BodyBytes(b []byte) *Builder {
+	return rb.GetBody(BodyBytes(b))
 }
 
-func BodyJSON(v interface{}) BodySource {
-	return func() (r io.ReadCloser, contentType string, err error) {
-		contentType = "application/json"
+// BodyJSON is a BodyGetter that marshals a JSON object.
+func BodyJSON(v interface{}) BodyGetter {
+	return func() (io.ReadCloser, error) {
 		b, err := json.Marshal(v)
 		if err != nil {
-			return
+			return nil, err
 		}
-		r = io.NopCloser(bytes.NewReader(b))
-		return
+		return io.NopCloser(bytes.NewReader(b)), nil
 	}
 }
 
+// BodyJSON sets the Builder's request body to the marshaled JSON.
+// It also sets ContentType to "application/json".
 func (rb *Builder) BodyJSON(v interface{}) *Builder {
-	return rb.Body(BodyJSON(v))
+	return rb.
+		GetBody(BodyJSON(v)).
+		ContentType("application/json")
 }
 
-func BodyForm(data url.Values) BodySource {
-	return func() (r io.ReadCloser, contentType string, err error) {
-		return io.NopCloser(strings.NewReader(data.Encode())),
-			"application/x-www-form-urlencoded", nil
+// BodyForm is a BodyGetter that builds an encoded form body.
+func BodyForm(data url.Values) BodyGetter {
+	return func() (r io.ReadCloser, err error) {
+		return io.NopCloser(strings.NewReader(data.Encode())), nil
 	}
 }
 
+// BodyForm sets the Builder's request body to the encoded form.
+// It also sets the ContentType to "application/x-www-form-urlencoded".
 func (rb *Builder) BodyForm(data url.Values) *Builder {
-	return rb.Body(BodyForm(data))
+	return rb.
+		GetBody(BodyForm(data)).
+		ContentType("application/x-www-form-urlencoded")
 }
 
 // ResponseHandler is used to validate or handle the response to a request.
@@ -357,9 +368,8 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	}
 	u := rb.url.String()
 	var body io.ReadCloser
-	var ct string
 	if rb.body != nil {
-		if body, ct, err = rb.body(); err != nil {
+		if body, err = rb.body(); err != nil {
 			return nil, err
 		}
 	}
@@ -367,18 +377,10 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	if err != nil {
 		return nil, err
 	}
-	if rb.body != nil {
-		req.GetBody = func() (io.ReadCloser, error) {
-			r, _, err := rb.body()
-			return r, err
-		}
-	}
+	req.GetBody = rb.body
 
 	for _, pair := range rb.headers {
 		req.Header.Set(pair[0], pair[1])
-	}
-	if req.Header.Get("Content-Type") == "" && ct != "" {
-		req.Header.Set("Content-Type", ct)
 	}
 	return req, nil
 }
