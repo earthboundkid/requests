@@ -43,7 +43,7 @@ func Example() {
 	err = requests.URL("https://jsonplaceholder.typicode.com/posts/9001").
 		Validate(requests.ChainHandlers(
 			requests.CheckStatus(404),
-			requests.MatchContentType("application/json; charset=utf-8"),
+			requests.MatchContentType("application/json"),
 		)).
 		Do(context.Background())
 	if err != nil {

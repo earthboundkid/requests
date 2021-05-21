@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"strings"
@@ -177,14 +178,6 @@ var DefaultValidator ResponseHandler = CheckStatus(
 	http.StatusNoContent,
 )
 
-func MatchContentType(s string) ResponseHandler {
-	return func(resp *http.Response) error {
-		if ct := resp.Header.Get("Content-Type"); ct != s {
-			return fmt.Errorf("unexpected Content-Type: %s", ct)
-		}
-		return nil
-	}
-}
 
 type StatusError struct {
 	URL, Status string
@@ -207,6 +200,19 @@ func HasStatusErr(err error, codes ...int) bool {
 	return false
 }
 
+// MatchContentType validates that a response has the given content type.
+func MatchContentType(ct string) ResponseHandler {
+	return func(resp *http.Response) error {
+		mt, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+		if err != nil {
+			return fmt.Errorf("problem matching Content-Type: %w", err)
+		}
+		if mt != ct {
+			return fmt.Errorf("unexpected Content-Type: %s", mt)
+		}
+		return nil
+	}
+}
 func (rb *Builder) Handle(h ResponseHandler) *Builder {
 	rb.handler = h
 	return rb
