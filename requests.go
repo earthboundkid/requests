@@ -360,6 +360,13 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	if err != nil {
 		return nil, err
 	}
+	if rb.body != nil {
+		req.GetBody = func() (io.ReadCloser, error) {
+			r, _, err := rb.body()
+			return r, err
+		}
+	}
+
 	for _, pair := range rb.headers {
 		req.Header.Add(pair[0], pair[1])
 	}
