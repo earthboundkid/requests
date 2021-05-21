@@ -15,7 +15,7 @@ func Example() {
 	var buf bytes.Buffer
 	err := requests.URL("http://example.com").
 		Buffer(&buf).
-		Do(context.Background())
+		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("could not connect to example.com:", err)
 	}
@@ -33,7 +33,7 @@ func Example() {
 	err = requests.URL("https://jsonplaceholder.typicode.com").
 		Path("/posts/1").
 		JSONUnmarshal(&post).
-		Do(context.Background())
+		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("could not connect to jsonplaceholder.typicode.com:", err)
 	}
@@ -45,7 +45,7 @@ func Example() {
 			requests.CheckStatus(404),
 			requests.MatchContentType("application/json"),
 		)).
-		Do(context.Background())
+		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("should be a 404:", err)
 	}
@@ -61,7 +61,7 @@ func Example() {
 		Host("jsonplaceholder.typicode.com").
 		JSONMarshal(&req).
 		JSONUnmarshal(&res).
-		Do(context.Background())
+		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("could not connect to jsonplaceholder.typicode.com:", err)
 	}
@@ -79,7 +79,7 @@ func Example() {
 	err = requests.URL("https://postman-echo.com/get?hello=world").
 		Param("param", "value").
 		JSONUnmarshal(&params).
-		Do(context.Background())
+		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("problem with postman:", err)
 	}
@@ -90,7 +90,7 @@ func Example() {
 	err = requests.URL("https://postman-echo.com/post").
 		Bytes([]byte(`hello, world`), "text/plain").
 		JSONUnmarshal(&data).
-		Do(context.Background())
+		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("problem with postman:", err)
 	}
@@ -104,7 +104,7 @@ func Example() {
 			"hello": []string{"world"},
 		}).
 		JSONUnmarshal(&echo).
-		Do(context.Background())
+		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("problem with postman:", err)
 	}

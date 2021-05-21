@@ -228,6 +228,7 @@ func MatchContentType(ct string) ResponseHandler {
 		return nil
 	}
 }
+
 func (rb *Builder) Handle(h ResponseHandler) *Builder {
 	rb.handler = h
 	return rb
@@ -289,9 +290,10 @@ func (rb *Builder) Clone() *Builder {
 	return &rb2
 }
 
-func (rb *Builder) Do(ctx context.Context) (err error) {
+// Request builds a new http.Request with its context set.
+func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	if rb.err != nil {
-		return err
+		return nil, err
 	}
 	method := http.MethodGet
 	if rb.body != nil {
@@ -302,7 +304,7 @@ func (rb *Builder) Do(ctx context.Context) (err error) {
 	}
 	if rb.url == nil {
 		if rb.host == "" {
-			return fmt.Errorf("must set a URL to connect to")
+			return nil, fmt.Errorf("must set a URL to connect to")
 		}
 		rb.url = &url.URL{}
 	}
@@ -327,12 +329,12 @@ func (rb *Builder) Do(ctx context.Context) (err error) {
 	var ct string
 	if rb.body != nil {
 		if body, ct, err = rb.body(); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	req, err := http.NewRequestWithContext(ctx, method, u, body)
+	req, err = http.NewRequestWithContext(ctx, method, u, body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, pair := range rb.headers {
 		req.Header.Add(pair[0], pair[1])
@@ -340,6 +342,11 @@ func (rb *Builder) Do(ctx context.Context) (err error) {
 	if req.Header.Get("Content-Type") == "" && ct != "" {
 		req.Header.Set("Content-Type", ct)
 	}
+	return req, nil
+}
+
+// Do calls the underlying http.Client and handles any resulting response.
+func (rb *Builder) Do(req *http.Request) (err error) {
 	cl := http.DefaultClient
 	if rb.cl != nil {
 		cl = rb.cl
@@ -365,4 +372,13 @@ func (rb *Builder) Do(ctx context.Context) (err error) {
 		return err
 	}
 	return nil
+}
+
+// Fetch builds a request, sends it, and handles the response.
+func (rb *Builder) Fetch(ctx context.Context) (err error) {
+	req, err := rb.Request(ctx)
+	if err != nil {
+		return err
+	}
+	return rb.Do(req)
 }
