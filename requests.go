@@ -15,6 +15,9 @@ import (
 	"strings"
 )
 
+// Builder is a convenient way to build, send, and handle HTTP requests.
+// A configured Builder can be used for concurrent fetching. The zero value
+// of Builder is usable but the Host must be set before fetching.
 type Builder struct {
 	cl         *http.Client
 	host, path string
@@ -91,14 +94,17 @@ func (rb *Builder) Method(method string) *Builder {
 	return rb
 }
 
+// Get sets HTTP method to GET.
 func (rb *Builder) Get() *Builder {
 	return rb.Method(http.MethodGet)
 }
 
+// Post sets HTTP method to POST.
 func (rb *Builder) Post() *Builder {
 	return rb.Method(http.MethodPost)
 }
 
+// Put sets HTTP method to PUT.
 func (rb *Builder) Put() *Builder {
 	return rb.Method(http.MethodPut)
 }
@@ -216,6 +222,7 @@ func CheckStatus(acceptStatuses ...int) ResponseHandler {
 	}
 }
 
+// CheckStatus adds a validator for status code of a response.
 func (rb *Builder) CheckStatus(acceptStatuses ...int) *Builder {
 	return rb.AddValidator(CheckStatus(acceptStatuses...))
 }
@@ -270,6 +277,8 @@ func MatchContentType(ct string) ResponseHandler {
 	}
 }
 
+// Handle sets the response handler for a Builder.
+// To use multiple handlers, use ChainHandlers.
 func (rb *Builder) Handle(h ResponseHandler) *Builder {
 	rb.handler = h
 	return rb
@@ -283,6 +292,7 @@ func consumeBody(res *http.Response) (err error) {
 	return err
 }
 
+// ToJSON decodes a response as a JSON object.
 func ToJSON(v interface{}) ResponseHandler {
 	return func(res *http.Response) error {
 		data, err := io.ReadAll(res.Body)
@@ -296,10 +306,12 @@ func ToJSON(v interface{}) ResponseHandler {
 	}
 }
 
+// ToJSON sets the Builder to decode a response as a JSON object
 func (rb *Builder) ToJSON(v interface{}) *Builder {
 	return rb.Handle(ToJSON(v))
 }
 
+// ToString writes the response body to the provided string pointer.
 func ToString(sp *string) ResponseHandler {
 	return func(res *http.Response) error {
 		var buf strings.Builder
@@ -311,10 +323,12 @@ func ToString(sp *string) ResponseHandler {
 	}
 }
 
+// ToString sets the Builder to write the response body to the provided string pointer.
 func (rb *Builder) ToString(sp *string) *Builder {
 	return rb.Handle(ToString(sp))
 }
 
+// ToBytesBuffer writes the response body to the provided bytes.Buffer.
 func ToBytesBuffer(buf *bytes.Buffer) ResponseHandler {
 	return func(res *http.Response) error {
 		_, err := io.Copy(buf, res.Body)
@@ -322,16 +336,19 @@ func ToBytesBuffer(buf *bytes.Buffer) ResponseHandler {
 	}
 }
 
+// ToBytesBuffer sets the Builder to write the response body to the provided bytes.Buffer.
 func (rb *Builder) ToBytesBuffer(buf *bytes.Buffer) *Builder {
 	return rb.Handle(ToBytesBuffer(buf))
 }
 
+// ToBufioReader takes a callback which wraps the response body in a bufio.Reader.
 func ToBufioReader(f func(r *bufio.Reader) error) ResponseHandler {
 	return func(res *http.Response) error {
 		return f(bufio.NewReader(res.Body))
 	}
 }
 
+// ToBytesBuffer sets the Builder to call a callback with the response body wrapped in a bufio.Reader.
 func (rb *Builder) ToBufioReader(f func(r *bufio.Reader) error) *Builder {
 	return rb.Handle(ToBufioReader(f))
 }
@@ -400,7 +417,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	return req, nil
 }
 
-// Do calls the underlying http.Client and validates and handles any resulting response.
+// Do calls the underlying http.Client and validates and handles any resulting response. The response body is closed after all validators and the handler run.
 func (rb *Builder) Do(req *http.Request) (err error) {
 	cl := http.DefaultClient
 	if rb.cl != nil {
