@@ -157,21 +157,21 @@ func Example_queryParam() {
 }
 
 func Example_header() {
-	// Set a query parameter
-	var params postman
+	// Set headers
+	var headers postman
 	err := requests.
 		URL("https://postman-echo.com/get?hello=world").
 		UserAgent("bond/james-bond").
 		ContentType("secret").
 		Header("martini", "shaken").
-		ToJSON(&params).
+		ToJSON(&headers).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("problem with postman:", err)
 	}
-	fmt.Println(params.Headers["user-agent"])
-	fmt.Println(params.Headers["content-type"])
-	fmt.Println(params.Headers["martini"])
+	fmt.Println(headers.Headers["user-agent"])
+	fmt.Println(headers.Headers["content-type"])
+	fmt.Println(headers.Headers["martini"])
 	// Output:
 	// bond/james-bond
 	// secret
