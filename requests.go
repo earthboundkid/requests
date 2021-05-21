@@ -71,7 +71,7 @@ func (rb *Builder) Header(key, value string) *Builder {
 	return rb
 }
 
-// ContentType sets the Content-Type header.
+// ContentType sets the Content-Type header on a request.
 func (rb *Builder) ContentType(ct string) *Builder {
 	return rb.Header("Content-Type", ct)
 }
@@ -263,8 +263,8 @@ func HasStatusErr(err error, codes ...int) bool {
 	return false
 }
 
-// MatchContentType validates that a response has the given content type.
-func MatchContentType(ct string) ResponseHandler {
+// CheckContentType validates that a response has the given content type.
+func CheckContentType(ct string) ResponseHandler {
 	return func(resp *http.Response) error {
 		mt, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 		if err != nil {
@@ -275,6 +275,11 @@ func MatchContentType(ct string) ResponseHandler {
 		}
 		return nil
 	}
+}
+
+// CheckContentType adds a validator for the content type of a response.
+func (rb *Builder) CheckContentType(ct string) *Builder {
+	return rb.AddValidator(CheckContentType(ct))
 }
 
 // Handle sets the response handler for a Builder.

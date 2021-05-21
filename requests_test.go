@@ -98,8 +98,8 @@ func Example_expectStatus() {
 	// Expect a specific status code
 	err := requests.
 		URL("https://jsonplaceholder.typicode.com/posts/9001").
-		AddValidator(requests.CheckStatus(404)).
-		AddValidator(requests.MatchContentType("application/json")).
+		CheckStatus(404).
+		CheckContentType("application/json").
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("should be a 404:", err)
