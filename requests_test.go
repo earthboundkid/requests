@@ -160,7 +160,7 @@ func Example_header() {
 	// Set headers
 	var headers postman
 	err := requests.
-		URL("https://postman-echo.com/get?hello=world").
+		URL("https://postman-echo.com/get").
 		UserAgent("bond/james-bond").
 		ContentType("secret").
 		Header("martini", "shaken").

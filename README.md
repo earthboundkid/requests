@@ -44,4 +44,13 @@ HTTP requests for Gophers.
 		ToJSON(&res).
 		Fetch(context.Background())
 ```
-
+```go
+	// Set headers
+	var headers postman
+	err := requests.
+		URL("https://postman-echo.com/get").
+		UserAgent("bond/james-bond").
+		ContentType("secret").
+		Header("martini", "shaken").
+		Fetch(context.Background())
+```
