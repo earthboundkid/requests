@@ -41,6 +41,9 @@ import (
 // Set a handler for a response with Handle or use ToJSON, ToString,
 // ToBytesBuffer, or ToBufioReader.
 //
+// Fetch creates an http.Request with Request and sends it via the underlying
+// http.Client with Do.
+//
 // In many cases, it will be possible to set most options for an API endpoint
 // in a Builder at the package level and then call Clone in a function
 // to add request specific URL parameters, headers, body, and handler.
