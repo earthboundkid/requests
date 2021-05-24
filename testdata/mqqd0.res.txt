@@ -1,0 +1,33 @@
+HTTP/2.0 201 Created
+Content-Length: 65
+Access-Control-Allow-Credentials: true
+Access-Control-Expose-Headers: Location
+Alt-Svc: h3-27=":443"; ma=86400, h3-28=":443"; ma=86400, h3-29=":443"; ma=86400
+Cache-Control: no-cache
+Cf-Cache-Status: DYNAMIC
+Cf-Ray: 6548b3589dc3595c-IAD
+Cf-Request-Id: 0a414e6b600000595c44be1000000001
+Content-Type: application/json; charset=utf-8
+Date: Mon, 24 May 2021 18:48:51 GMT
+Etag: W/"41-9WBd/UI+dS0dyXlVSd/+yGyi8tA"
+Expect-Ct: max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
+Expires: -1
+Location: http://jsonplaceholder.typicode.com/posts/101
+Nel: {"report_to":"cf-nel","max_age":604800}
+Pragma: no-cache
+Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v2?s=6MzwOf3Foq7mzQ0fGXRJNP5PPqvI8QQzv3gnIpPyqzR0wgcQMnxc3NERMEzSTrKEKkHnTjZq2PNVgFtIIXYM64fVTb0XPDfvzPbC%2FlbXWuqmSGAJwyYSr7GMbYHqxdLoAma8d%2FhSwLj2Yg%3D%3D"}],"group":"cf-nel","max_age":604800}
+Server: cloudflare
+Vary: Origin, X-HTTP-Method-Override, Accept-Encoding
+Via: 1.1 vegur
+X-Content-Type-Options: nosniff
+X-Powered-By: Express
+X-Ratelimit-Limit: 1000
+X-Ratelimit-Remaining: 999
+X-Ratelimit-Reset: 1621882170
+
+{
+  "title": "foo",
+  "body": "baz",
+  "userId": 1,
+  "id": 101
+}

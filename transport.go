@@ -13,16 +13,16 @@ func WrapRoundTripper(rt http.RoundTripper, f func(r *http.Request)) http.RoundT
 	if rt == nil {
 		rt = http.DefaultTransport
 	}
-	return transport{rt, f}
+	return RoundTripFunc(func(r *http.Request) (*http.Response, error) {
+		r = r.Clone(r.Context())
+		f(r)
+		return rt.RoundTrip(r)
+	})
 }
 
-type transport struct {
-	rt http.RoundTripper
-	f  func(*http.Request)
-}
+// RoundTripFunc implements http.RoundTripper.
+type RoundTripFunc func(req *http.Request) (res *http.Response, err error)
 
-func (t transport) RoundTrip(r *http.Request) (*http.Response, error) {
-	r = r.Clone(r.Context())
-	t.f(r)
-	return t.rt.RoundTrip(r)
+func (rtf RoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
+	return rtf(r)
 }

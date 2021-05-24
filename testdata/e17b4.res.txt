@@ -1,0 +1,31 @@
+HTTP/2.0 200 OK
+Access-Control-Allow-Credentials: true
+Age: 27070
+Alt-Svc: h3-27=":443"; ma=86400, h3-28=":443"; ma=86400, h3-29=":443"; ma=86400
+Cache-Control: max-age=43200
+Cf-Cache-Status: HIT
+Cf-Ray: 6548b357cc58595c-IAD
+Cf-Request-Id: 0a414e6ae00000595c38379000000001
+Content-Type: application/json; charset=utf-8
+Date: Mon, 24 May 2021 18:48:51 GMT
+Etag: W/"124-yiKdLzqO5gfBrJFrcdJ8Yq0LGnU"
+Expect-Ct: max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
+Expires: -1
+Nel: {"report_to":"cf-nel","max_age":604800}
+Pragma: no-cache
+Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v2?s=%2Ff8lx7y%2BUCpmhb8B9dkzmAA%2BdzZULC5j1fJU9vH%2B9h%2FJO0h2FGg0iqYLzOorSnU4StPquXQdvVwWhJcooEY69efXEEdVEzmQIrlDiwpkblGWLHoJUrfWu8qhr0L%2BA0B2yXCsJlP2UTR87A%3D%3D"}],"group":"cf-nel","max_age":604800}
+Server: cloudflare
+Vary: Origin, Accept-Encoding
+Via: 1.1 vegur
+X-Content-Type-Options: nosniff
+X-Powered-By: Express
+X-Ratelimit-Limit: 1000
+X-Ratelimit-Remaining: 998
+X-Ratelimit-Reset: 1621855110
+
+{
+  "userId": 1,
+  "id": 1,
+  "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+  "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+}

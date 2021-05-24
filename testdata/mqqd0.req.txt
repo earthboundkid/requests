@@ -1,0 +1,5 @@
+POST /posts HTTP/1.1
+Host: jsonplaceholder.typicode.com
+Content-Type: application/json
+
+{"title":"foo","body":"baz","userId":1}

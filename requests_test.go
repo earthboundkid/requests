@@ -6,11 +6,16 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/carlmjohnson/requests"
 )
+
+func init() {
+	http.DefaultClient.Transport = requests.Replay("testdata")
+}
 
 func Example() {
 	// Simple GET into a string
