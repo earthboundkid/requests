@@ -16,8 +16,7 @@ import (
 )
 
 // Builder is a convenient way to build, send, and handle HTTP requests.
-// A configured Builder can be used for concurrent fetching. The zero value
-// of Builder is usable but the Host must be set before fetching.
+// The zero value of Builder is usable but the Host must be set before fetching.
 type Builder struct {
 	cl         *http.Client
 	host, path string
