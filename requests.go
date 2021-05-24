@@ -16,7 +16,36 @@ import (
 )
 
 // Builder is a convenient way to build, send, and handle HTTP requests.
-// The zero value of Builder is usable but the Host must be set before fetching.
+// Builder has a fluent API with methods returning a pointer to the same
+// struct, which allows for declaratively describing a request by method chaining.
+//
+// Builder can be thought of as having the following phases:
+//
+// Set the base URL for a request with requests.URL then customize it with
+// Host, Hostf, Path, Pathf, and Param.
+//
+// Set the method for a request with Method or use the Get, Post, and Put
+// methods.
+//
+// Set headers with Header or set conventional header keys with ContentType,
+// UserAgent, and BasicAuth.
+//
+// Add a validator to the Builder with AddValidator or use the built in
+// CheckStatus and CheckContentType.
+//
+// Set the http.Client to use for a request with Client.
+//
+// Set the body of the request if any with GetBody or use built in BodyBytes,
+// BodyJSON, or BodyReader.
+//
+// Set a handler for a response with Handle or use ToJSON, ToString,
+// ToBytesBuffer, or ToBufioReader.
+//
+// In many cases, it will be possible to set most options for an API endpoint
+// in a Builder at the package level and then call Clone in a function
+// to add request specific URL parameters, headers, body, and handler.
+// The zero value of Builder is usable but at least the Host parameter
+// must be set before fetching.
 type Builder struct {
 	cl         *http.Client
 	host, path string

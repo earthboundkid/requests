@@ -4,6 +4,8 @@
 
 HTTP requests for Gophers.
 
+The requests.Builder type is a convenient way to build, send, and handle HTTP requests. Builder has a fluent API with methods returning a pointer to the same struct, which allows for declaratively describing a request by method chaining.
+
 ## Examples
 ```go
 // Simple GET into a string
