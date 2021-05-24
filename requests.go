@@ -52,10 +52,20 @@ func (rb *Builder) Host(host string) *Builder {
 	return rb
 }
 
+// Hostf calls Host with fmt.Sprintf.
+func (rb *Builder) Hostf(format string, a ...interface{}) *Builder {
+	return rb.Host(fmt.Sprintf(format, a...))
+}
+
 // Path sets the path for a request. It overrides the URL function.
 func (rb *Builder) Path(path string) *Builder {
 	rb.path = path
 	return rb
+}
+
+// Pathf calls Path with fmt.Sprintf.
+func (rb *Builder) Pathf(format string, a ...interface{}) *Builder {
+	return rb.Path(fmt.Sprintf(format, a...))
 }
 
 // Param sets a query parameter on a request. It overwrites the value of existing keys.
