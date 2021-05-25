@@ -248,18 +248,14 @@ func (rb *Builder) AddValidator(h ResponseHandler) *Builder {
 
 // CheckStatus validates the response has an acceptable status code.
 func CheckStatus(acceptStatuses ...int) ResponseHandler {
-	return func(resp *http.Response) error {
+	return func(res *http.Response) error {
 		for _, code := range acceptStatuses {
-			if resp.StatusCode == code {
+			if res.StatusCode == code {
 				return nil
 			}
 		}
 
-		return StatusError{
-			resp.Request.URL.Redacted(),
-			resp.Status,
-			resp.StatusCode,
-		}
+		return (*StatusError)(res)
 	}
 }
 
@@ -278,15 +274,12 @@ var DefaultValidator ResponseHandler = CheckStatus(
 )
 
 // StatusError is the error type produced by CheckStatus.
-type StatusError struct {
-	URL, Status string
-	StatusCode  int
-}
+type StatusError http.Response
 
 // Error fulfills the error interface.
-func (se StatusError) Error() string {
+func (se *StatusError) Error() string {
 	return fmt.Sprintf("unexpected status for %s: %s",
-		se.URL, se.Status)
+		se.Request.URL.Redacted(), se.Status)
 }
 
 // HasStatusErr returns true if err is a StatusError caused by any of the codes given.
@@ -294,7 +287,7 @@ func HasStatusErr(err error, codes ...int) bool {
 	if err == nil {
 		return false
 	}
-	if se := (StatusError{}); errors.As(err, &se) {
+	if se := new(StatusError); errors.As(err, &se) {
 		for _, code := range codes {
 			if se.StatusCode == code {
 				return true
