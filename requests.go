@@ -32,7 +32,7 @@ import (
 // CacheControl, ContentType, UserAgent, BasicAuth, and Bearer.
 //
 // Add a validator to the Builder with AddValidator or use the built in
-// CheckStatus and CheckContentType.
+// CheckStatus, CheckContentType, and Peek.
 //
 // Set the http.Client to use for a request with Client.
 //
@@ -330,6 +330,36 @@ func CheckContentType(ct string) ResponseHandler {
 // CheckContentType adds a validator for the content type of a response.
 func (rb *Builder) CheckContentType(ct string) *Builder {
 	return rb.AddValidator(CheckContentType(ct))
+}
+
+type bufioCloser struct {
+	*bufio.Reader
+	io.Closer
+}
+
+// Peek wraps the body of a response in a bufio.Reader and
+// gives f a peek at the first n bytes for validation.
+func Peek(n int, f func([]byte) error) ResponseHandler {
+	return func(res *http.Response) error {
+		// ensure buffer is at least minimum size
+		buf := bufio.NewReader(res.Body)
+		// ensure large peeks will fit in the buffer
+		buf = bufio.NewReaderSize(buf, n)
+		res.Body = &bufioCloser{
+			buf,
+			res.Body,
+		}
+		b, err := buf.Peek(n)
+		if err != nil && err != io.EOF {
+			return err
+		}
+		return f(b)
+	}
+}
+
+// Peek adds a validator that peeks at the first n bytes of a response body.
+func (rb *Builder) Peek(n int, f func([]byte) error) *Builder {
+	return rb.AddValidator(Peek(n, f))
 }
 
 // Handle sets the response handler for a Builder.

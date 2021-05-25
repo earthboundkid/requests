@@ -230,3 +230,30 @@ func ExampleHasStatusErr() {
 	// Output:
 	// got a 404
 }
+
+func ExampleBuilder_Peek() {
+	// Check that a response has a doctype
+	const doctype = "<!doctype html>"
+	var s string
+	err := requests.
+		URL("http://example.com").
+		Peek(len(doctype), func(b []byte) error {
+			if string(b) != doctype {
+				return fmt.Errorf("missing doctype: %q", b)
+			}
+			return nil
+		}).
+		ToString(&s).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("could not connect to example.com:", err)
+	}
+	fmt.Println(
+		// Final result still has the prefix
+		strings.HasPrefix(s, doctype),
+		// And the full body
+		strings.HasSuffix(s, "</html>\n"),
+	)
+	// Output:
+	// true true
+}
