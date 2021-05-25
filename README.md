@@ -2,20 +2,19 @@
 
 ![Requests logo](/img/gopher-web.png)
 
-HTTP requests for Gophers.
+## _HTTP requests for Gophers._
 
-The requests.Builder type is a convenient way to build, send, and handle HTTP requests. Builder has a fluent API with methods returning a pointer to the same struct, which allows for declaratively describing a request by method chaining.
+**The problem**: Go's net/http is powerful and versatile, but using it correctly for client requests can be extremely verbose.
+
+**The solution**: The requests.Builder type is a convenient way to build, send, and handle HTTP requests. Builder has a fluent API with methods returning a pointer to the same struct, which allows for declaratively describing a request by method chaining.
+
+Requests also comes with tools for building custom http transports, include a request recorder and replayer for testing.
 
 ## Examples
-```go
-// Simple GET into a string
-var s string
-err := requests.
-	URL("http://example.com").
-	ToString(&s).
-	Fetch(context.Background())
+### Simple GET into a string
 
-// Equivalent code with net/http
+```go
+// code with net/http
 req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://example.com", nil)
 if err != nil {
 	// ...
@@ -30,10 +29,20 @@ if err != nil {
 	// ...
 }
 s := string(b)
+
+// equivalent code using requests
+var s string
+err := requests.
+	URL("http://example.com").
+	ToString(&s).
+	Fetch(context.Background())
+
 // 5 lines vs. 13 lines
 ```
+
+### POST a raw body
+
 ```go
-// Post a raw body
 err := requests.
 	URL("https://postman-echo.com/post").
 	BodyBytes([]byte(`hello, world`)).
@@ -58,12 +67,14 @@ if err != nil {
 }
 // 5 lines vs. 14 lines
 ```
+
+### GET a JSON object
+
 ```go
-// GET a JSON object
 var post placeholder
 err := requests.
 	URL("https://jsonplaceholder.typicode.com").
-	Path("/posts/1").
+	Pathf("/posts/%d", 1).
 	ToJSON(&post).
 	Fetch(context.Background())
 
@@ -73,12 +84,11 @@ u, err := url.Parse("https://jsonplaceholder.typicode.com")
 if err != nil {
 	// ...
 }
-u.Path = "/posts/1"
-req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), body)
+u.Path = fmt.Sprintf("/posts/%d", 1)
+req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 if err != nil {
 	// ...
 }
-req.Header.Set("Content-Type", "text/plain")
 res, err := http.DefaultClient.Do(req)
 if err != nil {
 	// ...
@@ -94,8 +104,10 @@ if err != nil {
 }
 // 6 lines vs. 23 lines
 ```
+
+### POST a JSON object and parse the response
+
 ```go
-// POST a JSON object and parse the response
 var res placeholder
 req := placeholder{
 	Title:  "foo",
@@ -110,6 +122,9 @@ err := requests.
 	Fetch(context.Background())
 // net/http equivalent left as an exercise for the reader
 ```
+
+### Set custom headers for a request
+
 ```go
 // Set headers
 var headers postman
@@ -120,6 +135,9 @@ err := requests.
 	Header("martini", "shaken").
 	Fetch(context.Background())
 ```
+
+### Easily manipulate query parameters
+
 ```go
 var params postman
 err := requests.
@@ -128,4 +146,26 @@ err := requests.
 	Param("c", "4").
 	Fetch(context.Background())
 	// URL is https://postman-echo.com/get?a=1&b=3&c=4
+```
+
+### Record and replay responses
+
+```go
+// record a request to the file system
+cl.Transport = requests.Record(nil, "somedir")
+var s1, s2 string
+err := requests.URL("http://example.com").
+	Client(&cl).
+	ToString(&s1).
+	Fetch(context.Background())
+check(err)
+
+// now replay the request in tests
+cl.Transport = requests.Replay("somedir")
+err = requests.URL("http://example.com").
+	Client(&cl).
+	ToString(&s2).
+	Fetch(context.Background())
+check(err)
+assert(s1 == s2) // true
 ```
