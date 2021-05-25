@@ -32,7 +32,7 @@ func Example() {
 	// true
 }
 
-func Example_bytesBuffer() {
+func ExampleBuilder_ToBytesBuffer() {
 	// Simple GET into a buffer
 	var buf bytes.Buffer
 	err := requests.
@@ -47,7 +47,7 @@ func Example_bytesBuffer() {
 	// true
 }
 
-func Example_bufio() {
+func ExampleBuilder_ToBufioReader() {
 	// read a response line by line for a sentinel
 	found := false
 	err := requests.
@@ -99,10 +99,11 @@ func Example_getJSON() {
 	// sunt aut facere repellat provident occaecati excepturi optio reprehenderit
 }
 
-func Example_expectStatus() {
+func ExampleBuilder_CheckStatus() {
 	// Expect a specific status code
 	err := requests.
-		URL("https://jsonplaceholder.typicode.com/posts/9001").
+		URL("https://jsonplaceholder.typicode.com").
+		Pathf("/posts/%d", 9001).
 		CheckStatus(404).
 		CheckContentType("application/json").
 		Fetch(context.Background())
@@ -161,7 +162,7 @@ func Example_queryParam() {
 	// map[a:1 b:3 c:4]
 }
 
-func Example_header() {
+func ExampleBuilder_Header() {
 	// Set headers
 	var headers postman
 	err := requests.
@@ -183,7 +184,7 @@ func Example_header() {
 	// shaken
 }
 
-func Example_rawBody() {
+func ExampleBuilder_BodyBytes() {
 	// Post a raw body
 	var data postman
 	err := requests.
@@ -200,7 +201,7 @@ func Example_rawBody() {
 	// hello, world
 }
 
-func Example_formValue() {
+func ExampleBuilder_BodyForm() {
 	// Submit form values
 	var echo postman
 	err := requests.
