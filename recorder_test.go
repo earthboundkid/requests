@@ -2,9 +2,11 @@ package requests_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"testing"
+	"testing/fstest"
 
 	"github.com/carlmjohnson/requests"
 )
@@ -32,4 +34,30 @@ func TestRecord(t *testing.T) {
 	if s1 != s2 {
 		log.Fatalf("%q != %q", s1, s2)
 	}
+}
+
+func ExampleReplayFS() {
+	fsys := fstest.MapFS{
+		"62h1g.res.txt": &fstest.MapFile{
+			Data: []byte(`HTTP/1.1 200 OK
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 24 May 2021 18:48:50 GMT
+
+An example response.`),
+		},
+	}
+	var s string
+	const expected = `An example response.`
+	if err := requests.
+		URL("http://fsys.example").
+		Client(&http.Client{
+			Transport: requests.ReplayFS(fsys),
+		}).
+		ToString(&s).
+		Fetch(context.Background()); err != nil {
+		panic(err)
+	}
+	fmt.Println(s == expected)
+	// Ouput:
+	// true
 }
