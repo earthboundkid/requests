@@ -130,6 +130,11 @@ func (rb *Builder) BasicAuth(username, password string) *Builder {
 	return rb.Header("Authorization", "Basic "+v)
 }
 
+// Bearer sets the Authorization header to a bearer token.
+func (rb *Builder) Bearer(token string) *Builder {
+	return rb.Header("Authorization", "Bearer "+token)
+}
+
 // Method sets the HTTP method for a request.
 func (rb *Builder) Method(method string) *Builder {
 	rb.method = method
