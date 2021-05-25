@@ -28,8 +28,8 @@ import (
 // methods. By default, requests without a body are GET and those with a
 // body are POST.
 //
-// Set headers with Header or set conventional header keys with ContentType,
-// UserAgent, and BasicAuth.
+// Set headers with Header or set conventional header keys with CacheControl,
+// ContentType, UserAgent, BasicAuth, and Bearer.
 //
 // Add a validator to the Builder with AddValidator or use the built in
 // CheckStatus and CheckContentType.
@@ -111,6 +111,11 @@ func (rb *Builder) Param(key, value string) *Builder {
 func (rb *Builder) Header(key, value string) *Builder {
 	rb.headers = append(rb.headers, [2]string{key, value})
 	return rb
+}
+
+// CacheControl sets the client-side Cache-Control directive for a request.
+func (rb *Builder) CacheControl(directive string) *Builder {
+	return rb.Header("Cache-Control", directive)
 }
 
 // ContentType sets the Content-Type header on a request.
