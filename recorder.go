@@ -11,7 +11,9 @@ import (
 )
 
 // Record returns an http.RoundTripper that writes out its
-// requests and responses made to text files in basepath.
+// requests and their responses to text files in basepath.
+// Requests are named according to a hash of their contents.
+// Responses are named according to the request that made them.
 func Record(rt http.RoundTripper, basepath string) http.RoundTripper {
 	if rt == nil {
 		rt = http.DefaultTransport

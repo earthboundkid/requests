@@ -14,6 +14,7 @@ import (
 
 // Record returns an http.RoundTripper that reads its
 // responses from text files in basepath.
+// Responses looked up according to a hash of the request.
 func Replay(basepath string) http.RoundTripper {
 	return RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
 		defer func() {
