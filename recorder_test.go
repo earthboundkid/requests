@@ -58,6 +58,6 @@ An example response.`),
 		panic(err)
 	}
 	fmt.Println(s == expected)
-	// Ouput:
+	// Output:
 	// true
 }
