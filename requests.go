@@ -444,8 +444,10 @@ func (rb *Builder) Clone() *Builder {
 	rb2.headers = rb2.headers[0:len(rb2.headers):len(rb2.headers)]
 	rb2.params = rb2.params[0:len(rb2.params):len(rb2.params)]
 	rb2.validators = rb2.validators[0:len(rb2.validators):len(rb2.validators)]
-	u := *rb.url
-	rb2.url = &u
+	if rb2.url != nil {
+		u := *rb2.url
+		rb2.url = &u
+	}
 	return &rb2
 }
 
