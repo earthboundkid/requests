@@ -12,6 +12,8 @@ import (
 	"testing"
 
 	"github.com/carlmjohnson/requests"
+	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 )
 
 func init() {
@@ -75,6 +77,33 @@ func ExampleBuilder_ToBufioReader() {
 	fmt.Println(found)
 	// Output:
 	// true
+}
+
+func ExampleBuilder_ToHTML() {
+	var doc html.Node
+	err := requests.
+		URL("http://example.com").
+		ToHTML(&doc).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("could not connect to example.com:", err)
+	}
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		if n.DataAtom == atom.A {
+			for _, attr := range n.Attr {
+				if attr.Key == "href" {
+					fmt.Println("link:", attr.Val)
+				}
+			}
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			f(c)
+		}
+	}
+	f(&doc)
+	// Output:
+	// link: https://www.iana.org/domains/example
 }
 
 type placeholder struct {

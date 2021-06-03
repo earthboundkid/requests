@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"golang.org/x/net/html"
 )
 
 // Builder is a convenient way to build, send, and handle HTTP requests.
@@ -436,6 +438,23 @@ func ToBufioReader(f func(r *bufio.Reader) error) ResponseHandler {
 // ToBufioReader sets the Builder to call a callback with the response body wrapped in a bufio.Reader.
 func (rb *Builder) ToBufioReader(f func(r *bufio.Reader) error) *Builder {
 	return rb.Handle(ToBufioReader(f))
+}
+
+// ToHTML parses the page with x/net/html.Parse.
+func ToHTML(n *html.Node) ResponseHandler {
+	return ToBufioReader(func(r *bufio.Reader) error {
+		n2, err := html.Parse(r)
+		if err != nil {
+			return err
+		}
+		*n = *n2
+		return nil
+	})
+}
+
+// ToHTML sets the Builder to parse the response as HTML.
+func (rb *Builder) ToHTML(n *html.Node) *Builder {
+	return rb.Handle(ToHTML(n))
 }
 
 // Clone creates a new Builder suitable for independent mutation.
