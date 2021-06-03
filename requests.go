@@ -457,6 +457,20 @@ func (rb *Builder) ToHTML(n *html.Node) *Builder {
 	return rb.Handle(ToHTML(n))
 }
 
+// ToWriter copies the response body to w.
+func ToWriter(w io.Writer) ResponseHandler {
+	return ToBufioReader(func(r *bufio.Reader) error {
+		_, err := io.Copy(w, r)
+
+		return err
+	})
+}
+
+// ToWriter sets the Builder to copy the response body into w.
+func (rb *Builder) ToWriter(w io.Writer) *Builder {
+	return rb.Handle(ToWriter(w))
+}
+
 // Clone creates a new Builder suitable for independent mutation.
 func (rb *Builder) Clone() *Builder {
 	rb2 := *rb

@@ -6,8 +6,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
@@ -104,6 +106,33 @@ func ExampleBuilder_ToHTML() {
 	f(&doc)
 	// Output:
 	// link: https://www.iana.org/domains/example
+}
+
+func ExampleBuilder_ToWriter() {
+	f, err := os.CreateTemp("", "*.example.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(f.Name()) // clean up
+
+	err = requests.
+		URL("http://example.com").
+		ToWriter(f).
+		Fetch(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = f.Close(); err != nil {
+		log.Fatal(err)
+	}
+	stat, err := os.Stat(f.Name())
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("file is %d bytes\n", stat.Size())
+
+	// Output:
+	// file is 1256 bytes
 }
 
 type placeholder struct {
