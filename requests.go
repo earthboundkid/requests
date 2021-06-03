@@ -158,6 +158,11 @@ func (rb *Builder) Get() *Builder {
 	return rb.Method(http.MethodGet)
 }
 
+// Head sets HTTP method to HEAD.
+func (rb *Builder) Head() *Builder {
+	return rb.Method(http.MethodHead)
+}
+
 // Post sets HTTP method to POST.
 func (rb *Builder) Post() *Builder {
 	return rb.Method(http.MethodPost)
