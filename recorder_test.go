@@ -38,7 +38,7 @@ func TestRecord(t *testing.T) {
 
 func ExampleReplayFS() {
 	fsys := fstest.MapFS{
-		"62h1g.res.txt": &fstest.MapFile{
+		"MKIYDwjs.res.txt": &fstest.MapFile{
 			Data: []byte(`HTTP/1.1 200 OK
 Content-Type: text/plain; charset=UTF-8
 Date: Mon, 24 May 2021 18:48:50 GMT

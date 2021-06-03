@@ -1,13 +1,16 @@
 package requests
 
 import (
+	"bufio"
+	"bytes"
+	"crypto/md5"
+	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"net/http/httputil"
 	"os"
 	"path/filepath"
-
-	"github.com/carlmjohnson/crockford"
 )
 
 // Record returns an http.RoundTripper that writes out its
@@ -29,8 +32,8 @@ func Record(rt http.RoundTripper, basepath string) http.RoundTripper {
 		if err != nil {
 			return nil, err
 		}
-		md5 := crockford.MD5(crockford.Lower, b)
-		name := filepath.Join(basepath, md5[:5]+".req.txt")
+		reqname, resname := buildName(b)
+		name := filepath.Join(basepath, reqname)
 		if err = os.WriteFile(name, b, 0644); err != nil {
 			return nil, err
 		}
@@ -41,10 +44,49 @@ func Record(rt http.RoundTripper, basepath string) http.RoundTripper {
 		if err != nil {
 			return nil, err
 		}
-		name = filepath.Join(basepath, md5[:5]+".res.txt")
+		name = filepath.Join(basepath, resname)
 		if err = os.WriteFile(name, b, 0644); err != nil {
 			return nil, err
 		}
 		return
 	})
+}
+
+// Replay returns an http.RoundTripper that reads its
+// responses from text files in basepath.
+// Responses are looked up according to a hash of the request.
+func Replay(basepath string) http.RoundTripper {
+	return ReplayFS(os.DirFS(basepath))
+}
+
+// ReplayFS returns an http.RoundTripper that reads its
+// responses from text files in the fs.FS.
+// Responses are looked up according to a hash of the request.
+func ReplayFS(fsys fs.FS) http.RoundTripper {
+	return RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
+		defer func() {
+			if err != nil {
+				err = fmt.Errorf("problem while replaying transport: %w", err)
+			}
+		}()
+		b, err := httputil.DumpRequest(req, true)
+		if err != nil {
+			return nil, err
+		}
+		_, name := buildName(b)
+		b, err = fs.ReadFile(fsys, name)
+		if err != nil {
+			return nil, err
+		}
+		r := bufio.NewReader(bytes.NewReader(b))
+		res, err = http.ReadResponse(r, req)
+		return
+	})
+}
+
+func buildName(b []byte) (reqname, resname string) {
+	h := md5.New()
+	h.Write(b)
+	s := base64.URLEncoding.EncodeToString(h.Sum(nil))
+	return s[:8] + ".req.txt", s[:8] + ".res.txt"
 }
