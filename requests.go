@@ -53,16 +53,16 @@ import (
 // The zero value of Builder is usable but at least the Host parameter
 // must be set before fetching.
 type Builder struct {
-	cl         *http.Client
-	host, path string
-	params     [][2]string
-	headers    [][2]string
-	url        *url.URL
-	err        error
-	method     string
-	body       BodyGetter
-	validators []ResponseHandler
-	handler    ResponseHandler
+	cl                 *http.Client
+	scheme, host, path string
+	params             [][2]string
+	headers            [][2]string
+	url                *url.URL
+	err                error
+	method             string
+	body               BodyGetter
+	validators         []ResponseHandler
+	handler            ResponseHandler
 }
 
 // URL creates a new Builder suitable for method chaining.
@@ -78,6 +78,12 @@ func URL(u string) *Builder {
 // Client sets the http.Client to use for requests. If nil, it uses http.DefaultClient.
 func (rb *Builder) Client(cl *http.Client) *Builder {
 	rb.cl = cl
+	return rb
+}
+
+// Scheme sets the scheme for a request. It overrides the URL function.
+func (rb *Builder) Scheme(scheme string) *Builder {
+	rb.scheme = scheme
 	return rb
 }
 
@@ -509,6 +515,9 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	}
 	if rb.url.Scheme == "" {
 		rb.url.Scheme = "https"
+	}
+	if rb.scheme != "" {
+		rb.url.Scheme = rb.scheme
 	}
 	if rb.host != "" {
 		rb.url.Host = rb.host

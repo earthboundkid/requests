@@ -61,3 +61,32 @@ An example response.`),
 	// Output:
 	// true
 }
+
+func TestScheme(t *testing.T) {
+	fsys := fstest.MapFS{
+		"AvbxD0vL.res.txt": &fstest.MapFile{
+			Data: []byte(`HTTP/1.1 200 OK
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 24 May 2021 18:48:50 GMT
+
+An example response.`),
+		},
+	}
+	var s string
+	const expected = `An example response.`
+	var trans http.Transport
+	trans.RegisterProtocol("fsys", requests.ReplayFS(fsys))
+	if err := requests.
+		URL("example").
+		Scheme("fsys").
+		Client(&http.Client{
+			Transport: &trans,
+		}).
+		ToString(&s).
+		Fetch(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if s != expected {
+		t.Fatalf("%q != %q", s, expected)
+	}
+}
