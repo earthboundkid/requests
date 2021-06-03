@@ -24,7 +24,7 @@ import (
 // Builder can be thought of as having the following phases:
 //
 // Set the base URL for a request with requests.URL then customize it with
-// Host, Hostf, Path, Pathf, and Param.
+// Scheme, Host, Hostf, Path, Pathf, and Param.
 //
 // Set the method for a request with Method or use the Get, Post, and Put
 // methods. By default, requests without a body are GET and those with a
@@ -42,7 +42,7 @@ import (
 // BodyJSON, or BodyReader.
 //
 // Set a handler for a response with Handle or use ToJSON, ToString,
-// ToBytesBuffer, or ToBufioReader.
+// ToBytesBuffer, ToBufioReader, ToHTML, or ToWriter.
 //
 // Fetch creates an http.Request with Request and sends it via the underlying
 // http.Client with Do.
