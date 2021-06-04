@@ -33,13 +33,13 @@ import (
 // Set headers with Header or set conventional header keys with Accept,
 // CacheControl, ContentType, UserAgent, BasicAuth, and Bearer.
 //
-// Add a validator to the Builder with AddValidator or use the built in
-// CheckStatus, CheckContentType, and Peek.
-//
 // Set the http.Client to use for a request with Client.
 //
 // Set the body of the request if any with GetBody or use built in BodyBytes,
-// BodyJSON, or BodyReader.
+// BodyJSON, BodyForm, or BodyReader.
+//
+// Add a response validator to the Builder with AddValidator or use the built
+// in CheckStatus, CheckContentType, and Peek.
 //
 // Set a handler for a response with Handle or use ToJSON, ToString,
 // ToBytesBuffer, ToBufioReader, ToHTML, or ToWriter.
@@ -48,10 +48,9 @@ import (
 // http.Client with Do.
 //
 // In many cases, it will be possible to set most options for an API endpoint
-// in a Builder at the package level and then call Clone in a function
-// to add request specific URL parameters, headers, body, and handler.
-// The zero value of Builder is usable but at least the Host parameter
-// must be set before fetching.
+// in a Builder at the package or struct level and then call Clone in a
+// function to add request specific details for the URL, parameters, headers,
+// body, or handler. The zero value of Builder is usable.
 type Builder struct {
 	baseurl            string
 	scheme, host, path string
