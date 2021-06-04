@@ -53,25 +53,21 @@ import (
 // The zero value of Builder is usable but at least the Host parameter
 // must be set before fetching.
 type Builder struct {
-	cl                 *http.Client
+	baseurl            string
 	scheme, host, path string
 	params             [][2]string
 	headers            [][2]string
-	url                *url.URL
-	err                error
-	method             string
 	body               BodyGetter
+	method             string
+	cl                 *http.Client
 	validators         []ResponseHandler
 	handler            ResponseHandler
 }
 
 // URL creates a new Builder suitable for method chaining.
-func URL(u string) *Builder {
+func URL(baseurl string) *Builder {
 	var rb Builder
-	rb.url, rb.err = url.Parse(u)
-	if rb.err != nil {
-		rb.err = fmt.Errorf("could not initialize with URL %q: %w", u, rb.err)
-	}
+	rb.baseurl = baseurl
 	return &rb
 }
 
@@ -488,17 +484,42 @@ func (rb *Builder) Clone() *Builder {
 	rb2.headers = rb2.headers[0:len(rb2.headers):len(rb2.headers)]
 	rb2.params = rb2.params[0:len(rb2.params):len(rb2.params)]
 	rb2.validators = rb2.validators[0:len(rb2.validators):len(rb2.validators)]
-	if rb2.url != nil {
-		u := *rb2.url
-		rb2.url = &u
-	}
 	return &rb2
 }
 
 // Request builds a new http.Request with its context set.
 func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
-	if rb.err != nil {
-		return nil, err
+	if rb.baseurl == "" && rb.host == "" {
+		return nil, fmt.Errorf("must set a URL to connect to")
+	}
+	u, err := url.Parse(rb.baseurl)
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize with base URL %q: %w", u, err)
+	}
+	if u.Scheme == "" {
+		u.Scheme = "https"
+	}
+	if rb.scheme != "" {
+		u.Scheme = rb.scheme
+	}
+	if rb.host != "" {
+		u.Host = rb.host
+	}
+	if rb.path != "" {
+		u.Path = rb.path
+	}
+	if len(rb.params) > 0 {
+		q := u.Query()
+		for _, kv := range rb.params {
+			q.Set(kv[0], kv[1])
+		}
+		u.RawQuery = q.Encode()
+	}
+	var body io.ReadCloser
+	if rb.body != nil {
+		if body, err = rb.body(); err != nil {
+			return nil, err
+		}
 	}
 	method := http.MethodGet
 	if rb.body != nil {
@@ -507,39 +528,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	if rb.method != "" {
 		method = rb.method
 	}
-	if rb.url == nil {
-		if rb.host == "" {
-			return nil, fmt.Errorf("must set a URL to connect to")
-		}
-		rb.url = &url.URL{}
-	}
-	if rb.url.Scheme == "" {
-		rb.url.Scheme = "https"
-	}
-	if rb.scheme != "" {
-		rb.url.Scheme = rb.scheme
-	}
-	if rb.host != "" {
-		rb.url.Host = rb.host
-	}
-	if rb.path != "" {
-		rb.url.Path = rb.path
-	}
-	if len(rb.params) > 0 {
-		q := rb.url.Query()
-		for _, kv := range rb.params {
-			q.Set(kv[0], kv[1])
-		}
-		rb.url.RawQuery = q.Encode()
-	}
-	u := rb.url.String()
-	var body io.ReadCloser
-	if rb.body != nil {
-		if body, err = rb.body(); err != nil {
-			return nil, err
-		}
-	}
-	req, err = http.NewRequestWithContext(ctx, method, u, body)
+	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
 		return nil, err
 	}
