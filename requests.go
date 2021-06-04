@@ -321,23 +321,25 @@ func HasStatusErr(err error, codes ...int) bool {
 	return false
 }
 
-// CheckContentType validates that a response has the given content type.
-func CheckContentType(ct string) ResponseHandler {
+// CheckContentType validates that a response has one of the given content type headers.
+func CheckContentType(cts ...string) ResponseHandler {
 	return func(resp *http.Response) error {
 		mt, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 		if err != nil {
 			return fmt.Errorf("problem matching Content-Type: %w", err)
 		}
-		if mt != ct {
-			return fmt.Errorf("unexpected Content-Type: %s", mt)
+		for _, ct := range cts {
+			if mt == ct {
+				return nil
+			}
 		}
-		return nil
+		return fmt.Errorf("unexpected Content-Type: %s", mt)
 	}
 }
 
-// CheckContentType adds a validator for the content type of a response.
-func (rb *Builder) CheckContentType(ct string) *Builder {
-	return rb.AddValidator(CheckContentType(ct))
+// CheckContentType adds a validator for the content type header of a response.
+func (rb *Builder) CheckContentType(cts ...string) *Builder {
+	return rb.AddValidator(CheckContentType(cts...))
 }
 
 type bufioCloser struct {
