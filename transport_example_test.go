@@ -10,15 +10,13 @@ import (
 
 func ExampleRoundTripString() {
 	const res = `HTTP/1.1 200 OK
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 24 May 2021 18:48:50 GMT
 
 An example response.`
 
 	var s string
 	const expected = `An example response.`
 	if err := requests.
-		URL("http://fsys.example").
+		URL("http://response.example").
 		Client(&http.Client{
 			Transport: requests.RoundTripString(res),
 		}).

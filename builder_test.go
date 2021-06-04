@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"testing"
-	"testing/fstest"
 
 	"github.com/carlmjohnson/requests"
 )
@@ -93,22 +92,18 @@ func TestClone(t *testing.T) {
 }
 
 func TestScheme(t *testing.T) {
-	fsys := fstest.MapFS{
-		"AvbxD0vL.res.txt": &fstest.MapFile{
-			Data: []byte(`HTTP/1.1 200 OK
+	const res = `HTTP/1.1 200 OK
 Content-Type: text/plain; charset=UTF-8
 Date: Mon, 24 May 2021 18:48:50 GMT
 
-An example response.`),
-		},
-	}
+An example response.`
 	var s string
 	const expected = `An example response.`
 	var trans http.Transport
-	trans.RegisterProtocol("fsys", requests.ReplayFS(fsys))
+	trans.RegisterProtocol("string", requests.RoundTripString(res))
 	if err := requests.
 		URL("example").
-		Scheme("fsys").
+		Scheme("string").
 		Client(&http.Client{
 			Transport: &trans,
 		}).
