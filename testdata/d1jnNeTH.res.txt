@@ -1,0 +1,9 @@
+HTTP/2.0 200 OK
+Content-Length: 340
+Content-Type: application/json; charset=utf-8
+Date: Fri, 04 Jun 2021 15:15:20 GMT
+Etag: W/"154-mPL6yx90GSxSRiowmo6GTg0n3UY"
+Set-Cookie: sails.sid=s%3AguII6wGLRcJamS2rbiDvzdC16rEK040j.qhkdmTErwZ4HPFVhFL8RYF1HRkPkEfrM4vp83aoiAzM; Path=/; HttpOnly
+Vary: Accept-Encoding
+
+{"args":{},"headers":{"x-forwarded-proto":"https","x-forwarded-port":"443","host":"postman-echo.com","x-amzn-trace-id":"Root=1-60ba4388-4264c3d47962466a397338e3","martini":"shaken","user-agent":"bond/james-bond","authorization":"Basic Ym9uZGo6MDA3IQ==","content-type":"secret","accept-encoding":"gzip"},"url":"https://postman-echo.com/get"}

@@ -227,6 +227,7 @@ func ExampleBuilder_Header() {
 	err := requests.
 		URL("https://postman-echo.com/get").
 		UserAgent("bond/james-bond").
+		BasicAuth("bondj", "007!").
 		ContentType("secret").
 		Header("martini", "shaken").
 		ToJSON(&headers).
@@ -235,10 +236,12 @@ func ExampleBuilder_Header() {
 		fmt.Println("problem with postman:", err)
 	}
 	fmt.Println(headers.Headers["user-agent"])
+	fmt.Println(headers.Headers["authorization"])
 	fmt.Println(headers.Headers["content-type"])
 	fmt.Println(headers.Headers["martini"])
 	// Output:
 	// bond/james-bond
+	// Basic Ym9uZGo6MDA3IQ==
 	// secret
 	// shaken
 }

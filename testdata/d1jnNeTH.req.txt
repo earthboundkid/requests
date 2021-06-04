@@ -1,5 +1,6 @@
 GET /get HTTP/1.1
 Host: postman-echo.com
+Authorization: Basic Ym9uZGo6MDA3IQ==
 Content-Type: secret
 Martini: shaken
 User-Agent: bond/james-bond
