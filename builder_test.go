@@ -100,7 +100,7 @@ An example response.`
 	var s string
 	const expected = `An example response.`
 	var trans http.Transport
-	trans.RegisterProtocol("string", requests.RoundTripString(res))
+	trans.RegisterProtocol("string", requests.ReplayString(res))
 	if err := requests.
 		URL("example").
 		Scheme("string").

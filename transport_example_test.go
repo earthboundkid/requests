@@ -8,7 +8,7 @@ import (
 	"github.com/carlmjohnson/requests"
 )
 
-func ExampleRoundTripString() {
+func ExampleReplayString() {
 	const res = `HTTP/1.1 200 OK
 
 An example response.`
@@ -18,7 +18,7 @@ An example response.`
 	if err := requests.
 		URL("http://response.example").
 		Client(&http.Client{
-			Transport: requests.RoundTripString(res),
+			Transport: requests.ReplayString(res),
 		}).
 		ToString(&s).
 		Fetch(context.Background()); err != nil {

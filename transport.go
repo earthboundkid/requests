@@ -31,9 +31,9 @@ func (rtf RoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 	return rtf(r)
 }
 
-// RoundTripString returns an http.RoundTripper that always responds with a
+// ReplayString returns an http.RoundTripper that always responds with a
 // request built from rawResponse. It is intended for use in one-off tests.
-func RoundTripString(rawResponse string) http.RoundTripper {
+func ReplayString(rawResponse string) http.RoundTripper {
 	return RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
 		r := bufio.NewReader(strings.NewReader(rawResponse))
 		res, err = http.ReadResponse(r, req)
