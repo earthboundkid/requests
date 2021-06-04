@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/carlmjohnson/requests"
@@ -255,6 +256,41 @@ func ExampleBuilder_BodyBytes() {
 		fmt.Println("problem with postman:", err)
 	}
 	fmt.Println(data.Data)
+	// Output:
+	// hello, world
+}
+
+func ExampleBuilder_BodyReader() {
+	// temp file creation boilerplate
+	dir, err := os.MkdirTemp("", "example")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(dir) // clean up
+
+	file := filepath.Join(dir, "tmpfile")
+	if err := os.WriteFile(file, []byte(`hello, world`), 0666); err != nil {
+		log.Fatal(err)
+	}
+
+	f, err := os.Open(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	// send the raw file to server
+	var echo postman
+	err = requests.
+		URL("https://postman-echo.com/post").
+		ContentType("text/plain").
+		BodyReader(f).
+		ToJSON(&echo).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("problem with postman:", err)
+	}
+	fmt.Println(echo.Data)
 	// Output:
 	// hello, world
 }
