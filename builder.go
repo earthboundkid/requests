@@ -54,13 +54,18 @@ import (
 type Builder struct {
 	baseurl            string
 	scheme, host, path string
-	params             [][2]string
+	params             []param
 	headers            [][2]string
 	body               BodyGetter
 	method             string
 	cl                 *http.Client
 	validators         []ResponseHandler
 	handler            ResponseHandler
+}
+
+type param struct {
+	key    string
+	values []string
 }
 
 // URL creates a new Builder suitable for method chaining.
@@ -104,9 +109,9 @@ func (rb *Builder) Pathf(format string, a ...interface{}) *Builder {
 	return rb.Path(fmt.Sprintf(format, a...))
 }
 
-// Param sets a query parameter on a request. It overwrites the value of existing keys.
-func (rb *Builder) Param(key, value string) *Builder {
-	rb.params = append(rb.params, [2]string{key, value})
+// Param sets a query parameter on a request. It overwrites the existing values of a key.
+func (rb *Builder) Param(key string, values ...string) *Builder {
+	rb.params = append(rb.params, param{key, values})
 	return rb
 }
 
@@ -512,7 +517,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	if len(rb.params) > 0 {
 		q := u.Query()
 		for _, kv := range rb.params {
-			q.Set(kv[0], kv[1])
+			q[kv.key] = kv.values
 		}
 		u.RawQuery = q.Encode()
 	}
