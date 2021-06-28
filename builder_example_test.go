@@ -144,10 +144,11 @@ type placeholder struct {
 
 func Example_getJSON() {
 	// GET a JSON object
+	id := 1
 	var post placeholder
 	err := requests.
 		URL("https://jsonplaceholder.typicode.com").
-		Path("/posts/1").
+		Pathf("/posts/%d", id).
 		ToJSON(&post).
 		Fetch(context.Background())
 	if err != nil {
