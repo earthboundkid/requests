@@ -159,6 +159,24 @@ func Example_getJSON() {
 	// sunt aut facere repellat provident occaecati excepturi optio reprehenderit
 }
 
+func ExampleBuilder_Path() {
+	// Add an ID to a base path
+	id := 1
+	var post placeholder
+	err := requests.
+		URL("https://jsonplaceholder.typicode.com/posts").
+		// inherits path /posts from baseurl
+		Pathf("%d", id).
+		// URL is now https://jsonplaceholder.typicode.com/posts/1
+		ToJSON(&post).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("could not connect to jsonplaceholder.typicode.com:", err)
+	}
+	fmt.Println(post.ID)
+	// Output:
+	// 1
+}
 func ExampleBuilder_CheckStatus() {
 	// Expect a specific status code
 	err := requests.
