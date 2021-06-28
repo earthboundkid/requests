@@ -12,6 +12,7 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -52,15 +53,16 @@ import (
 // function to add request specific details for the URL, parameters, headers,
 // body, or handler. The zero value of Builder is usable.
 type Builder struct {
-	baseurl            string
-	scheme, host, path string
-	params             []param
-	headers            [][2]string
-	body               BodyGetter
-	method             string
-	cl                 *http.Client
-	validators         []ResponseHandler
-	handler            ResponseHandler
+	baseurl      string
+	scheme, host string
+	paths        []string
+	params       []param
+	headers      [][2]string
+	body         BodyGetter
+	method       string
+	cl           *http.Client
+	validators   []ResponseHandler
+	handler      ResponseHandler
 }
 
 type param struct {
@@ -98,9 +100,11 @@ func (rb *Builder) Hostf(format string, a ...interface{}) *Builder {
 	return rb.Host(fmt.Sprintf(format, a...))
 }
 
-// Path sets the path for a request. It overrides the URL function.
+// Path joins a path to a request. If the path begins with /, it overrides any
+// existing path. If the path begins with ./ or ../, the final path will be
+// rewritten in its absolute form.
 func (rb *Builder) Path(path string) *Builder {
-	rb.path = path
+	rb.paths = append(rb.paths, path)
 	return rb
 }
 
@@ -487,6 +491,7 @@ func (rb *Builder) ToWriter(w io.Writer) *Builder {
 // Clone creates a new Builder suitable for independent mutation.
 func (rb *Builder) Clone() *Builder {
 	rb2 := *rb
+	rb2.paths = rb2.paths[0:len(rb2.paths):len(rb2.paths)]
 	rb2.headers = rb2.headers[0:len(rb2.headers):len(rb2.headers)]
 	rb2.params = rb2.params[0:len(rb2.params):len(rb2.params)]
 	rb2.validators = rb2.validators[0:len(rb2.validators):len(rb2.validators)]
@@ -511,8 +516,16 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	if rb.host != "" {
 		u.Host = rb.host
 	}
-	if rb.path != "" {
-		u.Path = rb.path
+	for _, p := range rb.paths {
+		if strings.HasPrefix(p, "/") {
+			u.Path = p
+		} else {
+			if upath := path.Clean(u.Path); upath == "." || upath == "/" {
+				u.Path = path.Clean(p)
+			} else {
+				u.Path = path.Clean(path.Join(u.Path, p))
+			}
+		}
 	}
 	if len(rb.params) > 0 {
 		q := u.Query()
