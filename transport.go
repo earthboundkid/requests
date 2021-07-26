@@ -24,9 +24,10 @@ func WrapRoundTripper(rt http.RoundTripper, f func(r *http.Request)) http.RoundT
 	})
 }
 
-// RoundTripFunc implements http.RoundTripper.
+// RoundTripFunc is an adaptor to use a function as an http.RoundTripper.
 type RoundTripFunc func(req *http.Request) (res *http.Response, err error)
 
+// RoundTrip implements http.RoundTripper.
 func (rtf RoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 	return rtf(r)
 }
