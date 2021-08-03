@@ -81,6 +81,31 @@ func ExampleBuilder_ToBufioReader() {
 	// true
 }
 
+func ExampleBuilder_ToBufioScanner() {
+	// read a response line by line for a sentinel
+	found := false
+	needle := []byte("Example Domain")
+	err := requests.
+		URL("http://example.com").
+		ToBufioScanner(func(s *bufio.Scanner) error {
+			// read one line at time from response
+			for s.Scan() {
+				if bytes.Contains(s.Bytes(), needle) {
+					found = true
+					return nil
+				}
+			}
+			return s.Err()
+		}).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("could not connect to example.com:", err)
+	}
+	fmt.Println(found)
+	// Output:
+	// true
+}
+
 func ExampleBuilder_ToHTML() {
 	var doc html.Node
 	err := requests.

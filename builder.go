@@ -457,6 +457,18 @@ func (rb *Builder) ToBufioReader(f func(r *bufio.Reader) error) *Builder {
 	return rb.Handle(ToBufioReader(f))
 }
 
+// ToBufioScanner takes a callback which wraps the response body in a bufio.Scanner.
+func ToBufioScanner(f func(r *bufio.Scanner) error) ResponseHandler {
+	return func(res *http.Response) error {
+		return f(bufio.NewScanner(res.Body))
+	}
+}
+
+// ToBufioScanner sets the Builder to call a callback with the response body wrapped in a bufio.Scanner.
+func (rb *Builder) ToBufioScanner(f func(r *bufio.Scanner) error) *Builder {
+	return rb.Handle(ToBufioScanner(f))
+}
+
 // ToHTML parses the page with x/net/html.Parse.
 func ToHTML(n *html.Node) ResponseHandler {
 	return ToBufioReader(func(r *bufio.Reader) error {
