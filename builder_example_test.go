@@ -290,6 +290,35 @@ func ExampleBuilder_Header() {
 	// shaken
 }
 
+func ExampleBuilder_Bearer() {
+	// We get a 401 response if no bearer token is provided
+	err := requests.
+		URL("http://httpbin.org/bearer").
+		CheckStatus(http.StatusUnauthorized).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("problem with httpbin:", err)
+	}
+	// But our response is accepted when we provide a bearer token
+	var resp struct {
+		Authenticated bool
+		Token         string
+	}
+	err = requests.
+		URL("http://httpbin.org/bearer").
+		Bearer("whatever").
+		ToJSON(&resp).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("problem with httpbin:", err)
+	}
+	fmt.Println(resp.Authenticated)
+	fmt.Println(resp.Token)
+	// Output:
+	// true
+	// whatever
+}
+
 func ExampleBuilder_BodyBytes() {
 	// Post a raw body
 	var data postman

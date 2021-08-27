@@ -1,0 +1,13 @@
+HTTP/1.1 200 OK
+Content-Length: 52
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Content-Type: application/json
+Date: Fri, 27 Aug 2021 18:35:18 GMT
+Server: gunicorn/19.9.0
+
+{
+  "authenticated": true, 
+  "token": "whatever"
+}

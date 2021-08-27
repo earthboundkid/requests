@@ -1,0 +1,4 @@
+GET /bearer HTTP/1.1
+Host: httpbin.org
+Authorization: Bearer whatever
+
