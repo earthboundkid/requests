@@ -1,0 +1,10 @@
+HTTP/1.1 401 UNAUTHORIZED
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Content-Type: text/html; charset=utf-8
+Date: Fri, 27 Aug 2021 18:35:18 GMT
+Server: gunicorn/19.9.0
+Www-Authenticate: Bearer
+Content-Length: 0
+
