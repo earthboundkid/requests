@@ -1,0 +1,15 @@
+HTTP/1.1 302 FOUND
+Content-Length: 223
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Content-Type: text/html; charset=utf-8
+Date: Fri, 27 Aug 2021 15:53:12 GMT
+Location: /cookies
+Server: gunicorn/19.9.0
+Set-Cookie: chocolate=chip; Path=/
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<title>Redirecting...</title>
+<h1>Redirecting...</h1>
+<p>You should be redirected automatically to target URL: <a href="/cookies">/cookies</a>.  If not click the link.
