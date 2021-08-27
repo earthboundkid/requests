@@ -62,6 +62,7 @@ func Replay(basepath string) http.RoundTripper {
 // ReplayFS returns an http.RoundTripper that reads its
 // responses from text files in the fs.FS.
 // Responses are looked up according to a hash of the request.
+// Response file names may optionally be prefixed with comments for better human organization.
 func ReplayFS(fsys fs.FS) http.RoundTripper {
 	return RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
 		defer func() {
@@ -74,13 +75,23 @@ func ReplayFS(fsys fs.FS) http.RoundTripper {
 			return nil, err
 		}
 		_, name := buildName(b)
-		b, err = fs.ReadFile(fsys, name)
+		glob := "*" + name
+		matches, err := fs.Glob(fsys, glob)
+		if err != nil {
+			return nil, err
+		}
+		if len(matches) == 0 {
+			return nil, fmt.Errorf("no replay file matches %q", glob)
+		}
+		if len(matches) > 1 {
+			return nil, fmt.Errorf("ambiguous response: multiple replay files match %q", glob)
+		}
+		b, err = fs.ReadFile(fsys, matches[0])
 		if err != nil {
 			return nil, err
 		}
 		r := bufio.NewReader(bytes.NewReader(b))
-		res, err = http.ReadResponse(r, req)
-		return
+		return http.ReadResponse(r, req)
 	})
 }
 
