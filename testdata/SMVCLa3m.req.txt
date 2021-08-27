@@ -1,0 +1,5 @@
+GET /cookies HTTP/0.0
+Host: httpbin.org
+Cookie: chocolate=chip
+Referer: http://httpbin.org/cookies/set/chocolate/chip
+

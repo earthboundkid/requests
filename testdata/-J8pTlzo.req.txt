@@ -1,0 +1,3 @@
+GET /cookies/set/chocolate/chip HTTP/1.1
+Host: httpbin.org
+
