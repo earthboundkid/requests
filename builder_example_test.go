@@ -423,3 +423,26 @@ func ExampleBuilder_CheckPeek() {
 	// Output:
 	// true true
 }
+
+func ExampleBuilder_Transport() {
+	const text = "Hello, from transport!"
+	var myCustomTransport requests.RoundTripFunc = func(req *http.Request) (res *http.Response, err error) {
+		res = &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader(text)),
+		}
+		return
+	}
+	var s string
+	err := requests.
+		URL("x://transport.example").
+		Transport(myCustomTransport).
+		ToString(&s).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("transport failed:", err)
+	}
+	fmt.Println(s == text) // true
+	// Output:
+	// true
+}
