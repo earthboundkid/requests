@@ -1,0 +1,4 @@
+GET /relative-redirect/1 HTTP/0.0
+Host: httpbingo.org
+Referer: https://httpbingo.org/redirect/2
+
