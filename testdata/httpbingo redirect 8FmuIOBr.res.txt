@@ -1,0 +1,10 @@
+HTTP/2.0 302 Found
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Date: Wed, 08 Sep 2021 19:22:27 GMT
+Fly-Request-Id: 01FF3DS2M3Y5EWT2WWR1WK4FQK
+Location: /get
+Server: Fly/c203126 (2021-08-30)
+Via: 2 fly.io
+Content-Length: 0
+

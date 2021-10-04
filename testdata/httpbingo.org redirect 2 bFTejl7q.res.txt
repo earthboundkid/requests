@@ -1,0 +1,10 @@
+HTTP/2.0 302 Found
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Date: Wed, 08 Sep 2021 19:40:47 GMT
+Fly-Request-Id: 01FF3ETN8NADB8MH5P4WFPA0VY
+Location: /relative-redirect/1
+Server: Fly/c203126 (2021-08-30)
+Via: 2 fly.io
+Content-Length: 0
+
