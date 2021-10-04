@@ -9,10 +9,10 @@ import (
 	"github.com/carlmjohnson/requests"
 )
 
-func ExampleAddCookieJar() {
+func ExampleNewCookieJar() {
 	// Create a client that preserve cookies between requests
 	myClient := *http.DefaultClient
-	requests.AddCookieJar(&myClient)
+	myClient.Jar = requests.NewCookieJar()
 	// Use the client to make a request
 	err := requests.
 		URL("http://httpbin.org/cookies/set/chocolate/chip").
