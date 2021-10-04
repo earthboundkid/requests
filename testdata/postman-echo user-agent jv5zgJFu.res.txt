@@ -1,0 +1,9 @@
+HTTP/2.0 200 OK
+Content-Length: 254
+Content-Type: application/json; charset=utf-8
+Date: Wed, 08 Sep 2021 17:36:58 GMT
+Etag: W/"fe-0hYUQebvxz4dl09SZKbVw1wgvQA"
+Set-Cookie: sails.sid=s%3A9VOZ8G3QJjyuGCeeUdMtP0owUPRHlB_V.B25%2BwyosZPdiecHAKCaeC8RapghgGeB34QCv4iv6hXI; Path=/; HttpOnly
+Vary: Accept-Encoding
+
+{"args":{},"headers":{"x-forwarded-proto":"https","x-forwarded-port":"443","host":"postman-echo.com","x-amzn-trace-id":"Root=1-6138f4ba-581ea2e358c893793a543d95","user-agent":"my-user/agent","accept-encoding":"gzip"},"url":"https://postman-echo.com/get"}

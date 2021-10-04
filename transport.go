@@ -41,3 +41,16 @@ func ReplayString(rawResponse string) http.RoundTripper {
 		return
 	})
 }
+
+// UserAgentTransport returns a wrapped http.RoundTripper that sets the User-Agent header on requests to s.
+func UserAgentTransport(rt http.RoundTripper, s string) http.RoundTripper {
+	if rt == nil {
+		rt = http.DefaultTransport
+	}
+	return RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
+		r2 := *req
+		r2.Header = r2.Header.Clone()
+		r2.Header.Set("User-Agent", s)
+		return rt.RoundTrip(&r2)
+	})
+}
