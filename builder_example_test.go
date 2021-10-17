@@ -3,6 +3,7 @@ package requests_test
 import (
 	"bufio"
 	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
@@ -362,6 +363,27 @@ func ExampleBuilder_BodyReader() {
 		URL("https://postman-echo.com/post").
 		ContentType("text/plain").
 		BodyReader(f).
+		ToJSON(&echo).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("problem with postman:", err)
+	}
+	fmt.Println(echo.Data)
+	// Output:
+	// hello, world
+}
+
+func ExampleBuilder_BodyWriter() {
+	var echo postman
+	err := requests.
+		URL("https://postman-echo.com/post").
+		ContentType("text/plain").
+		Header("Content-Encoding", "gzip").
+		BodyWriter(func(w io.Writer) error {
+			gw, _ := gzip.NewWriterLevel(w, gzip.DefaultCompression)
+			gw.Write([]byte(`hello, world`))
+			return gw.Close()
+		}).
 		ToJSON(&echo).
 		Fetch(context.Background())
 	if err != nil {

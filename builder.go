@@ -37,7 +37,7 @@ import (
 // Set the http.Client to use for a request with Client.
 //
 // Set the body of the request, if any, with Body or use built in BodyBytes,
-// BodyJSON, BodyForm, or BodyReader.
+// BodyForm, BodyJSON, BodyReader, or BodyWriter.
 //
 // Add a response validator to the Builder with AddValidator or use the built
 // in CheckStatus, CheckContentType, and Peek.
@@ -207,6 +207,25 @@ func BodyReader(r io.Reader) BodyGetter {
 // BodyReader sets the Builder's request body to r.
 func (rb *Builder) BodyReader(r io.Reader) *Builder {
 	return rb.Body(BodyReader(r))
+}
+
+// BodyWriter is a BodyGetter that pipes writes into a request body.
+func BodyWriter(f func(w io.Writer) error) BodyGetter {
+	return func() (io.ReadCloser, error) {
+		r, w := io.Pipe()
+		go func() {
+			var err error
+			defer func() {
+				w.CloseWithError(err)
+			}()
+			err = f(w)
+		}()
+		return r, nil
+	}
+}
+
+func (rb *Builder) BodyWriter(f func(w io.Writer) error) *Builder {
+	return rb.Body(BodyWriter(f))
 }
 
 // BodyBytes is a BodyGetter that returns the provided raw bytes.
