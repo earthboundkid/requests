@@ -349,6 +349,7 @@ func ExampleBuilder_BodyReader() {
 		log.Fatal(err)
 	}
 
+	// suppose there is some file you want to stream from
 	f, err := os.Open(file)
 	if err != nil {
 		log.Fatal(err)
