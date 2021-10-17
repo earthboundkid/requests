@@ -36,7 +36,7 @@ import (
 //
 // Set the http.Client to use for a request with Client.
 //
-// Set the body of the request if any with GetBody or use built in BodyBytes,
+// Set the body of the request, if any, with Body or use built in BodyBytes,
 // BodyJSON, BodyForm, or BodyReader.
 //
 // Add a response validator to the Builder with AddValidator or use the built
@@ -58,7 +58,7 @@ type Builder struct {
 	paths        []string
 	params       []param
 	headers      [][2]string
-	body         BodyGetter
+	getBody      BodyGetter
 	method       string
 	cl           *http.Client
 	validators   []ResponseHandler
@@ -186,9 +186,11 @@ func (rb *Builder) Put() *Builder {
 // BodyGetter provides a Builder with a source for a request body.
 type BodyGetter = func() (io.ReadCloser, error)
 
-// GetBody sets the BodySource for a request. It implicitly sets method to POST.
-func (rb *Builder) GetBody(src BodyGetter) *Builder {
-	rb.body = src
+// Body sets the BodyGetter to use to build the body of a request.
+// The provided BodyGetter is used as an http.Request.GetBody func.
+// It implicitly sets method to POST.
+func (rb *Builder) Body(src BodyGetter) *Builder {
+	rb.getBody = src
 	return rb
 }
 
@@ -204,7 +206,7 @@ func BodyReader(r io.Reader) BodyGetter {
 
 // BodyReader sets the Builder's request body to r.
 func (rb *Builder) BodyReader(r io.Reader) *Builder {
-	return rb.GetBody(BodyReader(r))
+	return rb.Body(BodyReader(r))
 }
 
 // BodyBytes is a BodyGetter that returns the provided raw bytes.
@@ -216,7 +218,7 @@ func BodyBytes(b []byte) BodyGetter {
 
 // BodyBytes sets the Builder's request body to b.
 func (rb *Builder) BodyBytes(b []byte) *Builder {
-	return rb.GetBody(BodyBytes(b))
+	return rb.Body(BodyBytes(b))
 }
 
 // BodyJSON is a BodyGetter that marshals a JSON object.
@@ -234,7 +236,7 @@ func BodyJSON(v interface{}) BodyGetter {
 // It also sets ContentType to "application/json".
 func (rb *Builder) BodyJSON(v interface{}) *Builder {
 	return rb.
-		GetBody(BodyJSON(v)).
+		Body(BodyJSON(v)).
 		ContentType("application/json")
 }
 
@@ -249,7 +251,7 @@ func BodyForm(data url.Values) BodyGetter {
 // It also sets the ContentType to "application/x-www-form-urlencoded".
 func (rb *Builder) BodyForm(data url.Values) *Builder {
 	return rb.
-		GetBody(BodyForm(data)).
+		Body(BodyForm(data)).
 		ContentType("application/x-www-form-urlencoded")
 }
 
@@ -547,13 +549,13 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 		u.RawQuery = q.Encode()
 	}
 	var body io.ReadCloser
-	if rb.body != nil {
-		if body, err = rb.body(); err != nil {
+	if rb.getBody != nil {
+		if body, err = rb.getBody(); err != nil {
 			return nil, err
 		}
 	}
 	method := http.MethodGet
-	if rb.body != nil {
+	if rb.getBody != nil {
 		method = http.MethodPost
 	}
 	if rb.method != "" {
@@ -563,7 +565,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	if err != nil {
 		return nil, err
 	}
-	req.GetBody = rb.body
+	req.GetBody = rb.getBody
 
 	for _, pair := range rb.headers {
 		req.Header.Set(pair[0], pair[1])
