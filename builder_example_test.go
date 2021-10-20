@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
@@ -373,17 +374,17 @@ func ExampleBuilder_BodyReader() {
 	// hello, world
 }
 
-func ExampleBuilder_BodyWriter() {
+func ExampleGzipConfig() {
 	var echo postman
 	err := requests.
 		URL("https://postman-echo.com/post").
 		ContentType("text/plain").
-		Header("Content-Encoding", "gzip").
-		BodyWriter(func(w io.Writer) error {
-			gw, _ := gzip.NewWriterLevel(w, gzip.DefaultCompression)
-			gw.Write([]byte(`hello, world`))
-			return gw.Close()
-		}).
+		Config(requests.GzipConfig(
+			gzip.DefaultCompression,
+			func(gw *gzip.Writer) error {
+				_, err := gw.Write([]byte(`hello, world`))
+				return err
+			})).
 		ToJSON(&echo).
 		Fetch(context.Background())
 	if err != nil {
@@ -392,6 +393,28 @@ func ExampleBuilder_BodyWriter() {
 	fmt.Println(echo.Data)
 	// Output:
 	// hello, world
+}
+
+func ExampleBuilder_BodyWriter() {
+	var echo postman
+	err := requests.
+		URL("https://postman-echo.com/post").
+		ContentType("text/plain").
+		BodyWriter(func(w io.Writer) error {
+			cw := csv.NewWriter(w)
+			cw.Write([]string{"col1", "col2"})
+			cw.Write([]string{"val1", "val2"})
+			cw.Flush()
+			return cw.Error()
+		}).
+		ToJSON(&echo).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("problem with postman:", err)
+	}
+	fmt.Printf("%q\n", echo.Data)
+	// Output:
+	// "col1,col2\nval1,val2\n"
 }
 
 func ExampleBuilder_BodyForm() {
