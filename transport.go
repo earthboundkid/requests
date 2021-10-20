@@ -2,7 +2,9 @@ package requests
 
 import (
 	"bufio"
+	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -34,5 +36,22 @@ func UserAgentTransport(rt http.RoundTripper, s string) http.RoundTripper {
 		r2.Header = r2.Header.Clone()
 		r2.Header.Set("User-Agent", s)
 		return rt.RoundTrip(&r2)
+	})
+}
+
+// PermitURLTransport returns a wrapped http.RoundTripper that rejects any requests whose URL doesn't match the provided regular expression string.
+//
+// PermitURLTransport will panic if the regexp does not compile.
+func PermitURLTransport(rt http.RoundTripper, regex string) http.RoundTripper {
+	if rt == nil {
+		rt = http.DefaultTransport
+	}
+	re := regexp.MustCompile(regex)
+	reErr := fmt.Errorf("requested URL not permitted by regexp: %s", regex)
+	return RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
+		if u := req.URL.String(); !re.MatchString(u) {
+			return nil, reErr
+		}
+		return rt.RoundTrip(req)
 	})
 }
