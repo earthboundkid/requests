@@ -59,8 +59,8 @@ type Builder struct {
 	baseurl      string
 	scheme, host string
 	paths        []string
-	params       []param
-	headers      [][2]string
+	params       []multimap
+	headers      []multimap
 	getBody      BodyGetter
 	method       string
 	cl           *http.Client
@@ -68,7 +68,7 @@ type Builder struct {
 	handler      ResponseHandler
 }
 
-type param struct {
+type multimap struct {
 	key    string
 	values []string
 }
@@ -118,13 +118,13 @@ func (rb *Builder) Pathf(format string, a ...interface{}) *Builder {
 
 // Param sets a query parameter on a request. It overwrites the existing values of a key.
 func (rb *Builder) Param(key string, values ...string) *Builder {
-	rb.params = append(rb.params, param{key, values})
+	rb.params = append(rb.params, multimap{key, values})
 	return rb
 }
 
-// Header sets a header on a request. It overwrites the value of existing keys.
-func (rb *Builder) Header(key, value string) *Builder {
-	rb.headers = append(rb.headers, [2]string{key, value})
+// Header sets a header on a request. It overwrites the existing values of a key.
+func (rb *Builder) Header(key string, values ...string) *Builder {
+	rb.headers = append(rb.headers, multimap{key, values})
 	return rb
 }
 
@@ -591,8 +591,8 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	}
 	req.GetBody = rb.getBody
 
-	for _, pair := range rb.headers {
-		req.Header.Set(pair[0], pair[1])
+	for _, kv := range rb.headers {
+		req.Header[http.CanonicalHeaderKey(kv.key)] = kv.values
 	}
 	return req, nil
 }
