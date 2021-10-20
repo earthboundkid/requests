@@ -557,12 +557,10 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	for _, p := range rb.paths {
 		if strings.HasPrefix(p, "/") {
 			u.Path = p
+		} else if curpath := path.Clean(u.Path); curpath == "." || curpath == "/" {
+			u.Path = path.Clean(p)
 		} else {
-			if upath := path.Clean(u.Path); upath == "." || upath == "/" {
-				u.Path = path.Clean(p)
-			} else {
-				u.Path = path.Clean(path.Join(u.Path, p))
-			}
+			u.Path = path.Clean(path.Join(u.Path, p))
 		}
 	}
 	if len(rb.params) > 0 {
