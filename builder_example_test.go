@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -220,6 +221,23 @@ func ExampleBuilder_CheckStatus() {
 	// Output:
 	// OK
 }
+
+func ExampleBuilder_CheckContentType() {
+	// Expect a specific status code
+	err := requests.
+		URL("https://jsonplaceholder.typicode.com").
+		Pathf("/posts/%d", 1).
+		CheckContentType("application/bison").
+		Fetch(context.Background())
+	if err != nil {
+		if re := new(requests.ResponseError); errors.As(err, &re) {
+			fmt.Println("content-type was", re.Header.Get("Content-Type"))
+		}
+	}
+	// Output:
+	// content-type was application/json; charset=utf-8
+}
+
 func Example_postJSON() {
 	// POST a JSON object and parse the response
 	var res placeholder

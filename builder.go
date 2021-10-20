@@ -312,7 +312,8 @@ func CheckStatus(acceptStatuses ...int) ResponseHandler {
 			}
 		}
 
-		return (*StatusError)(res)
+		return fmt.Errorf("%w: unexpected status: %d",
+			(*ResponseError)(res), res.StatusCode)
 	}
 }
 
@@ -330,13 +331,12 @@ var DefaultValidator ResponseHandler = CheckStatus(
 	http.StatusNoContent,
 )
 
-// StatusError is the error type produced by CheckStatus.
-type StatusError http.Response
+// ResponseError is the error type produced by CheckStatus and CheckContentType.
+type ResponseError http.Response
 
 // Error fulfills the error interface.
-func (se *StatusError) Error() string {
-	return fmt.Sprintf("unexpected status for %s: %s",
-		se.Request.URL.Redacted(), se.Status)
+func (se *ResponseError) Error() string {
+	return fmt.Sprintf("response error for %s", se.Request.URL.Redacted())
 }
 
 // HasStatusErr returns true if err is a StatusError caused by any of the codes given.
@@ -344,7 +344,7 @@ func HasStatusErr(err error, codes ...int) bool {
 	if err == nil {
 		return false
 	}
-	if se := new(StatusError); errors.As(err, &se) {
+	if se := new(ResponseError); errors.As(err, &se) {
 		for _, code := range codes {
 			if se.StatusCode == code {
 				return true
@@ -356,17 +356,19 @@ func HasStatusErr(err error, codes ...int) bool {
 
 // CheckContentType validates that a response has one of the given content type headers.
 func CheckContentType(cts ...string) ResponseHandler {
-	return func(resp *http.Response) error {
-		mt, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+	return func(res *http.Response) error {
+		mt, _, err := mime.ParseMediaType(res.Header.Get("Content-Type"))
 		if err != nil {
-			return fmt.Errorf("problem matching Content-Type: %w", err)
+			return fmt.Errorf("%w: problem matching Content-Type",
+				(*ResponseError)(res))
 		}
 		for _, ct := range cts {
 			if mt == ct {
 				return nil
 			}
 		}
-		return fmt.Errorf("unexpected Content-Type: %s", mt)
+		return fmt.Errorf("%w: unexpected Content-Type: %s",
+			(*ResponseError)(res), mt)
 	}
 }
 
