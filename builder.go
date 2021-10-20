@@ -3,6 +3,7 @@ package requests
 import (
 	"bufio"
 	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -47,6 +48,8 @@ import (
 //
 // Fetch creates an http.Request with Request and sends it via the underlying
 // http.Client with Do.
+//
+// Config can be used to set several options on a Builder at once.
 //
 // In many cases, it will be possible to set most options for an API endpoint
 // in a Builder at the package or struct level and then call Clone in a
@@ -628,4 +631,32 @@ func (rb *Builder) Fetch(ctx context.Context) (err error) {
 		return err
 	}
 	return rb.Do(req)
+}
+
+// Config allows Builder to be extended by setting several options at once.
+// For example, a Config might set a Body and its ContentType.
+type Config = func(rb *Builder)
+
+// Config allows Builder to be extended by functions that set several options at once.
+func (rb *Builder) Config(cfg Config) *Builder {
+	cfg(rb)
+	return rb
+}
+
+func GzipConfig(level int, h func(gw *gzip.Writer) error) Config {
+	return func(rb *Builder) {
+		rb.
+			Header("Content-Encoding", "gzip").
+			BodyWriter(func(w io.Writer) error {
+				gw, err := gzip.NewWriterLevel(w, level)
+				if err != nil {
+					return err
+				}
+				if err = h(gw); err != nil {
+					gw.Close()
+					return err
+				}
+				return gw.Close()
+			})
+	}
 }
