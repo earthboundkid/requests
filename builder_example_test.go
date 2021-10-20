@@ -448,13 +448,13 @@ func ExampleHasStatusErr() {
 	// got a 404
 }
 
-func ExampleBuilder_Peek() {
+func ExampleBuilder_CheckPeek() {
 	// Check that a response has a doctype
 	const doctype = "<!doctype html>"
 	var s string
 	err := requests.
 		URL("http://example.com").
-		Peek(len(doctype), func(b []byte) error {
+		CheckPeek(len(doctype), func(b []byte) error {
 			if string(b) != doctype {
 				return fmt.Errorf("missing doctype: %q", b)
 			}

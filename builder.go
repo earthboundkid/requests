@@ -380,9 +380,9 @@ type bufioCloser struct {
 	io.Closer
 }
 
-// Peek wraps the body of a response in a bufio.Reader and
+// CheckPeek wraps the body of a response in a bufio.Reader and
 // gives f a peek at the first n bytes for validation.
-func Peek(n int, f func([]byte) error) ResponseHandler {
+func CheckPeek(n int, f func([]byte) error) ResponseHandler {
 	return func(res *http.Response) error {
 		// ensure buffer is at least minimum size
 		buf := bufio.NewReader(res.Body)
@@ -400,9 +400,9 @@ func Peek(n int, f func([]byte) error) ResponseHandler {
 	}
 }
 
-// Peek adds a validator that peeks at the first n bytes of a response body.
-func (rb *Builder) Peek(n int, f func([]byte) error) *Builder {
-	return rb.AddValidator(Peek(n, f))
+// CheckPeek adds a validator that peeks at the first n bytes of a response body.
+func (rb *Builder) CheckPeek(n int, f func([]byte) error) *Builder {
+	return rb.AddValidator(CheckPeek(n, f))
 }
 
 // Handle sets the response handler for a Builder.
