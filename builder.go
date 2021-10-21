@@ -285,9 +285,6 @@ func (rb *Builder) Clone() *Builder {
 
 // Request builds a new http.Request with its context set.
 func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
-	if rb.baseurl == "" && rb.host == "" {
-		return nil, fmt.Errorf("must set a URL to connect to")
-	}
 	u, err := url.Parse(rb.baseurl)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize with base URL %q: %w", u, err)
