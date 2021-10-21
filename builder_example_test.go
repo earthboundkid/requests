@@ -236,20 +236,20 @@ func ExampleBuilder_Bearer() {
 		fmt.Println("problem with httpbin:", err)
 	}
 	// But our response is accepted when we provide a bearer token
-	var resp struct {
+	var res struct {
 		Authenticated bool
 		Token         string
 	}
 	err = requests.
 		URL("http://httpbin.org/bearer").
 		Bearer("whatever").
-		ToJSON(&resp).
+		ToJSON(&res).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("problem with httpbin:", err)
 	}
-	fmt.Println(resp.Authenticated)
-	fmt.Println(resp.Token)
+	fmt.Println(res.Authenticated)
+	fmt.Println(res.Token)
 	// Output:
 	// true
 	// whatever
