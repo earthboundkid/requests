@@ -192,6 +192,7 @@ func (rb *Builder) BodyReader(r io.Reader) *Builder {
 	return rb.Body(BodyReader(r))
 }
 
+// BodyWriter pipes writes from w to the Builder's request body.
 func (rb *Builder) BodyWriter(f func(w io.Writer) error) *Builder {
 	return rb.Body(BodyWriter(f))
 }
