@@ -1,7 +1,6 @@
 package requests_test
 
 import (
-	"bufio"
 	"bytes"
 	"compress/gzip"
 	"context"
@@ -17,8 +16,6 @@ import (
 	"strings"
 
 	"github.com/carlmjohnson/requests"
-	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
 )
 
 func init() {
@@ -40,6 +37,45 @@ func Example() {
 	// true
 }
 
+func Example_getJSON() {
+	// GET a JSON object
+	id := 1
+	var post placeholder
+	err := requests.
+		URL("https://jsonplaceholder.typicode.com").
+		Pathf("/posts/%d", id).
+		ToJSON(&post).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("could not connect to jsonplaceholder.typicode.com:", err)
+	}
+	fmt.Println(post.Title)
+	// Output:
+	// sunt aut facere repellat provident occaecati excepturi optio reprehenderit
+}
+
+func Example_postJSON() {
+	// POST a JSON object and parse the response
+	var res placeholder
+	req := placeholder{
+		Title:  "foo",
+		Body:   "baz",
+		UserID: 1,
+	}
+	err := requests.
+		URL("/posts").
+		Host("jsonplaceholder.typicode.com").
+		BodyJSON(&req).
+		ToJSON(&res).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("could not connect to jsonplaceholder.typicode.com:", err)
+	}
+	fmt.Println(res)
+	// Output:
+	// {101 foo baz 1}
+}
+
 func ExampleBuilder_ToBytesBuffer() {
 	// Simple GET into a buffer
 	var buf bytes.Buffer
@@ -53,87 +89,6 @@ func ExampleBuilder_ToBytesBuffer() {
 	fmt.Println(strings.Contains(buf.String(), "Example Domain"))
 	// Output:
 	// true
-}
-
-func ExampleBuilder_ToBufioReader() {
-	// read a response line by line for a sentinel
-	found := false
-	err := requests.
-		URL("http://example.com").
-		ToBufioReader(func(r *bufio.Reader) error {
-			var err error
-			for s := ""; err == nil; {
-				if strings.Contains(s, "Example Domain") {
-					found = true
-					return nil
-				}
-				// read one line from response
-				s, err = r.ReadString('\n')
-			}
-			if err == io.EOF {
-				return nil
-			}
-			return err
-		}).
-		Fetch(context.Background())
-	if err != nil {
-		fmt.Println("could not connect to example.com:", err)
-	}
-	fmt.Println(found)
-	// Output:
-	// true
-}
-
-func ExampleBuilder_ToBufioScanner() {
-	// read a response line by line for a sentinel
-	found := false
-	needle := []byte("Example Domain")
-	err := requests.
-		URL("http://example.com").
-		ToBufioScanner(func(s *bufio.Scanner) error {
-			// read one line at time from response
-			for s.Scan() {
-				if bytes.Contains(s.Bytes(), needle) {
-					found = true
-					return nil
-				}
-			}
-			return s.Err()
-		}).
-		Fetch(context.Background())
-	if err != nil {
-		fmt.Println("could not connect to example.com:", err)
-	}
-	fmt.Println(found)
-	// Output:
-	// true
-}
-
-func ExampleBuilder_ToHTML() {
-	var doc html.Node
-	err := requests.
-		URL("http://example.com").
-		ToHTML(&doc).
-		Fetch(context.Background())
-	if err != nil {
-		fmt.Println("could not connect to example.com:", err)
-	}
-	var f func(*html.Node)
-	f = func(n *html.Node) {
-		if n.DataAtom == atom.A {
-			for _, attr := range n.Attr {
-				if attr.Key == "href" {
-					fmt.Println("link:", attr.Val)
-				}
-			}
-		}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			f(c)
-		}
-	}
-	f(&doc)
-	// Output:
-	// link: https://www.iana.org/domains/example
 }
 
 func ExampleBuilder_ToWriter() {
@@ -168,23 +123,6 @@ type placeholder struct {
 	Title  string `json:"title"`
 	Body   string `json:"body"`
 	UserID int    `json:"userId"`
-}
-
-func Example_getJSON() {
-	// GET a JSON object
-	id := 1
-	var post placeholder
-	err := requests.
-		URL("https://jsonplaceholder.typicode.com").
-		Pathf("/posts/%d", id).
-		ToJSON(&post).
-		Fetch(context.Background())
-	if err != nil {
-		fmt.Println("could not connect to jsonplaceholder.typicode.com:", err)
-	}
-	fmt.Println(post.Title)
-	// Output:
-	// sunt aut facere repellat provident occaecati excepturi optio reprehenderit
 }
 
 func ExampleBuilder_Path() {
@@ -236,28 +174,6 @@ func ExampleBuilder_CheckContentType() {
 	}
 	// Output:
 	// content-type was application/json; charset=utf-8
-}
-
-func Example_postJSON() {
-	// POST a JSON object and parse the response
-	var res placeholder
-	req := placeholder{
-		Title:  "foo",
-		Body:   "baz",
-		UserID: 1,
-	}
-	err := requests.
-		URL("/posts").
-		Host("jsonplaceholder.typicode.com").
-		BodyJSON(&req).
-		ToJSON(&res).
-		Fetch(context.Background())
-	if err != nil {
-		fmt.Println("could not connect to jsonplaceholder.typicode.com:", err)
-	}
-	fmt.Println(res)
-	// Output:
-	// {101 foo baz 1}
 }
 
 // Examples with the Postman echo server
@@ -392,7 +308,7 @@ func ExampleBuilder_BodyReader() {
 	// hello, world
 }
 
-func ExampleGzipConfig() {
+func ExampleBuilder_Config() {
 	var echo postman
 	err := requests.
 		URL("https://postman-echo.com/post").
@@ -452,18 +368,6 @@ func ExampleBuilder_BodyForm() {
 	fmt.Println(echo.JSON)
 	// Output:
 	// map[hello:world]
-}
-
-func ExampleHasStatusErr() {
-	err := requests.
-		URL("http://example.com/404").
-		CheckStatus(200).
-		Fetch(context.Background())
-	if requests.HasStatusErr(err, 404) {
-		fmt.Println("got a 404")
-	}
-	// Output:
-	// got a 404
 }
 
 func ExampleBuilder_CheckPeek() {
