@@ -1,7 +1,6 @@
 package requests
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -11,8 +10,6 @@ import (
 	"net/url"
 	"path"
 	"strings"
-
-	"golang.org/x/net/html"
 )
 
 // Builder is a convenient way to build, send, and handle HTTP requests.
@@ -39,8 +36,8 @@ import (
 // Add a response validator to the Builder with AddValidator or use the built
 // in CheckStatus, CheckContentType, and Peek.
 //
-// Set a handler for a response with Handle or use ToJSON, ToString,
-// ToBytesBuffer, ToBufioReader, ToHTML, or ToWriter.
+// Set a handler for a response with Handle or use the built in ToJSON,
+// ToString, ToBytesBuffer, or ToWriter.
 //
 // Fetch creates an http.Request with Request and sends it via the underlying
 // http.Client with Do.
@@ -263,21 +260,6 @@ func (rb *Builder) ToString(sp *string) *Builder {
 // ToBytesBuffer sets the Builder to write the response body to the provided bytes.Buffer.
 func (rb *Builder) ToBytesBuffer(buf *bytes.Buffer) *Builder {
 	return rb.Handle(ToBytesBuffer(buf))
-}
-
-// ToBufioReader sets the Builder to call a callback with the response body wrapped in a bufio.Reader.
-func (rb *Builder) ToBufioReader(f func(r *bufio.Reader) error) *Builder {
-	return rb.Handle(ToBufioReader(f))
-}
-
-// ToBufioScanner sets the Builder to call a callback with the response body wrapped in a bufio.Scanner.
-func (rb *Builder) ToBufioScanner(f func(r *bufio.Scanner) error) *Builder {
-	return rb.Handle(ToBufioScanner(f))
-}
-
-// ToHTML sets the Builder to parse the response as HTML.
-func (rb *Builder) ToHTML(n *html.Node) *Builder {
-	return rb.Handle(ToHTML(n))
 }
 
 // ToWriter sets the Builder to copy the response body into w.
