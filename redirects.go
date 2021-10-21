@@ -16,4 +16,4 @@ func MaxFollow(n int) CheckRedirectPolicy {
 }
 
 // NoFollow is a CheckRedirectPolicy that does not follow redirects.
-var NoFollow = MaxFollow(0)
+var NoFollow CheckRedirectPolicy = MaxFollow(0)
