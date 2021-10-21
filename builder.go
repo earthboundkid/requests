@@ -3,14 +3,10 @@ package requests
 import (
 	"bufio"
 	"bytes"
-	"compress/gzip"
 	"context"
 	"encoding/base64"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"mime"
 	"net/http"
 	"net/url"
 	"path"
@@ -186,9 +182,6 @@ func (rb *Builder) Put() *Builder {
 	return rb.Method(http.MethodPut)
 }
 
-// BodyGetter provides a Builder with a source for a request body.
-type BodyGetter = func() (io.ReadCloser, error)
-
 // Body sets the BodyGetter to use to build the body of a request.
 // The provided BodyGetter is used as an http.Request.GetBody func.
 // It implicitly sets method to POST.
@@ -197,61 +190,18 @@ func (rb *Builder) Body(src BodyGetter) *Builder {
 	return rb
 }
 
-// BodyReader is a BodyGetter that returns an io.Reader.
-func BodyReader(r io.Reader) BodyGetter {
-	return func() (io.ReadCloser, error) {
-		if rc, ok := r.(io.ReadCloser); ok {
-			return rc, nil
-		}
-		return io.NopCloser(r), nil
-	}
-}
-
 // BodyReader sets the Builder's request body to r.
 func (rb *Builder) BodyReader(r io.Reader) *Builder {
 	return rb.Body(BodyReader(r))
-}
-
-// BodyWriter is a BodyGetter that pipes writes into a request body.
-func BodyWriter(f func(w io.Writer) error) BodyGetter {
-	return func() (io.ReadCloser, error) {
-		r, w := io.Pipe()
-		go func() {
-			var err error
-			defer func() {
-				w.CloseWithError(err)
-			}()
-			err = f(w)
-		}()
-		return r, nil
-	}
 }
 
 func (rb *Builder) BodyWriter(f func(w io.Writer) error) *Builder {
 	return rb.Body(BodyWriter(f))
 }
 
-// BodyBytes is a BodyGetter that returns the provided raw bytes.
-func BodyBytes(b []byte) BodyGetter {
-	return func() (io.ReadCloser, error) {
-		return io.NopCloser(bytes.NewReader(b)), nil
-	}
-}
-
 // BodyBytes sets the Builder's request body to b.
 func (rb *Builder) BodyBytes(b []byte) *Builder {
 	return rb.Body(BodyBytes(b))
-}
-
-// BodyJSON is a BodyGetter that marshals a JSON object.
-func BodyJSON(v interface{}) BodyGetter {
-	return func() (io.ReadCloser, error) {
-		b, err := json.Marshal(v)
-		if err != nil {
-			return nil, err
-		}
-		return io.NopCloser(bytes.NewReader(b)), nil
-	}
 }
 
 // BodyJSON sets the Builder's request body to the marshaled JSON.
@@ -262,37 +212,12 @@ func (rb *Builder) BodyJSON(v interface{}) *Builder {
 		ContentType("application/json")
 }
 
-// BodyForm is a BodyGetter that builds an encoded form body.
-func BodyForm(data url.Values) BodyGetter {
-	return func() (r io.ReadCloser, err error) {
-		return io.NopCloser(strings.NewReader(data.Encode())), nil
-	}
-}
-
 // BodyForm sets the Builder's request body to the encoded form.
 // It also sets the ContentType to "application/x-www-form-urlencoded".
 func (rb *Builder) BodyForm(data url.Values) *Builder {
 	return rb.
 		Body(BodyForm(data)).
 		ContentType("application/x-www-form-urlencoded")
-}
-
-// ResponseHandler is used to validate or handle the response to a request.
-type ResponseHandler = func(*http.Response) error
-
-// ChainHandlers allows for the composing of validators or response handlers.
-func ChainHandlers(handlers ...ResponseHandler) ResponseHandler {
-	return func(r *http.Response) error {
-		for _, h := range handlers {
-			if h == nil {
-				continue
-			}
-			if err := h(r); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
 }
 
 // AddValidator adds a response validator to the Builder.
@@ -303,103 +228,14 @@ func (rb *Builder) AddValidator(h ResponseHandler) *Builder {
 	return rb
 }
 
-// CheckStatus validates the response has an acceptable status code.
-func CheckStatus(acceptStatuses ...int) ResponseHandler {
-	return func(res *http.Response) error {
-		for _, code := range acceptStatuses {
-			if res.StatusCode == code {
-				return nil
-			}
-		}
-
-		return fmt.Errorf("%w: unexpected status: %d",
-			(*ResponseError)(res), res.StatusCode)
-	}
-}
-
 // CheckStatus adds a validator for status code of a response.
 func (rb *Builder) CheckStatus(acceptStatuses ...int) *Builder {
 	return rb.AddValidator(CheckStatus(acceptStatuses...))
 }
 
-// DefaultValidator is the validator applied by Builder unless otherwise specified.
-var DefaultValidator ResponseHandler = CheckStatus(
-	http.StatusOK,
-	http.StatusCreated,
-	http.StatusAccepted,
-	http.StatusNonAuthoritativeInfo,
-	http.StatusNoContent,
-)
-
-// ResponseError is the error type produced by CheckStatus and CheckContentType.
-type ResponseError http.Response
-
-// Error fulfills the error interface.
-func (se *ResponseError) Error() string {
-	return fmt.Sprintf("response error for %s", se.Request.URL.Redacted())
-}
-
-// HasStatusErr returns true if err is a StatusError caused by any of the codes given.
-func HasStatusErr(err error, codes ...int) bool {
-	if err == nil {
-		return false
-	}
-	if se := new(ResponseError); errors.As(err, &se) {
-		for _, code := range codes {
-			if se.StatusCode == code {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// CheckContentType validates that a response has one of the given content type headers.
-func CheckContentType(cts ...string) ResponseHandler {
-	return func(res *http.Response) error {
-		mt, _, err := mime.ParseMediaType(res.Header.Get("Content-Type"))
-		if err != nil {
-			return fmt.Errorf("%w: problem matching Content-Type",
-				(*ResponseError)(res))
-		}
-		for _, ct := range cts {
-			if mt == ct {
-				return nil
-			}
-		}
-		return fmt.Errorf("%w: unexpected Content-Type: %s",
-			(*ResponseError)(res), mt)
-	}
-}
-
 // CheckContentType adds a validator for the content type header of a response.
 func (rb *Builder) CheckContentType(cts ...string) *Builder {
 	return rb.AddValidator(CheckContentType(cts...))
-}
-
-type bufioCloser struct {
-	*bufio.Reader
-	io.Closer
-}
-
-// CheckPeek wraps the body of a response in a bufio.Reader and
-// gives f a peek at the first n bytes for validation.
-func CheckPeek(n int, f func([]byte) error) ResponseHandler {
-	return func(res *http.Response) error {
-		// ensure buffer is at least minimum size
-		buf := bufio.NewReader(res.Body)
-		// ensure large peeks will fit in the buffer
-		buf = bufio.NewReaderSize(buf, n)
-		res.Body = &bufioCloser{
-			buf,
-			res.Body,
-		}
-		b, err := buf.Peek(n)
-		if err != nil && err != io.EOF {
-			return err
-		}
-		return f(b)
-	}
 }
 
 // CheckPeek adds a validator that peeks at the first n bytes of a response body.
@@ -414,43 +250,9 @@ func (rb *Builder) Handle(h ResponseHandler) *Builder {
 	return rb
 }
 
-func consumeBody(res *http.Response) (err error) {
-	const maxDiscardSize = 640 * 1 << 10
-	if _, err = io.CopyN(io.Discard, res.Body, maxDiscardSize); err == io.EOF {
-		err = nil
-	}
-	return err
-}
-
-// ToJSON decodes a response as a JSON object.
-func ToJSON(v interface{}) ResponseHandler {
-	return func(res *http.Response) error {
-		data, err := io.ReadAll(res.Body)
-		if err != nil {
-			return err
-		}
-		if err = json.Unmarshal(data, v); err != nil {
-			return err
-		}
-		return nil
-	}
-}
-
 // ToJSON sets the Builder to decode a response as a JSON object
 func (rb *Builder) ToJSON(v interface{}) *Builder {
 	return rb.Handle(ToJSON(v))
-}
-
-// ToString writes the response body to the provided string pointer.
-func ToString(sp *string) ResponseHandler {
-	return func(res *http.Response) error {
-		var buf strings.Builder
-		_, err := io.Copy(&buf, res.Body)
-		if err == nil {
-			*sp = buf.String()
-		}
-		return err
-	}
 }
 
 // ToString sets the Builder to write the response body to the provided string pointer.
@@ -458,24 +260,9 @@ func (rb *Builder) ToString(sp *string) *Builder {
 	return rb.Handle(ToString(sp))
 }
 
-// ToBytesBuffer writes the response body to the provided bytes.Buffer.
-func ToBytesBuffer(buf *bytes.Buffer) ResponseHandler {
-	return func(res *http.Response) error {
-		_, err := io.Copy(buf, res.Body)
-		return err
-	}
-}
-
 // ToBytesBuffer sets the Builder to write the response body to the provided bytes.Buffer.
 func (rb *Builder) ToBytesBuffer(buf *bytes.Buffer) *Builder {
 	return rb.Handle(ToBytesBuffer(buf))
-}
-
-// ToBufioReader takes a callback which wraps the response body in a bufio.Reader.
-func ToBufioReader(f func(r *bufio.Reader) error) ResponseHandler {
-	return func(res *http.Response) error {
-		return f(bufio.NewReader(res.Body))
-	}
 }
 
 // ToBufioReader sets the Builder to call a callback with the response body wrapped in a bufio.Reader.
@@ -483,28 +270,9 @@ func (rb *Builder) ToBufioReader(f func(r *bufio.Reader) error) *Builder {
 	return rb.Handle(ToBufioReader(f))
 }
 
-// ToBufioScanner takes a callback which wraps the response body in a bufio.Scanner.
-func ToBufioScanner(f func(r *bufio.Scanner) error) ResponseHandler {
-	return func(res *http.Response) error {
-		return f(bufio.NewScanner(res.Body))
-	}
-}
-
 // ToBufioScanner sets the Builder to call a callback with the response body wrapped in a bufio.Scanner.
 func (rb *Builder) ToBufioScanner(f func(r *bufio.Scanner) error) *Builder {
 	return rb.Handle(ToBufioScanner(f))
-}
-
-// ToHTML parses the page with x/net/html.Parse.
-func ToHTML(n *html.Node) ResponseHandler {
-	return ToBufioReader(func(r *bufio.Reader) error {
-		n2, err := html.Parse(r)
-		if err != nil {
-			return err
-		}
-		*n = *n2
-		return nil
-	})
 }
 
 // ToHTML sets the Builder to parse the response as HTML.
@@ -512,18 +280,15 @@ func (rb *Builder) ToHTML(n *html.Node) *Builder {
 	return rb.Handle(ToHTML(n))
 }
 
-// ToWriter copies the response body to w.
-func ToWriter(w io.Writer) ResponseHandler {
-	return ToBufioReader(func(r *bufio.Reader) error {
-		_, err := io.Copy(w, r)
-
-		return err
-	})
-}
-
 // ToWriter sets the Builder to copy the response body into w.
 func (rb *Builder) ToWriter(w io.Writer) *Builder {
 	return rb.Handle(ToWriter(w))
+}
+
+// Config allows Builder to be extended by functions that set several options at once.
+func (rb *Builder) Config(cfg Config) *Builder {
+	cfg(rb)
+	return rb
 }
 
 // Clone creates a new Builder suitable for independent mutation.
@@ -631,32 +396,4 @@ func (rb *Builder) Fetch(ctx context.Context) (err error) {
 		return err
 	}
 	return rb.Do(req)
-}
-
-// Config allows Builder to be extended by setting several options at once.
-// For example, a Config might set a Body and its ContentType.
-type Config = func(rb *Builder)
-
-// Config allows Builder to be extended by functions that set several options at once.
-func (rb *Builder) Config(cfg Config) *Builder {
-	cfg(rb)
-	return rb
-}
-
-func GzipConfig(level int, h func(gw *gzip.Writer) error) Config {
-	return func(rb *Builder) {
-		rb.
-			Header("Content-Encoding", "gzip").
-			BodyWriter(func(w io.Writer) error {
-				gw, err := gzip.NewWriterLevel(w, level)
-				if err != nil {
-					return err
-				}
-				if err = h(gw); err != nil {
-					gw.Close()
-					return err
-				}
-				return gw.Close()
-			})
-	}
 }
