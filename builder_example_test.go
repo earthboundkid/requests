@@ -130,7 +130,7 @@ func ExampleBuilder_Path() {
 	id := 1
 	var post placeholder
 	err := requests.
-		URL("https://jsonplaceholder.typicode.com/posts").
+		URL("https://jsonplaceholder.typicode.com/posts/").
 		// inherits path /posts from baseurl
 		Pathf("%d", id).
 		// URL is now https://jsonplaceholder.typicode.com/posts/1
