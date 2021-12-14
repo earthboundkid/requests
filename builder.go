@@ -103,6 +103,9 @@ func (rb *Builder) Path(path string) *Builder {
 }
 
 // Pathf calls Path with fmt.Sprintf.
+//
+// Note that for security reasons, you must not use %s
+// with a user provided string!
 func (rb *Builder) Pathf(format string, a ...interface{}) *Builder {
 	return rb.Path(fmt.Sprintf(format, a...))
 }
