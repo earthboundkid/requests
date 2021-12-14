@@ -12,7 +12,7 @@ func TestClone(t *testing.T) {
 	t.Run("from URL", func(t *testing.T) {
 		rb1 := requests.
 			URL("http://example.com").
-			Path("a").
+			Path("a/").
 			Header("a", "1").
 			Header("b", "2").
 			Param("a", "1").
@@ -38,7 +38,7 @@ func TestClone(t *testing.T) {
 		if req1.URL.Host != "example.com" {
 			t.Fatalf("bad host: %v", req1.URL)
 		}
-		if req1.URL.Path != "/a" {
+		if req1.URL.Path != "/a/" {
 			t.Fatalf("bad path: %v", req1.URL)
 		}
 		if req1.Header.Get("b") != "2" || req1.Header.Get("c") != "" {
@@ -192,27 +192,27 @@ func TestPath(t *testing.T) {
 		},
 		"multi-abs-paths": {
 			"https://example",
-			[]string{"/a", "/b", "/c"},
+			[]string{"/a", "/b/", "/c"},
 			"https://example/c",
 		},
 		"base+rel-path": {
-			"https://example/a",
+			"https://example/a/",
 			[]string{"./b"},
 			"https://example/a/b",
 		},
 		"base+rel-paths": {
-			"https://example/a",
-			[]string{"./b", "./c"},
+			"https://example/a/",
+			[]string{"./b/", "./c"},
 			"https://example/a/b/c",
 		},
 		"rel-path": {
 			"https://example/",
-			[]string{"a", "./b"},
+			[]string{"a/", "./b"},
 			"https://example/a/b",
 		},
 		"base+multi-paths": {
-			"https://example/a",
-			[]string{"b", "c"},
+			"https://example/a/",
+			[]string{"b/", "c"},
 			"https://example/a/b/c",
 		},
 		"base+slash+multi-paths": {
@@ -220,44 +220,44 @@ func TestPath(t *testing.T) {
 			[]string{"b/", "c"},
 			"https://example/a/b/c",
 		},
-		"mutli-paths": {
+		"multi-root": {
 			"https://example/",
 			[]string{"a", "b", "c"},
-			"https://example/a/b/c",
+			"https://example/c",
 		},
 		"dot-dot-paths": {
 			"https://example/",
-			[]string{"a", "b", "../c"},
+			[]string{"a/", "b/", "../c"},
 			"https://example/a/c",
 		},
 		"more-dot-dot-paths": {
 			"https://example/",
-			[]string{"a/b/c", "../d", "../e"},
+			[]string{"a/b/c/", "../d/", "../e"},
 			"https://example/a/b/e",
 		},
 		"more-dot-dot-paths+rel-path": {
 			"https://example/",
-			[]string{"a/b/c", "../d", "../e", "./f"},
+			[]string{"a/b/c/", "../d/", "../e/", "./f"},
 			"https://example/a/b/e/f",
 		},
 		"even-more-dot-dot-paths+base": {
-			"https://example/a/b/c",
+			"https://example/a/b/c/",
 			[]string{"../../d"},
 			"https://example/a/d",
 		},
 		"too-many-dot-dot-paths": {
 			"https://example",
 			[]string{"../a"},
-			"https://example/../a",
+			"https://example/a",
 		},
 		"too-many-dot-dot-paths+base": {
 			"https://example/",
 			[]string{"../a"},
-			"https://example/../a",
+			"https://example/a",
 		},
 		"last-abs-path-wins": {
-			"https://example/a",
-			[]string{"b", "c", "/d"},
+			"https://example/a/",
+			[]string{"b/", "c/", "/d"},
 			"https://example/d",
 		},
 	}

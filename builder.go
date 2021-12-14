@@ -8,8 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
-	"strings"
 )
 
 // Builder is a convenient way to build, send, and handle HTTP requests.
@@ -96,9 +94,9 @@ func (rb *Builder) Hostf(format string, a ...interface{}) *Builder {
 	return rb.Host(fmt.Sprintf(format, a...))
 }
 
-// Path joins a path to a request. If the path begins with /, it overrides any
-// existing path. If the path begins with ./ or ../, the final path will be
-// rewritten in its absolute form.
+// Path joins a path to a request per the path joining rules of RFC 3986.
+// If the path begins with /, it overrides any existing path.
+// If the path begins with ./ or ../, the final path will be rewritten in its absolute form when creating a request.
 func (rb *Builder) Path(path string) *Builder {
 	rb.paths = append(rb.paths, path)
 	return rb
@@ -300,13 +298,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 		u.Host = rb.host
 	}
 	for _, p := range rb.paths {
-		if strings.HasPrefix(p, "/") {
-			u.Path = p
-		} else if curpath := path.Clean(u.Path); curpath == "." || curpath == "/" {
-			u.Path = path.Clean(p)
-		} else {
-			u.Path = path.Clean(path.Join(u.Path, p))
-		}
+		u.Path = u.ResolveReference(&url.URL{Path: p}).Path
 	}
 	if len(rb.params) > 0 {
 		q := u.Query()
