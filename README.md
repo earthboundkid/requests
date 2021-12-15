@@ -169,3 +169,74 @@ err = requests.URL("http://example.com").
 check(err)
 assert(s1 == s2) // true
 ```
+
+## FAQs
+### Why not just use the standard library HTTP client?
+
+Brad Fitzpatrick, long time maintainer of the net/http package, [wrote an extensive list of problems with the standard library HTTP client](https://github.com/bradfitz/exp-httpclient/blob/master/problems.md). His four main points (ignoring issues that can't be resolved by a wrapper around the standard library) are:
+
+> - Too easy to not call Response.Body.Close.
+> - Too easy to not check return status codes
+> - Context support is oddly bolted on
+> - Proper usage is too many lines of boilerplate
+
+Requests solves these issues by always closing the response body, checking status codes by default, always requiring a `context.Context`, and simplifying the boilerplate with a descriptive UI based on fluent method chaining.
+
+### Why requests and not some other helper library?
+
+There are two major flaws in other libraries as I see it. One is that in other libraries support for `context.Context` tends to be bolted on if it exists at all. Two, many hide the underlying `http.Client` in such a way that it is difficult or impossible to replace or mock out. Beyond that, I believe that none have acheived the same core simplicity that the requests library has.
+
+### How do I just get some JSON?
+
+```go
+var data SomeDataType
+err := requests.
+	URL("https://example.com/my-json").
+	ToJSON(&data).
+	Fetch(context.Background())
+```
+
+### How do I post JSON and read the response JSON?
+
+```go
+body := MyRequestType{}
+var resp MyResponseType
+err := requests.
+	URL("https://example.com/my-json").
+	BodyJSON(&body).
+	ToJSON(&data).
+	Fetch(context.Background())
+```
+
+### How do I just save a file to disk?
+
+It depends on exactly what you need in terms of file atomicity and buffering, but this will work for most cases:
+
+```go
+	f, err := os.Create("myfile.txt")
+	if err != nil {
+		// handle
+	}
+	defer f.Close()
+
+	err = requests.
+		URL("http://example.com").
+		ToWriter(f).
+		Fetch(context.Background())
+```
+
+### How do I save a response to a string?
+
+```go
+var s string
+err := requests.
+	URL("http://example.com").
+	ToString(&s).
+	Fetch(context.Background())
+```
+
+### How do I validate the response status?
+
+By default, if no other validators are added to a builder, requests will check that the response is in the 2XX range. If you add another validator, you can add `builder.CheckStatus(200)` or `builder.AddValidator(requests.DefaultValidator)` to the validation stack.
+
+To disable all response validation, run `builder.AddValidator(nil)`.
