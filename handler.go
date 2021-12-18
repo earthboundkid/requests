@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -104,4 +106,21 @@ func ToWriter(w io.Writer) ResponseHandler {
 
 		return err
 	})
+}
+
+// ToFile writes the response body to file.
+func ToFile(name string) ResponseHandler {
+	return func(res *http.Response) error {
+		err := os.MkdirAll(filepath.Dir(name), 0777)
+		if err != nil {
+			return err
+		}
+
+		f, err := os.Create(name)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		return ToWriter(f)(res)
+	}
 }

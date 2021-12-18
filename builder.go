@@ -269,6 +269,13 @@ func (rb *Builder) ToWriter(w io.Writer) *Builder {
 	return rb.Handle(ToWriter(w))
 }
 
+// ToFile sets the Builder to write the response body to given file. The file
+// and its parent directories are automatically created with default permission.
+// For more advanced use case, use ToWriter.
+func (rb *Builder) ToFile(name string) *Builder {
+	return rb.Handle(ToFile(name))
+}
+
 // Config allows Builder to be extended by functions that set several options at once.
 func (rb *Builder) Config(cfg Config) *Builder {
 	cfg(rb)

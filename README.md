@@ -213,17 +213,13 @@ err := requests.
 It depends on exactly what you need in terms of file atomicity and buffering, but this will work for most cases:
 
 ```go
-	f, err := os.Create("myfile.txt")
-	if err != nil {
-		// handle
-	}
-	defer f.Close()
-
-	err = requests.
+	err := requests.
 		URL("http://example.com").
-		ToWriter(f).
+		ToFile("myfile.txt").
 		Fetch(context.Background())
 ```
+
+For more advanced use case, use `ToWriter`. 
 
 ### How do I save a response to a string?
 
