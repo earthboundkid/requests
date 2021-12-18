@@ -2,6 +2,7 @@ package requests_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,18 +12,23 @@ import (
 )
 
 func BenchmarkBuilder_ToFile(b *testing.B) {
+	d, err := os.MkdirTemp("", "to_file_*")
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.Cleanup(func() {
+		os.RemoveAll(d)
+	})
+	tmpFiles := make([]string, b.N)
 	for n := 0; n < b.N; n++ {
-		d, err := os.MkdirTemp("", "to_file_*")
-		if err != nil {
-			b.Fatal(err)
-		}
-		tmpFile := filepath.Join(d, "100mb.test")
-		b.Cleanup(func() {
-			os.RemoveAll(d)
-		})
-		err = requests.URL("http://speedtest-sgp1.digitalocean.com/100mb.test").
+		tmpFile := filepath.Join(d, fmt.Sprintf("10mb-%d.test", n))
+		tmpFiles[n] = tmpFile
+	}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		err = requests.URL("http://speedtest-nyc1.digitalocean.com/10mb.test").
 			Client(&http.Client{Transport: http.DefaultTransport}).
-			ToFile(tmpFile).
+			ToFile(tmpFiles[n]).
 			Fetch(context.Background())
 		if err != nil {
 			b.Fatal(err)
