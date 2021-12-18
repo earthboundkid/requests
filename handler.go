@@ -121,6 +121,8 @@ func ToFile(name string) ResponseHandler {
 			return err
 		}
 		defer f.Close()
-		return ToWriter(f)(res)
+
+		_, err = io.Copy(f, res.Body)
+		return err
 	}
 }
