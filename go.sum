@@ -1,3 +1,5 @@
+github.com/vkuznet/x509proxy v0.0.0-20210801171832-e47b94db99b6 h1:Y5LCuH9nfTZ6srI5NaoKKbcDb01zqTHw8678++4fw0c=
+github.com/vkuznet/x509proxy v0.0.0-20210801171832-e47b94db99b6/go.mod h1:gfEPE3azFe+K/nMLezta3+kTiumttEYDawGAE72IYfM=
 golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f h1:OfiFi4JbukWwe3lzw+xunroH1mnC1e2Gy5cxNJApiSY=
 golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
