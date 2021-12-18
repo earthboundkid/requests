@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 )
 
@@ -57,6 +58,8 @@ type Builder struct {
 	cl           *http.Client
 	validators   []ResponseHandler
 	handler      ResponseHandler
+	dumpRequest  bool
+	dumpResponse bool
 }
 
 type multimap struct {
@@ -74,6 +77,18 @@ func URL(baseurl string) *Builder {
 // Client sets the http.Client to use for requests. If nil, it uses http.DefaultClient.
 func (rb *Builder) Client(cl *http.Client) *Builder {
 	rb.cl = cl
+	return rb
+}
+
+// DumpRequest creates a new Builder suitable for method chaining.
+func (rb *Builder) DumpRequest() *Builder {
+	rb.dumpRequest = true
+	return rb
+}
+
+// DumpResponse creates a new Builder suitable for method chaining.
+func (rb *Builder) DumpResponse() *Builder {
+	rb.dumpResponse = true
 	return rb
 }
 
@@ -341,11 +356,27 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	if rb.cl != nil {
 		cl = rb.cl
 	}
+	if rb.dumpRequest {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			fmt.Println(string(dump))
+		} else {
+			fmt.Printf("http request: %+v %s error %v\n", req, string(dump), err)
+		}
+	}
 	res, err := cl.Do(req)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
+	if rb.dumpResponse {
+		dump, err := httputil.DumpResponse(res, true)
+		if err == nil {
+			fmt.Println(string(dump))
+		} else {
+			fmt.Printf("http response: %+v %s error %v\n", res, string(dump), err)
+		}
+	}
 
 	validators := rb.validators
 	if len(validators) == 0 {
