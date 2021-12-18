@@ -123,15 +123,19 @@ func ExampleBuilder_ToFile() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	tmpFile := filepath.Join(d, "parent_dir", "example.txt")
 	defer os.RemoveAll(d) // clean up
-	err = requests.URL("http://example.com").
-		ToFile(tmpFile).
+
+	exampleFilename := filepath.Join(d, "parent_dir", "example.txt")
+
+	err = requests.
+		URL("http://example.com").
+		ToFile(exampleFilename).
 		Fetch(context.Background())
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	stat, err := os.Stat(tmpFile)
+	stat, err := os.Stat(exampleFilename)
 	if err != nil {
 		log.Fatal(err)
 	}
