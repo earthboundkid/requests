@@ -118,6 +118,33 @@ func ExampleBuilder_ToWriter() {
 	// file is 1256 bytes
 }
 
+func ExampleBuilder_ToFile() {
+	d, err := os.MkdirTemp("", "to_file_*")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(d) // clean up
+
+	exampleFilename := filepath.Join(d, "parent_dir", "example.txt")
+
+	err = requests.
+		URL("http://example.com").
+		ToFile(exampleFilename).
+		Fetch(context.Background())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	stat, err := os.Stat(exampleFilename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("file is %d bytes\n", stat.Size())
+
+	// Output:
+	// file is 1256 bytes
+}
+
 type placeholder struct {
 	ID     int    `json:"id,omitempty"`
 	Title  string `json:"title"`

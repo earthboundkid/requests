@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -104,4 +106,21 @@ func ToWriter(w io.Writer) ResponseHandler {
 
 		return err
 	})
+}
+
+// ToFile writes the response body at the provided file path.
+// The file and its parent directories are created automatically.
+func ToFile(name string) ResponseHandler {
+	return func(res *http.Response) error {
+		_ = os.MkdirAll(filepath.Dir(name), 0777)
+
+		f, err := os.Create(name)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		_, err = io.Copy(f, res.Body)
+		return err
+	}
 }
