@@ -2,6 +2,10 @@ package requests_test
 
 import (
 	"context"
+	"crypto/sha256"
+	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"testing"
 
@@ -276,4 +280,98 @@ func TestPath(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPreRequestHook(t *testing.T) {
+	addBodyDigestHeader := func(r *http.Request) error {
+		if r.Body == nil {
+			return nil
+		}
+
+		body, err := r.GetBody()
+		if err != nil {
+			return err
+		}
+
+		bodyBytes, err := io.ReadAll(body)
+		if err != nil {
+			return err
+		}
+
+		r.Header.Add("digest", fmt.Sprintf("%x", sha256.Sum256(bodyBytes)))
+		return nil
+	}
+
+	t.Run("body-hash-header", func(t *testing.T) {
+		body := []byte("hello world")
+		b := requests.URL("https://example").
+			BodyBytes(body).
+			PreRequestHook(addBodyDigestHeader)
+
+		r, err := b.Request(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expected := fmt.Sprintf("%x", sha256.Sum256(body))
+		digest := r.Header.Get("digest")
+		if digest != expected {
+			t.Fatalf("got %q; want %q", digest, expected)
+		}
+	})
+
+	t.Run("nil-body-hash-header", func(t *testing.T) {
+		b := requests.URL("https://example").
+			PreRequestHook(addBodyDigestHeader)
+
+		r, err := b.Request(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		digest := r.Header.Get("digest")
+		if digest != "" {
+			t.Fatalf("`digest` header set but should not be")
+		}
+	})
+
+	t.Run("failed-hook", func(t *testing.T) {
+		b := requests.URL("https://example").
+			PreRequestHook(func(*http.Request) error {
+				return errors.New("hook failed")
+			})
+
+		r, err := b.Request(context.Background())
+		if err == nil {
+			t.Fatalf("Failed hook should lead to error")
+		}
+
+		if r != nil {
+			t.Fatalf("Failed hook should lead to nil request")
+		}
+	})
+
+	t.Run("clone-request-with-hook", func(t *testing.T) {
+		i := 0
+		b := requests.URL("https://example").
+			PreRequestHook(func(*http.Request) error {
+				i++
+				return nil
+			})
+
+		b2 := b.Clone()
+
+		_, err := b.Request(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = b2.Request(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if i != 2 {
+			t.Fatalf("got %q, want 2", i)
+		}
+	})
 }

@@ -57,6 +57,7 @@ type Builder struct {
 	cl           *http.Client
 	validators   []ResponseHandler
 	handler      ResponseHandler
+	preHook      RequestHook
 }
 
 type multimap struct {
@@ -64,11 +65,21 @@ type multimap struct {
 	values []string
 }
 
+// RequestHook is a function that operates on the fully constructed http request.
+type RequestHook func(*http.Request) error
+
 // URL creates a new Builder suitable for method chaining.
 func URL(baseurl string) *Builder {
 	var rb Builder
 	rb.baseurl = baseurl
 	return &rb
+}
+
+// PreRequestHook sets a hook to be called when the request has been constructed, but not
+// yet sent.
+func (rb *Builder) PreRequestHook(hook RequestHook) *Builder {
+	rb.preHook = hook
+	return rb
 }
 
 // Client sets the http.Client to use for requests. If nil, it uses http.DefaultClient.
@@ -339,6 +350,13 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	for _, kv := range rb.headers {
 		req.Header[http.CanonicalHeaderKey(kv.key)] = kv.values
 	}
+
+	if rb.preHook != nil {
+		if err = rb.preHook(req); err != nil {
+			return nil, err
+		}
+	}
+
 	return req, nil
 }
 
