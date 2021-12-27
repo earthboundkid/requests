@@ -236,3 +236,7 @@ err := requests.
 By default, if no other validators are added to a builder, requests will check that the response is in the 2XX range. If you add another validator, you can add `builder.CheckStatus(200)` or `builder.AddValidator(requests.DefaultValidator)` to the validation stack.
 
 To disable all response validation, run `builder.AddValidator(nil)`.
+
+## Contributing
+
+Please [create a discussion](https://github.com/carlmjohnson/requests/discussions) before submitting a pull request for a new feature.
