@@ -17,7 +17,7 @@ import (
 // requests and their responses to text files in basepath.
 // Requests are named according to a hash of their contents.
 // Responses are named according to the request that made them.
-func Record(rt http.RoundTripper, basepath string) http.RoundTripper {
+func Record(rt http.RoundTripper, basepath string) Transport {
 	if rt == nil {
 		rt = http.DefaultTransport
 	}
@@ -55,7 +55,7 @@ func Record(rt http.RoundTripper, basepath string) http.RoundTripper {
 // Replay returns an http.RoundTripper that reads its
 // responses from text files in basepath.
 // Responses are looked up according to a hash of the request.
-func Replay(basepath string) http.RoundTripper {
+func Replay(basepath string) Transport {
 	return ReplayFS(os.DirFS(basepath))
 }
 
@@ -63,7 +63,7 @@ func Replay(basepath string) http.RoundTripper {
 // responses from text files in the fs.FS.
 // Responses are looked up according to a hash of the request.
 // Response file names may optionally be prefixed with comments for better human organization.
-func ReplayFS(fsys fs.FS) http.RoundTripper {
+func ReplayFS(fsys fs.FS) Transport {
 	return RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
 		defer func() {
 			if err != nil {
