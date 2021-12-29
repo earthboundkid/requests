@@ -40,7 +40,7 @@ func CheckStatus(acceptStatuses ...int) ResponseHandler {
 	}
 }
 
-// HasStatusErr returns true if err is a StatusError caused by any of the codes given.
+// HasStatusErr returns true if err is a ResponseError caused by any of the codes given.
 func HasStatusErr(err error, codes ...int) bool {
 	if err == nil {
 		return false
