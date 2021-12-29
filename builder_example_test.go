@@ -92,12 +92,13 @@ func ExampleBuilder_ToBytesBuffer() {
 }
 
 func ExampleBuilder_ToWriter() {
-	f, err := os.CreateTemp("", "*.example.html")
+	f, err := os.CreateTemp("", "*.to_writer.html")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer os.Remove(f.Name()) // clean up
 
+	// suppose there is some io.Writer you want to stream to
 	err = requests.
 		URL("http://example.com").
 		ToWriter(f).
@@ -119,13 +120,13 @@ func ExampleBuilder_ToWriter() {
 }
 
 func ExampleBuilder_ToFile() {
-	d, err := os.MkdirTemp("", "to_file_*")
+	dir, err := os.MkdirTemp("", "to_file_*")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.RemoveAll(d) // clean up
+	defer os.RemoveAll(dir) // clean up
 
-	exampleFilename := filepath.Join(d, "parent_dir", "example.txt")
+	exampleFilename := filepath.Join(dir, "example.txt")
 
 	err = requests.
 		URL("http://example.com").
@@ -301,19 +302,20 @@ func ExampleBuilder_BodyBytes() {
 
 func ExampleBuilder_BodyReader() {
 	// temp file creation boilerplate
-	dir, err := os.MkdirTemp("", "example")
+	dir, err := os.MkdirTemp("", "body_reader_*")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer os.RemoveAll(dir) // clean up
 
-	file := filepath.Join(dir, "tmpfile")
-	if err := os.WriteFile(file, []byte(`hello, world`), 0666); err != nil {
+	exampleFilename := filepath.Join(dir, "example.txt")
+	exampleContent := `hello, world`
+	if err := os.WriteFile(exampleFilename, []byte(exampleContent), 0644); err != nil {
 		log.Fatal(err)
 	}
 
-	// suppose there is some file you want to stream from
-	f, err := os.Open(file)
+	// suppose there is some io.Reader you want to stream from
+	f, err := os.Open(exampleFilename)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -413,13 +415,13 @@ func ExampleBuilder_BodyForm() {
 
 func ExampleBuilder_BodyFile() {
 	// Make a file to read from
-	d, err := os.MkdirTemp("", "body_file_*")
+	dir, err := os.MkdirTemp("", "body_file_*")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.RemoveAll(d) // clean up
+	defer os.RemoveAll(dir) // clean up
 
-	exampleFilename := filepath.Join(d, "example.txt")
+	exampleFilename := filepath.Join(dir, "example.txt")
 	exampleContent := `hello, world`
 	if err = os.WriteFile(exampleFilename, []byte(exampleContent), 0644); err != nil {
 		log.Fatal(err)
