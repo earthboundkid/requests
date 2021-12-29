@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -58,5 +59,12 @@ func BodyJSON(v interface{}) BodyGetter {
 func BodyForm(data url.Values) BodyGetter {
 	return func() (r io.ReadCloser, err error) {
 		return io.NopCloser(strings.NewReader(data.Encode())), nil
+	}
+}
+
+// BodyFile is a BodyGetter that reads the provided file path.
+func BodyFile(name string) BodyGetter {
+	return func() (r io.ReadCloser, err error) {
+		return os.Open(name)
 	}
 }

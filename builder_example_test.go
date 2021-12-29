@@ -397,6 +397,36 @@ func ExampleBuilder_BodyForm() {
 	// map[hello:world]
 }
 
+func ExampleBuilder_BodyFile() {
+	// Make a file to read from
+	d, err := os.MkdirTemp("", "body_file_*")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(d) // clean up
+
+	exampleFilename := filepath.Join(d, "example.txt")
+	exampleContent := `hello, world`
+	if err = os.WriteFile(exampleFilename, []byte(exampleContent), 0644); err != nil {
+		log.Fatal(err)
+	}
+
+	// Post a raw file
+	var data postman
+	err = requests.
+		URL("https://postman-echo.com/post").
+		BodyFile(exampleFilename).
+		ContentType("text/plain").
+		ToJSON(&data).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("problem with postman:", err)
+	}
+	fmt.Println(data.Data)
+	// Output:
+	// hello, world
+}
+
 func ExampleBuilder_CheckPeek() {
 	// Check that a response has a doctype
 	const doctype = "<!doctype html>"

@@ -30,7 +30,7 @@ import (
 // http.RoundTripper with Transport.
 //
 // Set the body of the request, if any, with Body or use built in BodyBytes,
-// BodyForm, BodyJSON, BodyReader, or BodyWriter.
+// BodyFile, BodyForm, BodyJSON, BodyReader, or BodyWriter.
 //
 // Add a response validator to the Builder with AddValidator or use the built
 // in CheckStatus, CheckContentType, and Peek.
@@ -226,6 +226,11 @@ func (rb *Builder) BodyForm(data url.Values) *Builder {
 	return rb.
 		Body(BodyForm(data)).
 		ContentType("application/x-www-form-urlencoded")
+}
+
+// BodyFile sets the Builder's request body to read from the given file path.
+func (rb *Builder) BodyFile(name string) *Builder {
+	return rb.Body(BodyFile(name))
 }
 
 // AddValidator adds a response validator to the Builder.
