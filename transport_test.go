@@ -9,12 +9,14 @@ import (
 )
 
 func TestUserAgentTransport(t *testing.T) {
+	// Wrap an existing transport or use nil for http.DefaultTransport
+	baseTrans := http.DefaultClient.Transport
+	trans := requests.UserAgentTransport(baseTrans, "my-user/agent")
+
 	var headers postman
 	err := requests.
 		URL("https://postman-echo.com/get").
-		Client(&http.Client{
-			Transport: requests.UserAgentTransport(http.DefaultClient.Transport, "my-user/agent"),
-		}).
+		Transport(trans).
 		ToJSON(&headers).
 		Fetch(context.Background())
 	if err != nil {

@@ -10,20 +10,19 @@ import (
 )
 
 func TestRecordReplay(t *testing.T) {
-	cl := *http.DefaultClient
 	dir := t.TempDir()
-	cl.Transport = requests.Record(http.DefaultTransport, dir)
+
 	var s1, s2 string
 	err := requests.URL("http://example.com").
-		Client(&cl).
+		Transport(requests.Record(http.DefaultTransport, dir)).
 		ToString(&s1).
 		Fetch(context.Background())
 	if err != nil {
 		log.Fatalln("unexpected error:", err)
 	}
-	cl.Transport = requests.Replay(dir)
+
 	err = requests.URL("http://example.com").
-		Client(&cl).
+		Transport(requests.Replay(dir)).
 		ToString(&s2).
 		Fetch(context.Background())
 	if err != nil {

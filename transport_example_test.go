@@ -31,13 +31,13 @@ An example response.`
 }
 
 func ExamplePermitURLTransport() {
-	cl := *http.DefaultClient
 	// Wrap an existing transport or use nil for http.DefaultTransport
-	cl.Transport = requests.PermitURLTransport(cl.Transport, `^http://example\.com/?`)
+	baseTrans := http.DefaultClient.Transport
+	trans := requests.PermitURLTransport(baseTrans, `^http://example\.com/?`)
 	var s string
 	if err := requests.
 		URL("http://example.com").
-		Client(&cl).
+		Transport(trans).
 		ToString(&s).
 		Fetch(context.Background()); err != nil {
 		panic(err)
@@ -46,7 +46,7 @@ func ExamplePermitURLTransport() {
 
 	if err := requests.
 		URL("http://unauthorized.example.com").
-		Client(&cl).
+		Transport(trans).
 		ToString(&s).
 		Fetch(context.Background()); err != nil {
 		fmt.Println(err) // unauthorized subdomain not allowed

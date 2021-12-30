@@ -152,18 +152,16 @@ err := requests.
 
 ```go
 // record a request to the file system
-cl.Transport = requests.Record(nil, "somedir")
 var s1, s2 string
 err := requests.URL("http://example.com").
-	Client(&cl).
+	Transport(requests.Record(nil, "somedir")).
 	ToString(&s1).
 	Fetch(context.Background())
 check(err)
 
 // now replay the request in tests
-cl.Transport = requests.Replay("somedir")
 err = requests.URL("http://example.com").
-	Client(&cl).
+	Transport(requests.Replay("somedir")).
 	ToString(&s2).
 	Fetch(context.Background())
 check(err)
