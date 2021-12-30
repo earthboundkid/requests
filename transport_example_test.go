@@ -55,3 +55,27 @@ func ExamplePermitURLTransport() {
 	// true
 	// Get "http://unauthorized.example.com": requested URL not permitted by regexp: ^http://example\.com/?
 }
+
+func ExampleRoundTripFunc() {
+	// Wrap an underlying transport in order to add request middleware
+	var logTripper requests.RoundTripFunc = func(req *http.Request) (res *http.Response, err error) {
+		fmt.Printf("req [%s] %s\n", req.Method, req.URL)
+		res, err = http.DefaultClient.Transport.RoundTrip(req)
+		if err != nil {
+			fmt.Printf("res [error] %s %s\n", err, req.URL)
+		} else {
+			fmt.Printf("res [%s] %s\n", res.Status, req.URL)
+		}
+		return
+	}
+	err := requests.
+		URL("http://example.com").
+		Transport(logTripper).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("something went wrong:", err)
+	}
+	// Output:
+	// req [GET] http://example.com
+	// res [200 OK] http://example.com
+}
