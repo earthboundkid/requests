@@ -1,0 +1,4 @@
+GET /cookies HTTP/1.1
+Host: httpbin.org
+Cookie: oatmeal=raisin; chocolate=chip
+
