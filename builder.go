@@ -19,7 +19,7 @@ import (
 // Set the base URL for a request with requests.URL then customize it with
 // Scheme, Host, Hostf, Path, Pathf, and Param.
 //
-// Set the method for a request with Method or use the Get, Post, and Put
+// Set the method for a request with Method or use the Delete, Patch, and Put
 // methods. By default, requests without a body are GET and those with a
 // body are POST.
 //
@@ -181,19 +181,9 @@ func (rb *Builder) Method(method string) *Builder {
 	return rb
 }
 
-// Get sets HTTP method to GET.
-func (rb *Builder) Get() *Builder {
-	return rb.Method(http.MethodGet)
-}
-
 // Head sets HTTP method to HEAD.
 func (rb *Builder) Head() *Builder {
 	return rb.Method(http.MethodHead)
-}
-
-// Post sets HTTP method to POST.
-func (rb *Builder) Post() *Builder {
-	return rb.Method(http.MethodPost)
 }
 
 // Put sets HTTP method to PUT.
