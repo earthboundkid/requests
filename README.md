@@ -219,7 +219,7 @@ It depends on exactly what you need in terms of file atomicity and buffering, bu
 		Fetch(context.Background())
 ```
 
-For more advanced use case, use `ToWriter`. 
+For more advanced use case, use `ToWriter`.
 
 ### How do I save a response to a string?
 
