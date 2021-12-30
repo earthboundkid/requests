@@ -24,7 +24,7 @@ import (
 // body are POST.
 //
 // Set headers with Header or set conventional header keys with Accept,
-// CacheControl, ContentType, UserAgent, BasicAuth, and Bearer.
+// CacheControl, ContentType, Cookie, UserAgent, BasicAuth, and Bearer.
 //
 // Set the http.Client to use for a request with Client and/or set an
 // http.RoundTripper with Transport.
@@ -53,6 +53,7 @@ type Builder struct {
 	paths        []string
 	params       []multimap
 	headers      []multimap
+	cookies      []kvpair
 	getBody      BodyGetter
 	method       string
 	cl           *http.Client
@@ -64,6 +65,10 @@ type Builder struct {
 type multimap struct {
 	key    string
 	values []string
+}
+
+type kvpair struct {
+	key, value string
 }
 
 // URL creates a new Builder suitable for method chaining.
@@ -161,6 +166,13 @@ func (rb *Builder) BasicAuth(username, password string) *Builder {
 // Bearer sets the Authorization header to a bearer token.
 func (rb *Builder) Bearer(token string) *Builder {
 	return rb.Header("Authorization", "Bearer "+token)
+}
+
+// Cookie adds a cookie to a request.
+// Unlike other headers, adding a cookie does not overwrite existing values.
+func (rb *Builder) Cookie(name, value string) *Builder {
+	rb.cookies = append(rb.cookies, kvpair{name, value})
+	return rb
 }
 
 // Method sets the HTTP method for a request.
@@ -309,6 +321,7 @@ func (rb *Builder) Clone() *Builder {
 	rb2.paths = rb2.paths[0:len(rb2.paths):len(rb2.paths)]
 	rb2.headers = rb2.headers[0:len(rb2.headers):len(rb2.headers)]
 	rb2.params = rb2.params[0:len(rb2.params):len(rb2.params)]
+	rb2.cookies = rb2.cookies[0:len(rb2.cookies):len(rb2.cookies)]
 	rb2.validators = rb2.validators[0:len(rb2.validators):len(rb2.validators)]
 	return &rb2
 }
@@ -359,6 +372,12 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 
 	for _, kv := range rb.headers {
 		req.Header[http.CanonicalHeaderKey(kv.key)] = kv.values
+	}
+	for _, kv := range rb.cookies {
+		req.AddCookie(&http.Cookie{
+			Name:  kv.key,
+			Value: kv.value,
+		})
 	}
 	return req, nil
 }

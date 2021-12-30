@@ -15,6 +15,7 @@ func TestClone(t *testing.T) {
 			Path("a/").
 			Header("a", "1").
 			Header("b", "2").
+			Cookie("cookie", "base").
 			Param("a", "1").
 			Param("b", "2")
 		rb2 := rb1.Clone().
@@ -22,6 +23,7 @@ func TestClone(t *testing.T) {
 			Path("b").
 			Header("b", "3").
 			Header("c", "4").
+			Cookie("cookie", "override").
 			Param("b", "3").
 			Param("c", "4")
 		rb3 := rb1.Clone().
@@ -29,6 +31,7 @@ func TestClone(t *testing.T) {
 			Path("c").
 			Header("b", "5").
 			Header("c", "6").
+			Cookie("alternate", "value").
 			Param("b", "5").
 			Param("c", "6")
 		req1, err := rb1.Request(context.Background())
@@ -43,6 +46,9 @@ func TestClone(t *testing.T) {
 		}
 		if req1.Header.Get("b") != "2" || req1.Header.Get("c") != "" {
 			t.Fatalf("bad header: %v", req1.URL)
+		}
+		if cookies := req1.Header.Get("Cookie"); cookies != "cookie=base" {
+			t.Fatalf("bad cookies: %q", cookies)
 		}
 		if q := req1.URL.Query(); q.Get("b") != "2" || q.Get("c") != "" {
 			t.Fatalf("bad query: %v", req1.URL)
@@ -60,6 +66,9 @@ func TestClone(t *testing.T) {
 		if req2.Header.Get("b") != "3" || req2.Header.Get("c") != "4" {
 			t.Fatalf("bad header: %v", req2.URL)
 		}
+		if cookies := req2.Header.Get("Cookie"); cookies != "cookie=base; cookie=override" {
+			t.Fatalf("bad cookies: %q", cookies)
+		}
 		if q := req2.URL.Query(); q.Get("b") != "3" || q.Get("c") != "4" {
 			t.Fatalf("bad query: %v", req2.URL)
 		}
@@ -75,6 +84,9 @@ func TestClone(t *testing.T) {
 		}
 		if req3.Header.Get("b") != "5" || req3.Header.Get("c") != "6" {
 			t.Fatalf("bad header: %v", req3.URL)
+		}
+		if cookies := req3.Header.Get("Cookie"); cookies != "cookie=base; alternate=value" {
+			t.Fatalf("bad cookies: %q", cookies)
 		}
 		if q := req3.URL.Query(); q.Get("b") != "5" || q.Get("c") != "6" {
 			t.Fatalf("bad query: %v", req3.URL)

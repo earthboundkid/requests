@@ -41,7 +41,22 @@ func ExampleNewCookieJar() {
 		fmt.Println("could not connect to httpbin.org:", err)
 	}
 	fmt.Println(cookies)
+
+	// And we can manually add our own cookie values
+	// without overriding existing ones
+	err = requests.
+		URL("http://httpbin.org/cookies").
+		Client(&myClient).
+		Cookie("oatmeal", "raisin").
+		ToJSON(&cookies).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("could not connect to httpbin.org:", err)
+	}
+	fmt.Println(cookies)
+
 	// Output:
 	// chocolate=chip
 	// {map[chocolate:chip]}
+	// {map[chocolate:chip oatmeal:raisin]}
 }

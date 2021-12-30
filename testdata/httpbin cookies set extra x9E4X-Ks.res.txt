@@ -1,0 +1,15 @@
+HTTP/1.1 200 OK
+Content-Length: 73
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Content-Type: application/json
+Date: Thu, 30 Dec 2021 01:06:35 GMT
+Server: gunicorn/19.9.0
+
+{
+  "cookies": {
+    "chocolate": "chip", 
+    "oatmeal": "raisin"
+  }
+}
