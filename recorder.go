@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -59,6 +60,8 @@ func Replay(basepath string) Transport {
 	return ReplayFS(os.DirFS(basepath))
 }
 
+var errNotFound = errors.New("response not found")
+
 // ReplayFS returns an http.RoundTripper that reads its
 // responses from text files in the fs.FS.
 // Responses are looked up according to a hash of the request.
@@ -81,7 +84,7 @@ func ReplayFS(fsys fs.FS) Transport {
 			return nil, err
 		}
 		if len(matches) == 0 {
-			return nil, fmt.Errorf("no replay file matches %q", glob)
+			return nil, fmt.Errorf("%w: no replay file matches %q", errNotFound, glob)
 		}
 		if len(matches) > 1 {
 			return nil, fmt.Errorf("ambiguous response: multiple replay files match %q", glob)
@@ -100,4 +103,21 @@ func buildName(b []byte) (reqname, resname string) {
 	h.Write(b)
 	s := base64.URLEncoding.EncodeToString(h.Sum(nil))
 	return s[:8] + ".req.txt", s[:8] + ".res.txt"
+}
+
+// Caching returns an http.RoundTripper that attempts to read its
+// responses from text files in basepath. If the response is absent,
+// it caches the result of issuing the request with rt in basepath.
+// Requests are named according to a hash of their contents.
+// Responses are named according to the request that made them.
+func Caching(rt http.RoundTripper, basepath string) Transport {
+	replay := Replay(basepath).RoundTrip
+	record := Record(rt, basepath).RoundTrip
+	return RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
+		res, err = replay(req)
+		if errors.Is(err, errNotFound) {
+			res, err = record(req)
+		}
+		return
+	})
 }
