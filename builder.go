@@ -201,6 +201,16 @@ func (rb *Builder) Put() *Builder {
 	return rb.Method(http.MethodPut)
 }
 
+// Patch sets HTTP method to PATCH.
+func (rb *Builder) Patch() *Builder {
+	return rb.Method(http.MethodPatch)
+}
+
+// Delete sets HTTP method to DELETE.
+func (rb *Builder) Delete() *Builder {
+	return rb.Method(http.MethodDelete)
+}
+
 // Body sets the BodyGetter to use to build the body of a request.
 // The provided BodyGetter is used as an http.Request.GetBody func.
 // It implicitly sets method to POST.
