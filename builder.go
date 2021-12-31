@@ -35,8 +35,8 @@ import (
 // Add a response validator to the Builder with AddValidator or use the built
 // in CheckStatus, CheckContentType, and Peek.
 //
-// Set a handler for a response with Handle or use the built in ToJSON,
-// ToString, ToBytesBuffer, or ToWriter.
+// Set a handler for a response with Handle or use the built in ToHeaders,
+// ToJSON, ToString, ToBytesBuffer, or ToWriter.
 //
 // Fetch creates an http.Request with Request and sends it via the underlying
 // http.Client with Do.
@@ -294,6 +294,13 @@ func (rb *Builder) ToFile(name string) *Builder {
 func (rb *Builder) Config(cfg Config) *Builder {
 	cfg(rb)
 	return rb
+}
+
+// ToHeaders sets the method to HEAD and adds a handler which copies the response headers to h.
+func (rb *Builder) ToHeaders(h map[string][]string) *Builder {
+	return rb.
+		Head().
+		Handle(ChainHandlers(ToHeaders(h), consumeBody))
 }
 
 // Clone creates a new Builder suitable for independent mutation.
