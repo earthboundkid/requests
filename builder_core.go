@@ -1,9 +1,7 @@
 package requests
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -103,25 +101,12 @@ func (rb *Builder) Host(host string) *Builder {
 	return rb
 }
 
-// Hostf calls Host with fmt.Sprintf.
-func (rb *Builder) Hostf(format string, a ...interface{}) *Builder {
-	return rb.Host(fmt.Sprintf(format, a...))
-}
-
 // Path joins a path to a request per the path joining rules of RFC 3986.
 // If the path begins with /, it overrides any existing path.
 // If the path begins with ./ or ../, the final path will be rewritten in its absolute form when creating a request.
 func (rb *Builder) Path(path string) *Builder {
 	rb.paths = append(rb.paths, path)
 	return rb
-}
-
-// Pathf calls Path with fmt.Sprintf.
-//
-// Note that for security reasons, you must not use %s
-// with a user provided string!
-func (rb *Builder) Pathf(format string, a ...interface{}) *Builder {
-	return rb.Path(fmt.Sprintf(format, a...))
 }
 
 // Param sets a query parameter on a request. It overwrites the existing values of a key.
@@ -134,38 +119,6 @@ func (rb *Builder) Param(key string, values ...string) *Builder {
 func (rb *Builder) Header(key string, values ...string) *Builder {
 	rb.headers = append(rb.headers, multimap{key, values})
 	return rb
-}
-
-// Accept sets the Accept header for a request.
-func (rb *Builder) Accept(contentTypes string) *Builder {
-	return rb.Header("Accept", contentTypes)
-}
-
-// CacheControl sets the client-side Cache-Control directive for a request.
-func (rb *Builder) CacheControl(directive string) *Builder {
-	return rb.Header("Cache-Control", directive)
-}
-
-// ContentType sets the Content-Type header on a request.
-func (rb *Builder) ContentType(ct string) *Builder {
-	return rb.Header("Content-Type", ct)
-}
-
-// UserAgent sets the User-Agent header.
-func (rb *Builder) UserAgent(s string) *Builder {
-	return rb.Header("User-Agent", s)
-}
-
-// BasicAuth sets the Authorization header to a basic auth credential.
-func (rb *Builder) BasicAuth(username, password string) *Builder {
-	auth := username + ":" + password
-	v := base64.StdEncoding.EncodeToString([]byte(auth))
-	return rb.Header("Authorization", "Basic "+v)
-}
-
-// Bearer sets the Authorization header to a bearer token.
-func (rb *Builder) Bearer(token string) *Builder {
-	return rb.Header("Authorization", "Bearer "+token)
 }
 
 // Cookie adds a cookie to a request.
@@ -181,68 +134,12 @@ func (rb *Builder) Method(method string) *Builder {
 	return rb
 }
 
-// Head sets HTTP method to HEAD.
-func (rb *Builder) Head() *Builder {
-	return rb.Method(http.MethodHead)
-}
-
-// Put sets HTTP method to PUT.
-func (rb *Builder) Put() *Builder {
-	return rb.Method(http.MethodPut)
-}
-
-// Patch sets HTTP method to PATCH.
-func (rb *Builder) Patch() *Builder {
-	return rb.Method(http.MethodPatch)
-}
-
-// Delete sets HTTP method to DELETE.
-func (rb *Builder) Delete() *Builder {
-	return rb.Method(http.MethodDelete)
-}
-
 // Body sets the BodyGetter to use to build the body of a request.
 // The provided BodyGetter is used as an http.Request.GetBody func.
 // It implicitly sets method to POST.
 func (rb *Builder) Body(src BodyGetter) *Builder {
 	rb.getBody = src
 	return rb
-}
-
-// BodyReader sets the Builder's request body to r.
-func (rb *Builder) BodyReader(r io.Reader) *Builder {
-	return rb.Body(BodyReader(r))
-}
-
-// BodyWriter pipes writes from w to the Builder's request body.
-func (rb *Builder) BodyWriter(f func(w io.Writer) error) *Builder {
-	return rb.Body(BodyWriter(f))
-}
-
-// BodyBytes sets the Builder's request body to b.
-func (rb *Builder) BodyBytes(b []byte) *Builder {
-	return rb.Body(BodyBytes(b))
-}
-
-// BodyJSON sets the Builder's request body to the marshaled JSON.
-// It also sets ContentType to "application/json".
-func (rb *Builder) BodyJSON(v interface{}) *Builder {
-	return rb.
-		Body(BodyJSON(v)).
-		ContentType("application/json")
-}
-
-// BodyForm sets the Builder's request body to the encoded form.
-// It also sets the ContentType to "application/x-www-form-urlencoded".
-func (rb *Builder) BodyForm(data url.Values) *Builder {
-	return rb.
-		Body(BodyForm(data)).
-		ContentType("application/x-www-form-urlencoded")
-}
-
-// BodyFile sets the Builder's request body to read from the given file path.
-func (rb *Builder) BodyFile(name string) *Builder {
-	return rb.Body(BodyFile(name))
 }
 
 // AddValidator adds a response validator to the Builder.
@@ -253,21 +150,6 @@ func (rb *Builder) AddValidator(h ResponseHandler) *Builder {
 	return rb
 }
 
-// CheckStatus adds a validator for status code of a response.
-func (rb *Builder) CheckStatus(acceptStatuses ...int) *Builder {
-	return rb.AddValidator(CheckStatus(acceptStatuses...))
-}
-
-// CheckContentType adds a validator for the content type header of a response.
-func (rb *Builder) CheckContentType(cts ...string) *Builder {
-	return rb.AddValidator(CheckContentType(cts...))
-}
-
-// CheckPeek adds a validator that peeks at the first n bytes of a response body.
-func (rb *Builder) CheckPeek(n int, f func([]byte) error) *Builder {
-	return rb.AddValidator(CheckPeek(n, f))
-}
-
 // Handle sets the response handler for a Builder.
 // To use multiple handlers, use ChainHandlers.
 func (rb *Builder) Handle(h ResponseHandler) *Builder {
@@ -275,44 +157,10 @@ func (rb *Builder) Handle(h ResponseHandler) *Builder {
 	return rb
 }
 
-// ToJSON sets the Builder to decode a response as a JSON object
-func (rb *Builder) ToJSON(v interface{}) *Builder {
-	return rb.Handle(ToJSON(v))
-}
-
-// ToString sets the Builder to write the response body to the provided string pointer.
-func (rb *Builder) ToString(sp *string) *Builder {
-	return rb.Handle(ToString(sp))
-}
-
-// ToBytesBuffer sets the Builder to write the response body to the provided bytes.Buffer.
-func (rb *Builder) ToBytesBuffer(buf *bytes.Buffer) *Builder {
-	return rb.Handle(ToBytesBuffer(buf))
-}
-
-// ToWriter sets the Builder to copy the response body into w.
-func (rb *Builder) ToWriter(w io.Writer) *Builder {
-	return rb.Handle(ToWriter(w))
-}
-
-// ToFile sets the Builder to write the response body to the given file name.
-// The file and its parent directories are created automatically.
-// For more advanced use cases, use ToWriter.
-func (rb *Builder) ToFile(name string) *Builder {
-	return rb.Handle(ToFile(name))
-}
-
 // Config allows Builder to be extended by functions that set several options at once.
 func (rb *Builder) Config(cfg Config) *Builder {
 	cfg(rb)
 	return rb
-}
-
-// ToHeaders sets the method to HEAD and adds a handler which copies the response headers to h.
-func (rb *Builder) ToHeaders(h map[string][]string) *Builder {
-	return rb.
-		Head().
-		Handle(ChainHandlers(ToHeaders(h), consumeBody))
 }
 
 // Clone creates a new Builder suitable for independent mutation.
