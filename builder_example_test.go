@@ -356,6 +356,20 @@ func ExampleBuilder_Config() {
 	// hello, world
 }
 
+func ExampleBuilder_ToHeaders() {
+	headers := http.Header{}
+	err := requests.
+		URL("http://example.com").
+		ToHeaders(headers).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("problem with example.com:", err)
+	}
+	fmt.Println(headers.Get("Etag"))
+	// Output:
+	// "3147526947"
+}
+
 func ExampleBuilder_BodyWriter() {
 	var echo postman
 	err := requests.
