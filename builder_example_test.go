@@ -368,8 +368,25 @@ func ExampleBuilder_ToHeaders() {
 		fmt.Println("problem with example.com:", err)
 	}
 	fmt.Println(headers.Get("Etag"))
+
+	// Get headers while still getting body
+	var s string
+	headers = http.Header{}
+	err = requests.
+		URL("http://example.com").
+		CheckStatus(http.StatusOK).
+		AddValidator(requests.ToHeaders(headers)).
+		ToString(&s).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("problem with example.com:", err)
+	}
+	fmt.Println(headers.Get("Etag"))
+	fmt.Println(strings.Contains(s, "Example Domain"))
 	// Output:
 	// "3147526947"
+	// "3147526947+gzip"
+	// true
 }
 
 func ExampleBuilder_BodyWriter() {
