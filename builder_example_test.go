@@ -213,12 +213,13 @@ type postman struct {
 }
 
 func Example_queryParam() {
+	c := 4
 	// Set a query parameter
 	var params postman
 	err := requests.
 		URL("https://postman-echo.com/get?a=1&b=2").
 		Param("b", "3").
-		Param("c", "4").
+		ParamInt("c", c).
 		ToJSON(&params).
 		Fetch(context.Background())
 	if err != nil {
