@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 // Head sets HTTP method to HEAD.
@@ -40,6 +41,11 @@ func (rb *Builder) Hostf(format string, a ...interface{}) *Builder {
 // with a user provided string!
 func (rb *Builder) Pathf(format string, a ...interface{}) *Builder {
 	return rb.Path(fmt.Sprintf(format, a...))
+}
+
+// ParamInt converts value to a string and calls Param.
+func (rb *Builder) ParamInt(key string, value int) *Builder {
+	return rb.Param(key, strconv.Itoa(value))
 }
 
 // Accept sets the Accept header for a request.
