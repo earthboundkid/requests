@@ -202,7 +202,7 @@ var resp MyResponseType
 err := requests.
 	URL("https://example.com/my-json").
 	BodyJSON(&body).
-	ToJSON(&data).
+	ToJSON(&resp).
 	Fetch(context.Background())
 ```
 
