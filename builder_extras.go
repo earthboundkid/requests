@@ -10,6 +10,11 @@ import (
 	"strconv"
 )
 
+// Configure creates a new Builder suitable for method chaining by applying the specified Configs.
+func Configure(cfgs ...Config) *Builder {
+	return (&Builder{}).Config(cfgs...)
+}
+
 // Head sets HTTP method to HEAD.
 func (rb *Builder) Head() *Builder {
 	return rb.Method(http.MethodHead)

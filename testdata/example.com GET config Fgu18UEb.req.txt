@@ -1,0 +1,5 @@
+GET /?some_param=some-value HTTP/1.1
+Host: example.com
+Accept: application/vnd.myproj+json;charset=utf-8
+User-Agent: myproj/1.0
+
