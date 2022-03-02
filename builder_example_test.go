@@ -558,3 +558,29 @@ func ExampleBuilder_ErrorJSON() {
 	// true
 	// brewing
 }
+
+func ExampleConfig() {
+	// Suppose all requests in your project need some common options set.
+	// First, define a Config function in your project...
+	myProjectConfig := func(rb *requests.Builder) {
+		*rb = *requests.
+			URL("http://example.com").
+			UserAgent("myproj/1.0").
+			Accept("application/vnd.myproj+json;charset=utf-8")
+	}
+
+	// Then build your requests using that Config as the base Builder.
+	var s string
+	err := requests.
+		Configure(myProjectConfig).
+		Path("/").
+		Param("some_param", "some-value").
+		ToString(&s).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("my project fetch failed", err)
+	}
+	fmt.Println(strings.Contains(s, "Example Domain"))
+	// Output:
+	// true
+}
