@@ -31,7 +31,7 @@ func (rb *Builder) Delete() *Builder {
 }
 
 // Hostf calls Host with fmt.Sprintf.
-func (rb *Builder) Hostf(format string, a ...interface{}) *Builder {
+func (rb *Builder) Hostf(format string, a ...any) *Builder {
 	return rb.Host(fmt.Sprintf(format, a...))
 }
 
@@ -39,7 +39,7 @@ func (rb *Builder) Hostf(format string, a ...interface{}) *Builder {
 //
 // Note that for security reasons, you must not use %s
 // with a user provided string!
-func (rb *Builder) Pathf(format string, a ...interface{}) *Builder {
+func (rb *Builder) Pathf(format string, a ...any) *Builder {
 	return rb.Path(fmt.Sprintf(format, a...))
 }
 
@@ -97,7 +97,7 @@ func (rb *Builder) BodyBytes(b []byte) *Builder {
 
 // BodyJSON sets the Builder's request body to the marshaled JSON.
 // It also sets ContentType to "application/json".
-func (rb *Builder) BodyJSON(v interface{}) *Builder {
+func (rb *Builder) BodyJSON(v any) *Builder {
 	return rb.
 		Body(BodyJSON(v)).
 		ContentType("application/json")
@@ -132,7 +132,7 @@ func (rb *Builder) CheckPeek(n int, f func([]byte) error) *Builder {
 }
 
 // ToJSON sets the Builder to decode a response as a JSON object
-func (rb *Builder) ToJSON(v interface{}) *Builder {
+func (rb *Builder) ToJSON(v any) *Builder {
 	return rb.Handle(ToJSON(v))
 }
 

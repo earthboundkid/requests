@@ -40,7 +40,7 @@ func consumeBody(res *http.Response) (err error) {
 }
 
 // ToJSON decodes a response as a JSON object.
-func ToJSON(v interface{}) ResponseHandler {
+func ToJSON(v any) ResponseHandler {
 	return func(res *http.Response) error {
 		data, err := io.ReadAll(res.Body)
 		if err != nil {

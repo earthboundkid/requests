@@ -165,14 +165,19 @@ func (rb *Builder) Config(cfgs ...Config) *Builder {
 	return rb
 }
 
+func clip[T any](sp *[]T) {
+	s := *sp
+	*sp = s[:len(s):len(s)]
+}
+
 // Clone creates a new Builder suitable for independent mutation.
 func (rb *Builder) Clone() *Builder {
 	rb2 := *rb
-	rb2.paths = rb2.paths[0:len(rb2.paths):len(rb2.paths)]
-	rb2.headers = rb2.headers[0:len(rb2.headers):len(rb2.headers)]
-	rb2.params = rb2.params[0:len(rb2.params):len(rb2.params)]
-	rb2.cookies = rb2.cookies[0:len(rb2.cookies):len(rb2.cookies)]
-	rb2.validators = rb2.validators[0:len(rb2.validators):len(rb2.validators)]
+	clip(&rb2.paths)
+	clip(&rb2.headers)
+	clip(&rb2.params)
+	clip(&rb2.cookies)
+	clip(&rb2.validators)
 	return &rb2
 }
 
