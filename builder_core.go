@@ -158,8 +158,10 @@ func (rb *Builder) Handle(h ResponseHandler) *Builder {
 }
 
 // Config allows Builder to be extended by functions that set several options at once.
-func (rb *Builder) Config(cfg Config) *Builder {
-	cfg(rb)
+func (rb *Builder) Config(cfgs ...Config) *Builder {
+	for _, cfg := range cfgs {
+		cfg(rb)
+	}
 	return rb
 }
 
