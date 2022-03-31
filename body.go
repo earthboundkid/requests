@@ -45,7 +45,7 @@ func BodyBytes(b []byte) BodyGetter {
 }
 
 // BodyJSON is a BodyGetter that marshals a JSON object.
-func BodyJSON(v interface{}) BodyGetter {
+func BodyJSON(v any) BodyGetter {
 	return func() (io.ReadCloser, error) {
 		b, err := json.Marshal(v)
 		if err != nil {
