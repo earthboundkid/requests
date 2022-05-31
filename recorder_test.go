@@ -3,13 +3,13 @@ package requests_test
 import (
 	"context"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/carlmjohnson/requests"
+	"github.com/carlmjohnson/requests/internal/be"
 )
 
 func TestRecordReplay(t *testing.T) {
@@ -20,20 +20,14 @@ func TestRecordReplay(t *testing.T) {
 		Transport(requests.Record(http.DefaultTransport, dir)).
 		ToString(&s1).
 		Fetch(context.Background())
-	if err != nil {
-		log.Fatalln("unexpected error:", err)
-	}
+	be.NilErr(t, err)
 
 	err = requests.URL("http://example.com").
 		Transport(requests.Replay(dir)).
 		ToString(&s2).
 		Fetch(context.Background())
-	if err != nil {
-		log.Fatalln("unexpected error:", err)
-	}
-	if s1 != s2 {
-		log.Fatalf("%q != %q", s1, s2)
-	}
+	be.NilErr(t, err)
+	be.Equal(t, s1, s2)
 }
 
 func TestCaching(t *testing.T) {
@@ -41,9 +35,7 @@ func TestCaching(t *testing.T) {
 	hasRun := false
 	content := "some content"
 	var onceTrans requests.RoundTripFunc = func(req *http.Request) (res *http.Response, err error) {
-		if hasRun {
-			t.Fatal("ran twice")
-		}
+		be.False(t, hasRun)
 		hasRun = true
 		res = &http.Response{
 			StatusCode: http.StatusOK,
@@ -57,27 +49,16 @@ func TestCaching(t *testing.T) {
 		Transport(trans).
 		ToString(&s1).
 		Fetch(context.Background())
-	if err != nil {
-		log.Fatalln("unexpected error:", err)
-	}
+	be.NilErr(t, err)
 	err = requests.URL("http://example.com").
 		Transport(trans).
 		ToString(&s2).
 		Fetch(context.Background())
-	if err != nil {
-		log.Fatalln("unexpected error:", err)
-	}
-	if s1 != content {
-		log.Fatalf("%q != %q", s1, content)
-	}
-	if s1 != s2 {
-		log.Fatalf("%q != %q", s1, s2)
-	}
+	be.NilErr(t, err)
+	be.Equal(t, content, s1)
+	be.Equal(t, s1, s2)
+
 	entries, err := os.ReadDir(dir)
-	if err != nil {
-		t.Fatalf("something wrong with cache dir: %v", err)
-	}
-	if len(entries) != 2 {
-		t.Fatalf("unexpected entries in cache dir: %v", entries)
-	}
+	be.NilErr(t, err)
+	be.Equal(t, 2, len(entries))
 }
