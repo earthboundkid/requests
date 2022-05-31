@@ -9,13 +9,12 @@ import (
 	"testing"
 
 	"github.com/carlmjohnson/requests"
+	"github.com/carlmjohnson/requests/internal/be"
 )
 
 func BenchmarkBuilder_ToFile(b *testing.B) {
 	d, err := os.MkdirTemp("", "to_file_*")
-	if err != nil {
-		b.Fatal(err)
-	}
+	be.NilErr(b, err)
 	b.Cleanup(func() {
 		os.RemoveAll(d)
 	})
@@ -30,8 +29,6 @@ func BenchmarkBuilder_ToFile(b *testing.B) {
 			Client(&http.Client{Transport: http.DefaultTransport}).
 			ToFile(tmpFiles[n]).
 			Fetch(context.Background())
-		if err != nil {
-			b.Fatal(err)
-		}
+		be.NilErr(b, err)
 	}
 }

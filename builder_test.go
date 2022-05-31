@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/carlmjohnson/requests"
+	"github.com/carlmjohnson/requests/internal/be"
 )
 
 func TestClone(t *testing.T) {
@@ -35,62 +36,34 @@ func TestClone(t *testing.T) {
 			Param("b", "5").
 			Param("c", "6")
 		req1, err := rb1.Request(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if req1.URL.Host != "example.com" {
-			t.Fatalf("bad host: %v", req1.URL)
-		}
-		if req1.URL.Path != "/a/" {
-			t.Fatalf("bad path: %v", req1.URL)
-		}
-		if req1.Header.Get("b") != "2" || req1.Header.Get("c") != "" {
-			t.Fatalf("bad header: %v", req1.URL)
-		}
-		if cookies := req1.Header.Get("Cookie"); cookies != "cookie=base" {
-			t.Fatalf("bad cookies: %q", cookies)
-		}
-		if q := req1.URL.Query(); q.Get("b") != "2" || q.Get("c") != "" {
-			t.Fatalf("bad query: %v", req1.URL)
-		}
+		be.NilErr(t, err)
+		be.Equal(t, "example.com", req1.URL.Host)
+		be.Equal(t, "/a/", req1.URL.Path)
+		be.Equal(t, "2", req1.Header.Get("b"))
+		be.Equal(t, "", req1.Header.Get("c"))
+		be.Equal(t, "cookie=base", req1.Header.Get("Cookie"))
+		be.Equal(t, "2", req1.URL.Query().Get("b"))
+		be.Equal(t, "", req1.URL.Query().Get("c"))
+
 		req2, err := rb2.Request(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if req2.URL.Host != "host.example" {
-			t.Fatalf("bad host: %v", req2.URL)
-		}
-		if req2.URL.Path != "/a/b" {
-			t.Fatalf("bad path: %v", req2.URL.Path)
-		}
-		if req2.Header.Get("b") != "3" || req2.Header.Get("c") != "4" {
-			t.Fatalf("bad header: %v", req2.URL)
-		}
-		if cookies := req2.Header.Get("Cookie"); cookies != "cookie=base; cookie=override" {
-			t.Fatalf("bad cookies: %q", cookies)
-		}
-		if q := req2.URL.Query(); q.Get("b") != "3" || q.Get("c") != "4" {
-			t.Fatalf("bad query: %v", req2.URL)
-		}
+		be.NilErr(t, err)
+		be.Equal(t, "host.example", req2.URL.Host)
+		be.Equal(t, "/a/b", req2.URL.Path)
+		be.Equal(t, "3", req2.Header.Get("b"))
+		be.Equal(t, "4", req2.Header.Get("c"))
+		be.Equal(t, "cookie=base; cookie=override", req2.Header.Get("Cookie"))
+		be.Equal(t, "3", req2.URL.Query().Get("b"))
+		be.Equal(t, "4", req2.URL.Query().Get("c"))
+
 		req3, err := rb3.Request(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if req3.URL.Host != "host.example3" {
-			t.Fatalf("bad host: %v", req3.URL)
-		}
-		if req3.URL.Path != "/a/c" {
-			t.Fatalf("bad path: %v", req3.URL.Path)
-		}
-		if req3.Header.Get("b") != "5" || req3.Header.Get("c") != "6" {
-			t.Fatalf("bad header: %v", req3.URL)
-		}
-		if cookies := req3.Header.Get("Cookie"); cookies != "cookie=base; alternate=value" {
-			t.Fatalf("bad cookies: %q", cookies)
-		}
-		if q := req3.URL.Query(); q.Get("b") != "5" || q.Get("c") != "6" {
-			t.Fatalf("bad query: %v", req3.URL)
-		}
+		be.NilErr(t, err)
+		be.Equal(t, "host.example3", req3.URL.Host)
+		be.Equal(t, "/a/c", req3.URL.Path)
+		be.Equal(t, "5", req3.Header.Get("b"))
+		be.Equal(t, "6", req3.Header.Get("c"))
+		be.Equal(t, "cookie=base; alternate=value", req3.Header.Get("Cookie"))
+		be.Equal(t, "5", req3.URL.Query().Get("b"))
+		be.Equal(t, "6", req3.URL.Query().Get("c"))
 	})
 	t.Run("from new", func(t *testing.T) {
 		rb1 := new(requests.Builder).
@@ -114,50 +87,30 @@ func TestClone(t *testing.T) {
 			Param("b", "5").
 			Param("c", "6")
 		req1, err := rb1.Request(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if req1.URL.Host != "example.com" {
-			t.Fatalf("bad host: %v", req1.URL)
-		}
-		if req1.Header.Get("b") != "2" || req1.Header.Get("c") != "" {
-			t.Fatalf("bad header: %v", req1.URL)
-		}
-		if q := req1.URL.Query(); q.Get("b") != "2" || q.Get("c") != "" {
-			t.Fatalf("bad query: %v", req1.URL)
-		}
+		be.NilErr(t, err)
+		be.Equal(t, "example.com", req1.URL.Host)
+		be.Equal(t, "", req1.URL.Path)
+		be.Equal(t, "2", req1.Header.Get("b"))
+		be.Equal(t, "", req1.Header.Get("c"))
+		be.Equal(t, "2", req1.URL.Query().Get("b"))
+		be.Equal(t, "", req1.URL.Query().Get("c"))
+
 		req2, err := rb2.Request(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if req2.URL.Host != "host.example" {
-			t.Fatalf("bad host: %v", req2.URL)
-		}
-		if req2.URL.Path != "/2" {
-			t.Fatalf("bad path: %v", req2.URL.Path)
-		}
-		if req2.Header.Get("b") != "3" || req2.Header.Get("c") != "4" {
-			t.Fatalf("bad header: %v", req2.URL)
-		}
-		if q := req2.URL.Query(); q.Get("b") != "3" || q.Get("c") != "4" {
-			t.Fatalf("bad query: %v", req2.URL)
-		}
+		be.NilErr(t, err)
+		be.Equal(t, "host.example", req2.URL.Host)
+		be.Equal(t, "/2", req2.URL.Path)
+		be.Equal(t, "3", req2.Header.Get("b"))
+		be.Equal(t, "4", req2.Header.Get("c"))
+		be.Equal(t, "3", req2.URL.Query().Get("b"))
+		be.Equal(t, "4", req2.URL.Query().Get("c"))
+
 		req3, err := rb3.Request(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if req3.URL.Host != "host.example3" {
-			t.Fatalf("bad host: %v", req3.URL)
-		}
-		if req3.URL.Path != "/3" {
-			t.Fatalf("bad path: %v", req3.URL.Path)
-		}
-		if req3.Header.Get("b") != "5" || req3.Header.Get("c") != "6" {
-			t.Fatalf("bad header: %v", req3.URL)
-		}
-		if q := req3.URL.Query(); q.Get("b") != "5" || q.Get("c") != "6" {
-			t.Fatalf("bad query: %v", req3.URL)
-		}
+		be.Equal(t, "host.example3", req3.URL.Host)
+		be.Equal(t, "/3", req3.URL.Path)
+		be.Equal(t, "5", req3.Header.Get("b"))
+		be.Equal(t, "6", req3.Header.Get("c"))
+		be.Equal(t, "5", req3.URL.Query().Get("b"))
+		be.Equal(t, "6", req3.URL.Query().Get("c"))
 	})
 }
 
@@ -171,19 +124,16 @@ An example response.`
 	const expected = `An example response.`
 	var trans http.Transport
 	trans.RegisterProtocol("string", requests.ReplayString(res))
-	if err := requests.
+	err := requests.
 		URL("example").
 		Scheme("string").
 		Client(&http.Client{
 			Transport: &trans,
 		}).
 		ToString(&s).
-		Fetch(context.Background()); err != nil {
-		t.Fatal(err)
-	}
-	if s != expected {
-		t.Fatalf("%q != %q", s, expected)
-	}
+		Fetch(context.Background())
+	be.NilErr(t, err)
+	be.Equal(t, expected, s)
 }
 
 func TestPath(t *testing.T) {
@@ -280,12 +230,8 @@ func TestPath(t *testing.T) {
 				b.Path(p)
 			}
 			r, err := b.Request(context.Background())
-			if err != nil {
-				t.Fatal(err)
-			}
-			if u := r.URL.String(); u != tc.result {
-				t.Fatalf("got %q; want %q", u, tc.result)
-			}
+			be.NilErr(t, err)
+			be.Equal(t, tc.result, r.URL.String())
 		})
 	}
 }

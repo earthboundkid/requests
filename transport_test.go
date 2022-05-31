@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/carlmjohnson/requests"
+	"github.com/carlmjohnson/requests/internal/be"
 )
 
 func TestUserAgentTransport(t *testing.T) {
@@ -19,10 +20,6 @@ func TestUserAgentTransport(t *testing.T) {
 		Transport(trans).
 		ToJSON(&headers).
 		Fetch(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if h := headers.Headers["user-agent"]; h != "my-user/agent" {
-		t.Fatalf("bad user agent: %q", h)
-	}
+	be.NilErr(t, err)
+	be.Equal(t, "my-user/agent", headers.Headers["user-agent"])
 }
