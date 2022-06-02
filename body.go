@@ -9,6 +9,18 @@ import (
 	"strings"
 )
 
+// nopCloser is like io.NopCloser(),
+// but it is a concrete type so we can strip it out
+// before setting a body on a request.
+// See https://github.com/carlmjohnson/requests/discussions/49
+type nopCloser struct {
+	io.Reader
+}
+
+func (_ nopCloser) Close() error { return nil }
+
+var _ io.ReadCloser = nopCloser{}
+
 // BodyGetter provides a Builder with a source for a request body.
 type BodyGetter = func() (io.ReadCloser, error)
 
@@ -18,7 +30,7 @@ func BodyReader(r io.Reader) BodyGetter {
 		if rc, ok := r.(io.ReadCloser); ok {
 			return rc, nil
 		}
-		return io.NopCloser(r), nil
+		return nopCloser{r}, nil
 	}
 }
 
@@ -40,7 +52,7 @@ func BodyWriter(f func(w io.Writer) error) BodyGetter {
 // BodyBytes is a BodyGetter that returns the provided raw bytes.
 func BodyBytes(b []byte) BodyGetter {
 	return func() (io.ReadCloser, error) {
-		return io.NopCloser(bytes.NewReader(b)), nil
+		return nopCloser{bytes.NewReader(b)}, nil
 	}
 }
 
@@ -51,14 +63,14 @@ func BodyJSON(v any) BodyGetter {
 		if err != nil {
 			return nil, err
 		}
-		return io.NopCloser(bytes.NewReader(b)), nil
+		return nopCloser{bytes.NewReader(b)}, nil
 	}
 }
 
 // BodyForm is a BodyGetter that builds an encoded form body.
 func BodyForm(data url.Values) BodyGetter {
 	return func() (r io.ReadCloser, err error) {
-		return io.NopCloser(strings.NewReader(data.Encode())), nil
+		return nopCloser{strings.NewReader(data.Encode())}, nil
 	}
 }
 
