@@ -1,8 +1,11 @@
 package requests_test
 
 import (
+	"bytes"
 	"context"
 	"net/http"
+	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/carlmjohnson/requests"
@@ -233,5 +236,42 @@ func TestPath(t *testing.T) {
 			be.NilErr(t, err)
 			be.Equal(t, tc.result, r.URL.String())
 		})
+	}
+}
+
+func TestContentLength(t *testing.T) {
+	for _, n := range []int{0, 1, 10, 1000, 100_000} {
+		req, err := requests.
+			URL("http://example.com").
+			BodyBytes(bytes.Repeat([]byte("a"), n)).
+			Request(context.Background())
+		be.NilErr(t, err)
+		be.Equal(t, int64(n), req.ContentLength)
+		req, err = requests.
+			URL("http://example.com").
+			BodyReader(
+				strings.NewReader(strings.Repeat("a", n)),
+			).
+			Request(context.Background())
+		be.NilErr(t, err)
+		be.Equal(t, int64(n), req.ContentLength)
+	}
+	for _, obj := range []any{nil, 1, "x"} {
+		req, err := requests.
+			URL("http://example.com").
+			BodyJSON(obj).
+			Request(context.Background())
+		be.NilErr(t, err)
+		be.True(t, req.ContentLength > 0)
+	}
+	for _, qs := range []string{"", "a", "a=1"} {
+		q, err := url.ParseQuery(qs)
+		be.NilErr(t, err)
+		req, err := requests.
+			URL("http://example.com").
+			BodyForm(q).
+			Request(context.Background())
+		be.NilErr(t, err)
+		be.Equal(t, len(qs) > 0, req.ContentLength > 0)
 	}
 }

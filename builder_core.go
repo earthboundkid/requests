@@ -206,10 +206,13 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 		}
 		u.RawQuery = q.Encode()
 	}
-	var body io.ReadCloser
+	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
 			return nil, err
+		}
+		if nopper, ok := body.(nopCloser); ok {
+			body = nopper.Reader
 		}
 	}
 	method := http.MethodGet
