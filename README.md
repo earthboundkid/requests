@@ -169,6 +169,9 @@ assert(s1 == s2) // true
 ```
 
 ## FAQs
+
+[See wiki](https://github.com/carlmjohnson/requests/wiki) for more details.
+
 ### Why not just use the standard library HTTP client?
 
 Brad Fitzpatrick, long time maintainer of the net/http package, [wrote an extensive list of problems with the standard library HTTP client](https://github.com/bradfitz/exp-httpclient/blob/master/problems.md). His four main points (ignoring issues that can't be resolved by a wrapper around the standard library) are:
