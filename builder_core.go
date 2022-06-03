@@ -31,7 +31,7 @@ import (
 // BodyFile, BodyForm, BodyJSON, BodyReader, or BodyWriter.
 //
 // Add a response validator to the Builder with AddValidator or use the built
-// in CheckStatus, CheckContentType, and Peek.
+// in CheckStatus, CheckContentType, CopyHeaders, and Peek.
 //
 // Set a handler for a response with Handle or use the built in ToHeaders,
 // ToJSON, ToString, ToBytesBuffer, or ToWriter.

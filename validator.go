@@ -97,3 +97,14 @@ func CheckPeek(n int, f func([]byte) error) ResponseHandler {
 		return f(b)
 	}
 }
+
+// CopyHeaders copies the response headers to h.
+func CopyHeaders(h map[string][]string) ResponseHandler {
+	return func(res *http.Response) error {
+		for k, v := range res.Header {
+			h[k] = v
+		}
+
+		return nil
+	}
+}
