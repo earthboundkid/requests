@@ -108,6 +108,7 @@ func TestClone(t *testing.T) {
 		be.Equal(t, "4", req2.URL.Query().Get("c"))
 
 		req3, err := rb3.Request(context.Background())
+		be.NilErr(t, err)
 		be.Equal(t, "host.example3", req3.URL.Host)
 		be.Equal(t, "/3", req3.URL.Path)
 		be.Equal(t, "5", req3.Header.Get("b"))
