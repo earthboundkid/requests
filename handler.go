@@ -125,13 +125,5 @@ func ToFile(name string) ResponseHandler {
 	}
 }
 
-// ToHeaders copies the response headers to h.
-func ToHeaders(h map[string][]string) ResponseHandler {
-	return func(res *http.Response) error {
-		for k, v := range res.Header {
-			h[k] = v
-		}
-
-		return nil
-	}
-}
+// ToHeaders is an alias for backwards compatibility.
+var ToHeaders = CopyHeaders

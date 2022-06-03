@@ -158,9 +158,19 @@ func (rb *Builder) ToFile(name string) *Builder {
 	return rb.Handle(ToFile(name))
 }
 
+// CopyHeaders adds a validator which copies the response headers to h.
+// Note that because CopyHeaders adds a validator,
+// the DefaultValidator is disabled and must be added back manually
+// if status code validation is desired.
+func (rb *Builder) CopyHeaders(h map[string][]string) *Builder {
+	return rb.
+		AddValidator(CopyHeaders(h))
+}
+
 // ToHeaders sets the method to HEAD and adds a handler which copies the response headers to h.
+// To just copy headers, see Builder.CopyHeaders.
 func (rb *Builder) ToHeaders(h map[string][]string) *Builder {
 	return rb.
 		Head().
-		Handle(ChainHandlers(ToHeaders(h), consumeBody))
+		Handle(ChainHandlers(CopyHeaders(h), consumeBody))
 }

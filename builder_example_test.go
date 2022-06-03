@@ -359,7 +359,29 @@ func ExampleBuilder_Config() {
 	// hello, world
 }
 
+func ExampleBuilder_CopyHeaders() {
+	// Get headers while also getting body
+	var s string
+	headers := http.Header{}
+	err := requests.
+		URL("http://example.com").
+		CopyHeaders(headers).
+		// CopyHeaders disables status validation, so add it back
+		CheckStatus(http.StatusOK).
+		ToString(&s).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("problem with example.com:", err)
+	}
+	fmt.Println(headers.Get("Etag"))
+	fmt.Println(strings.Contains(s, "Example Domain"))
+	// Output:
+	// "3147526947+gzip"
+	// true
+}
+
 func ExampleBuilder_ToHeaders() {
+	// Send a HEAD request and look at headers
 	headers := http.Header{}
 	err := requests.
 		URL("http://example.com").
@@ -369,25 +391,8 @@ func ExampleBuilder_ToHeaders() {
 		fmt.Println("problem with example.com:", err)
 	}
 	fmt.Println(headers.Get("Etag"))
-
-	// Get headers while still getting body
-	var s string
-	headers = http.Header{}
-	err = requests.
-		URL("http://example.com").
-		CheckStatus(http.StatusOK).
-		AddValidator(requests.ToHeaders(headers)).
-		ToString(&s).
-		Fetch(context.Background())
-	if err != nil {
-		fmt.Println("problem with example.com:", err)
-	}
-	fmt.Println(headers.Get("Etag"))
-	fmt.Println(strings.Contains(s, "Example Domain"))
 	// Output:
 	// "3147526947"
-	// "3147526947+gzip"
-	// true
 }
 
 func ExampleBuilder_BodyWriter() {
