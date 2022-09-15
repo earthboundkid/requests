@@ -174,3 +174,13 @@ func (rb *Builder) ToHeaders(h map[string][]string) *Builder {
 		Head().
 		Handle(ChainHandlers(CopyHeaders(h), consumeBody))
 }
+
+// OnError sets the error handler for the given ErrorKind
+func (rb *Builder) OnError(kind ErrorKind, errFunc ErrorHandler) *Builder {
+	if rb.errorHandlers == nil {
+		rb.errorHandlers = map[ErrorKind]ErrorHandler{}
+	}
+
+	rb.errorHandlers[kind] = errFunc
+	return rb
+}

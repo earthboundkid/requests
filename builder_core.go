@@ -46,18 +46,19 @@ import (
 // function to add request specific details for the URL, parameters, headers,
 // body, or handler. The zero value of Builder is usable.
 type Builder struct {
-	baseurl      string
-	scheme, host string
-	paths        []string
-	params       []multimap
-	headers      []multimap
-	cookies      []kvpair
-	getBody      BodyGetter
-	method       string
-	cl           *http.Client
-	rt           http.RoundTripper
-	validators   []ResponseHandler
-	handler      ResponseHandler
+	baseurl       string
+	scheme, host  string
+	paths         []string
+	params        []multimap
+	headers       []multimap
+	cookies       []kvpair
+	getBody       BodyGetter
+	method        string
+	cl            *http.Client
+	rt            http.RoundTripper
+	validators    []ResponseHandler
+	handler       ResponseHandler
+	errorHandlers map[ErrorKind]ErrorHandler
 }
 
 type multimap struct {
@@ -253,7 +254,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	res, err := cl.Do(req)
 	if err != nil {
-		return err
+		return rb.handleError(ErrorKindConnectionErr, err, res)
 	}
 	defer res.Body.Close()
 
@@ -262,14 +263,14 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		validators = []ResponseHandler{DefaultValidator}
 	}
 	if err = ChainHandlers(validators...)(res); err != nil {
-		return err
+		return rb.handleError(ErrorKindValidationErr, err, res)
 	}
 	h := consumeBody
 	if rb.handler != nil {
 		h = rb.handler
 	}
 	if err = h(res); err != nil {
-		return err
+		return rb.handleError(ErrorKindHandlerErr, err, res)
 	}
 	return nil
 }
