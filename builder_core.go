@@ -58,6 +58,7 @@ type Builder struct {
 	rt           http.RoundTripper
 	validators   []ResponseHandler
 	handler      ResponseHandler
+	onerrs       []ErrorHandler
 }
 
 type multimap struct {
@@ -165,6 +166,12 @@ func (rb *Builder) Config(cfgs ...Config) *Builder {
 	return rb
 }
 
+// OnError adds an ErrorHandler to run if any part of building, validating, or handling a request fails.
+func (rb *Builder) OnError(h ErrorHandler) *Builder {
+	rb.onerrs = append(rb.onerrs, h)
+	return rb
+}
+
 func clip[T any](sp *[]T) {
 	s := *sp
 	*sp = s[:len(s):len(s)]
@@ -178,6 +185,7 @@ func (rb *Builder) Clone() *Builder {
 	clip(&rb2.params)
 	clip(&rb2.cookies)
 	clip(&rb2.validators)
+	clip(&rb2.onerrs)
 	return &rb2
 }
 
@@ -185,7 +193,10 @@ func (rb *Builder) Clone() *Builder {
 func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	u, err := url.Parse(rb.baseurl)
 	if err != nil {
-		return nil, fmt.Errorf("could not initialize with base URL %q: %w", u, err)
+		err = fmt.Errorf("could not initialize with base URL %q: %w", u, err)
+		err = ek{ErrorKindURLParse, err}
+		rb.handleErr(err, nil, nil)
+		return nil, err
 	}
 	if u.Scheme == "" {
 		u.Scheme = "https"
@@ -209,6 +220,8 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
+			err = ek{ErrorKindBodyGet, err}
+			rb.handleErr(err, nil, nil)
 			return nil, err
 		}
 		if nopper, ok := body.(nopCloser); ok {
@@ -224,6 +237,12 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	}
 	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
+		if ctx == nil {
+			err = ek{ErrorKindNilContext, err}
+		} else {
+			err = ek{ErrorKindUnknownMethod, err}
+		}
+		rb.handleErr(err, nil, nil)
 		return nil, err
 	}
 	req.GetBody = rb.getBody
@@ -253,6 +272,8 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	res, err := cl.Do(req)
 	if err != nil {
+		err = ek{ErrorKindConnection, err}
+		rb.handleErr(err, req, nil)
 		return err
 	}
 	defer res.Body.Close()
@@ -262,6 +283,8 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		validators = []ResponseHandler{DefaultValidator}
 	}
 	if err = ChainHandlers(validators...)(res); err != nil {
+		err = ek{ErrorKindValidator, err}
+		rb.handleErr(err, req, res)
 		return err
 	}
 	h := consumeBody
@@ -269,6 +292,8 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		h = rb.handler
 	}
 	if err = h(res); err != nil {
+		err = ek{ErrorKindHandler, err}
+		rb.handleErr(err, req, res)
 		return err
 	}
 	return nil
@@ -281,4 +306,10 @@ func (rb *Builder) Fetch(ctx context.Context) (err error) {
 		return err
 	}
 	return rb.Do(req)
+}
+
+func (rb *Builder) handleErr(err error, req *http.Request, res *http.Response) {
+	for _, h := range rb.onerrs {
+		h(err, req, res)
+	}
 }
