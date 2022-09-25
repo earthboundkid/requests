@@ -58,7 +58,7 @@ type Builder struct {
 	rt           http.RoundTripper
 	validators   []ResponseHandler
 	handler      ResponseHandler
-	onerrs       []ErrorHandler
+	errhandlers  []ErrorHandler
 }
 
 type multimap struct {
@@ -168,7 +168,7 @@ func (rb *Builder) Config(cfgs ...Config) *Builder {
 
 // OnError adds an ErrorHandler to run if any part of building, validating, or handling a request fails.
 func (rb *Builder) OnError(h ErrorHandler) *Builder {
-	rb.onerrs = append(rb.onerrs, h)
+	rb.errhandlers = append(rb.errhandlers, h)
 	return rb
 }
 
@@ -185,7 +185,7 @@ func (rb *Builder) Clone() *Builder {
 	clip(&rb2.params)
 	clip(&rb2.cookies)
 	clip(&rb2.validators)
-	clip(&rb2.onerrs)
+	clip(&rb2.errhandlers)
 	return &rb2
 }
 
@@ -309,7 +309,7 @@ func (rb *Builder) Fetch(ctx context.Context) (err error) {
 }
 
 func (rb *Builder) handleErr(err error, req *http.Request, res *http.Response) {
-	for _, h := range rb.onerrs {
+	for _, h := range rb.errhandlers {
 		h(err, req, res)
 	}
 }
