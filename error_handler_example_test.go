@@ -9,7 +9,7 @@ import (
 	"github.com/carlmjohnson/requests"
 )
 
-func ExampleValidationHandler() {
+func ExampleBuilder_OnError() {
 	logError := func(err error, req *http.Request, res *http.Response) {
 		url := "<no url>"
 		if req != nil {
@@ -19,13 +19,12 @@ func ExampleValidationHandler() {
 		if res != nil {
 			resCode = res.Status
 		}
-		fmt.Printf("error kind=%s url=%s status=%s message=%v\n",
+		fmt.Printf("[error] kind=%q url=%q status=%q message=%q\n",
 			requests.ErrorKindFrom(err), url, resCode, err)
 	}
 	var (
-		body              string
-		handledInvalidReq bool
-		errBody           string
+		body    string
+		errBody string
 	)
 
 	// All errors are sent to logErr.
@@ -37,16 +36,15 @@ func ExampleValidationHandler() {
 		ToString(&body).
 		OnError(logError).
 		OnValidationError(
-			&handledInvalidReq, requests.ToString(&errBody)).
+			nil, requests.ToString(&errBody)).
 		Fetch(context.Background())
 	if err != nil {
-		fmt.Println(handledInvalidReq)
-		fmt.Println(strings.Contains(errBody, "Example Domain"))
+		fmt.Println("got errBody:",
+			strings.Contains(errBody, "Example Domain"))
 	}
-	fmt.Println(strings.Contains(body, "Example Domain"))
+	fmt.Println("got body:", strings.Contains(body, "Example Domain"))
 	// Output:
-	// error kind=ErrorKindValidator url=http://example.com/404 status=404 Not Found message=response error for http://example.com/404: unexpected status: 404
-	// true
-	// true
-	// false
+	// [error] kind="KindInvalid" url="http://example.com/404" status="404 Not Found" message="response error for http://example.com/404: unexpected status: 404"
+	// got errBody: true
+	// got body: false
 }
