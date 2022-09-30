@@ -194,7 +194,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	u, err := url.Parse(rb.baseurl)
 	if err != nil {
 		err = fmt.Errorf("could not initialize with base URL %q: %w", u, err)
-		err = ek{ErrorKindURLParse, err}
+		err = ek{KindURLErr, err}
 		rb.handleErr(err, nil, nil)
 		return nil, err
 	}
@@ -220,7 +220,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
-			err = ek{ErrorKindBodyGet, err}
+			err = ek{KindBodyGet, err}
 			rb.handleErr(err, nil, nil)
 			return nil, err
 		}
@@ -237,10 +237,12 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	}
 	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
-		if ctx == nil {
-			err = ek{ErrorKindNilContext, err}
+		if _, urlerr := url.Parse(u.String()); urlerr != nil {
+			err = ek{KindURLErr, err}
+		} else if ctx == nil {
+			err = ek{KindNilContext, err}
 		} else {
-			err = ek{ErrorKindUnknownMethod, err}
+			err = ek{KindBadMethod, err}
 		}
 		rb.handleErr(err, nil, nil)
 		return nil, err
@@ -272,7 +274,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	res, err := cl.Do(req)
 	if err != nil {
-		err = ek{ErrorKindConnection, err}
+		err = ek{KindConnectErr, err}
 		rb.handleErr(err, req, nil)
 		return err
 	}
@@ -283,7 +285,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		validators = []ResponseHandler{DefaultValidator}
 	}
 	if err = ChainHandlers(validators...)(res); err != nil {
-		err = ek{ErrorKindValidator, err}
+		err = ek{KindInvalid, err}
 		rb.handleErr(err, req, res)
 		return err
 	}
@@ -292,7 +294,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		h = rb.handler
 	}
 	if err = h(res); err != nil {
-		err = ek{ErrorKindHandler, err}
+		err = ek{KindHandlerErr, err}
 		rb.handleErr(err, req, res)
 		return err
 	}
