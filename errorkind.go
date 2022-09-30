@@ -3,20 +3,21 @@ package requests
 import "errors"
 
 // ErrorKind indicates where an error was returned in the process of building, validating, and handling a request.
-type ErrorKind int
+type ErrorKind int8
 
 //go:generate stringer -type=ErrorKind
 
+// Enum values for type ErrorKind
 const (
-	ErrorKindNone ErrorKind = iota
-	ErrorKindUnknown
-	ErrorKindURLParse
-	ErrorKindBodyGet
-	ErrorKindUnknownMethod
-	ErrorKindNilContext
-	ErrorKindConnection
-	ErrorKindValidator
-	ErrorKindHandler
+	KindNone ErrorKind = iota
+	KindUnknown
+	KindURLErr
+	KindBodyGet
+	KindBadMethod
+	KindNilContext
+	KindConnectErr
+	KindInvalid
+	KindHandlerErr
 )
 
 type ek struct {
@@ -33,15 +34,15 @@ func (e ek) Unwrap() error {
 }
 
 // ErrorKindFrom extracts the ErrorKind from an error.
-// Nil errors return ErrorKindNone. Errors not passed through
-// a Builder return ErrorKindUnknown.
+// Nil errors return KindNone.
+// Errors not from a Builder return KindUnknown.
 func ErrorKindFrom(err error) ErrorKind {
 	if err == nil {
-		return ErrorKindNone
+		return KindNone
 	}
 	var e ek
 	if !errors.As(err, &e) {
-		return ErrorKindUnknown
+		return KindUnknown
 	}
 	return e.kind
 }
