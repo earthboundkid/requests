@@ -11,10 +11,10 @@ type ErrorHandler = func(error, *http.Request, *http.Response)
 // The handler only runs if the ErrorHandler encounters a validation error.
 // If ok is nil, the ErrorHandler ignores it.
 func ValidationHandler(ok *bool, h ResponseHandler) ErrorHandler {
-	if ok == nil {
-		ok = new(bool)
-	}
 	return func(err error, req *http.Request, res *http.Response) {
+		if ok == nil {
+			ok = new(bool)
+		}
 		if res != nil && ErrorKindFrom(err) == KindInvalid {
 			*ok = h(res) == nil
 		}
