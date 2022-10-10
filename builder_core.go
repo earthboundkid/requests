@@ -220,7 +220,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
-			err = ek{KindBodyGet, err}
+			err = ek{KindBodyGetErr, err}
 			rb.handleErr(err, nil, nil)
 			return nil, err
 		}
@@ -240,9 +240,9 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 		if _, urlerr := url.Parse(u.String()); urlerr != nil {
 			err = ek{KindURLErr, err}
 		} else if ctx == nil {
-			err = ek{KindNilContext, err}
+			err = ek{KindContextErr, err}
 		} else {
-			err = ek{KindBadMethod, err}
+			err = ek{KindMethodErr, err}
 		}
 		rb.handleErr(err, nil, nil)
 		return nil, err
@@ -285,7 +285,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		validators = []ResponseHandler{DefaultValidator}
 	}
 	if err = ChainHandlers(validators...)(res); err != nil {
-		err = ek{KindInvalid, err}
+		err = ek{KindInvalidErr, err}
 		rb.handleErr(err, req, res)
 		return err
 	}

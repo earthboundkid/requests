@@ -8,20 +8,20 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[KindNone-0]
-	_ = x[KindUnknown-1]
+	_ = x[KindUnknown-0]
+	_ = x[KindNone-1]
 	_ = x[KindURLErr-2]
-	_ = x[KindBodyGet-3]
-	_ = x[KindBadMethod-4]
-	_ = x[KindNilContext-5]
+	_ = x[KindBodyGetErr-3]
+	_ = x[KindMethodErr-4]
+	_ = x[KindContextErr-5]
 	_ = x[KindConnectErr-6]
-	_ = x[KindInvalid-7]
+	_ = x[KindInvalidErr-7]
 	_ = x[KindHandlerErr-8]
 }
 
-const _ErrorKind_name = "KindNoneKindUnknownKindURLErrKindBodyGetKindBadMethodKindNilContextKindConnectErrKindInvalidKindHandlerErr"
+const _ErrorKind_name = "KindUnknownKindNoneKindURLErrKindBodyGetErrKindMethodErrKindContextErrKindConnectErrKindInvalidErrKindHandlerErr"
 
-var _ErrorKind_index = [...]uint8{0, 8, 19, 29, 40, 53, 67, 81, 92, 106}
+var _ErrorKind_index = [...]uint8{0, 11, 19, 29, 43, 56, 70, 84, 98, 112}
 
 func (i ErrorKind) String() string {
 	if i < 0 || i >= ErrorKind(len(_ErrorKind_index)-1) {
