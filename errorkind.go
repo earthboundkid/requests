@@ -9,15 +9,15 @@ type ErrorKind int8
 
 // Enum values for type ErrorKind
 const (
-	KindNone ErrorKind = iota
-	KindUnknown
-	KindURLErr
-	KindBodyGet
-	KindBadMethod
-	KindNilContext
-	KindConnectErr
-	KindInvalid
-	KindHandlerErr
+	KindUnknown    ErrorKind = iota // Not a Builder error
+	KindNone                        // error is nil
+	KindURLErr                      // error building URL
+	KindBodyGetErr                  // error getting request body
+	KindMethodErr                   // request method was invalid
+	KindContextErr                  // request context was nil
+	KindConnectErr                  // error connecting
+	KindInvalidErr                  // validation failure
+	KindHandlerErr                  // handler error
 )
 
 type ek struct {
@@ -33,16 +33,14 @@ func (e ek) Unwrap() error {
 	return e.cause
 }
 
-// ErrorKindFrom extracts the ErrorKind from an error.
+// HasKindErr extracts the ErrorKind from an error.
 // Nil errors return KindNone.
 // Errors not from a Builder return KindUnknown.
-func ErrorKindFrom(err error) ErrorKind {
+func HasKindErr(err error) ErrorKind {
 	if err == nil {
 		return KindNone
 	}
 	var e ek
-	if !errors.As(err, &e) {
-		return KindUnknown
-	}
+	errors.As(err, &e) // defaults to KindUknown
 	return e.kind
 }

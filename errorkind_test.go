@@ -11,62 +11,60 @@ import (
 )
 
 func TestErrorKind(t *testing.T) {
+	ctx := context.Background()
 	res200 := requests.ReplayString("HTTP/1.1 200 OK\n\n")
 	for _, tc := range []struct {
+		ctx  context.Context
 		want requests.ErrorKind
 		b    *requests.Builder
 	}{
-		{requests.KindNone, requests.
+		{ctx, requests.KindNone, requests.
 			URL("").
 			Transport(res200),
 		},
-		{requests.KindURLErr, requests.
+		{ctx, requests.KindURLErr, requests.
 			URL("http://%2020").
 			Transport(res200),
 		},
-		{requests.KindURLErr, requests.
+		{ctx, requests.KindURLErr, requests.
 			URL("hello world").
 			Transport(res200),
 		},
-		{requests.KindBodyGet, requests.
+		{ctx, requests.KindBodyGetErr, requests.
 			URL("").
 			Body(func() (io.ReadCloser, error) {
 				return nil, errors.New("x")
 			}).
 			Transport(res200),
 		},
-		{requests.KindBadMethod, requests.
+		{ctx, requests.KindMethodErr, requests.
 			URL("").
 			Method(" ").
 			Transport(res200),
 		},
-		{requests.KindNilContext, requests.
+		{nil, requests.KindContextErr, requests.
 			URL("").
 			Transport(res200),
 		},
-		{requests.KindConnectErr, requests.
+		{ctx, requests.KindConnectErr, requests.
 			URL("").
 			Transport(requests.ReplayString("")),
 		},
-		{requests.KindInvalid, requests.
+		{ctx, requests.KindInvalidErr, requests.
 			URL("").
 			Transport(requests.ReplayString("HTTP/1.1 404 Nope\n\n")),
 		},
-		{requests.KindHandlerErr, requests.
+		{ctx, requests.KindHandlerErr, requests.
 			URL("").
 			Transport(res200).
 			ToJSON(nil),
 		},
 	} {
-		ctx := context.Background()
-		if tc.want == requests.KindNilContext {
-			ctx = nil
-		}
-		err := tc.b.Fetch(ctx)
-		be.Equal(t, tc.want, requests.ErrorKindFrom(err))
+		err := tc.b.Fetch(tc.ctx)
+		be.Equal(t, tc.want, requests.HasKindErr(err))
 	}
 
 	be.Equal(t,
 		requests.KindUnknown,
-		requests.ErrorKindFrom(errors.New("")))
+		requests.HasKindErr(errors.New("")))
 }
