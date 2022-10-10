@@ -20,7 +20,7 @@ func ExampleBuilder_OnError() {
 			resCode = res.Status
 		}
 		fmt.Printf("[error] kind=%q url=%q status=%q message=%q\n",
-			requests.ErrorKindFrom(err), url, resCode, err)
+			requests.HasKindErr(err), url, resCode, err)
 	}
 	var (
 		body    string
@@ -44,7 +44,7 @@ func ExampleBuilder_OnError() {
 	}
 	fmt.Println("got body:", strings.Contains(body, "Example Domain"))
 	// Output:
-	// [error] kind="KindInvalid" url="http://example.com/404" status="404 Not Found" message="response error for http://example.com/404: unexpected status: 404"
+	// [error] kind="KindInvalidErr" url="http://example.com/404" status="404 Not Found" message="response error for http://example.com/404: unexpected status: 404"
 	// got errBody: true
 	// got body: false
 }
