@@ -175,8 +175,8 @@ func (rb *Builder) ToHeaders(h map[string][]string) *Builder {
 		Handle(ChainHandlers(CopyHeaders(h), consumeBody))
 }
 
-// OnValidationError calls OnError by converting h with ValidationHandler into an ErrorHandler.
+// OnValidatorError calls OnError by converting h with ValidatorHandler into an ErrorHandler.
 // It only runs if the Builder encounters a validation error.
-func (rb *Builder) OnValidationError(ok *bool, h ResponseHandler) *Builder {
-	return rb.OnError(ValidationHandler(ok, h))
+func (rb *Builder) OnValidatorError(h ResponseHandler) *Builder {
+	return rb.OnError(ValidatorHandler(h))
 }
