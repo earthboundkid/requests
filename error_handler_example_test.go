@@ -35,8 +35,8 @@ func ExampleBuilder_OnError() {
 		URL("http://example.com/404").
 		ToString(&body).
 		OnError(logError).
-		OnValidationError(
-			nil, requests.ToString(&errBody)).
+		OnValidatorError(
+			requests.ToString(&errBody)).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("got errBody:",
