@@ -47,7 +47,7 @@ func ExampleBuilder_OnError() {
 	}
 	fmt.Println("got body:", strings.Contains(body, "Example Domain"))
 	// Output:
-	// [error] kind="ErrorKindValidator" url="http://example.com/404" status="404 Not Found" message="response error for http://example.com/404: unexpected status: 404"
+	// [error] kind="ErrorKindValidator" url="http://example.com/404" status="404 Not Found" message="handled recovery from invalid response"
 	// got errBody: true
 	// got body: false
 }

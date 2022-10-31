@@ -167,6 +167,8 @@ func (rb *Builder) Config(cfgs ...Config) *Builder {
 }
 
 // OnError adds an ErrorHandler to run if any part of building, validating, or handling a request fails.
+// ErrorHandlers are run in reverse order and may modify the error returned
+// to the caller and other ErrorHandlers.
 func (rb *Builder) OnError(h ErrorHandler) *Builder {
 	rb.errhandlers = append(rb.errhandlers, h)
 	return rb
@@ -301,7 +303,8 @@ func (rb *Builder) Fetch(ctx context.Context) (err error) {
 
 func (rb *Builder) handleErr(kind ErrorKind, err error, req *http.Request, res *http.Response) error {
 	err = ek{kind, err}
-	for _, h := range rb.errhandlers {
+	for i := len(rb.errhandlers) - 1; i >= 0; i-- {
+		h := rb.errhandlers[i]
 		err = h(kind, err, req, res)
 	}
 	return err
