@@ -17,7 +17,7 @@ func ValidatorHandler(h ResponseHandler) ErrorHandler {
 	return func(kind ErrorKind, err error, req *http.Request, res *http.Response) error {
 		if kind == ErrorKindValidator && res != nil {
 			if err := h(res); err != nil {
-				return err
+				return ek{ErrorKindValidator, err}
 			}
 		}
 		return ErrInvalidHandled
