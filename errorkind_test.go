@@ -10,6 +10,14 @@ import (
 	"github.com/carlmjohnson/requests/internal/be"
 )
 
+func kind(err error) requests.ErrorKind {
+	var e requests.ErrorKindError
+	if errors.As(err, &e) {
+		return e.Kind()
+	}
+	return requests.ErrorKindUnknown
+}
+
 func TestErrorKind(t *testing.T) {
 	ctx := context.Background()
 	res200 := requests.ReplayString("HTTP/1.1 200 OK\n\n")
@@ -18,53 +26,53 @@ func TestErrorKind(t *testing.T) {
 		want requests.ErrorKind
 		b    *requests.Builder
 	}{
-		{ctx, requests.KindNone, requests.
+		{ctx, requests.ErrorKindUnknown, requests.
 			URL("").
 			Transport(res200),
 		},
-		{ctx, requests.KindURLErr, requests.
+		{ctx, requests.ErrorKindURL, requests.
 			URL("http://%2020").
 			Transport(res200),
 		},
-		{ctx, requests.KindURLErr, requests.
+		{ctx, requests.ErrorKindURL, requests.
 			URL("hello world").
 			Transport(res200),
 		},
-		{ctx, requests.KindBodyGetErr, requests.
+		{ctx, requests.ErrorKindBodyGet, requests.
 			URL("").
 			Body(func() (io.ReadCloser, error) {
 				return nil, errors.New("x")
 			}).
 			Transport(res200),
 		},
-		{ctx, requests.KindMethodErr, requests.
+		{ctx, requests.ErrorKindMethod, requests.
 			URL("").
 			Method(" ").
 			Transport(res200),
 		},
-		{nil, requests.KindContextErr, requests.
+		{nil, requests.ErrorKindContext, requests.
 			URL("").
 			Transport(res200),
 		},
-		{ctx, requests.KindConnectErr, requests.
+		{ctx, requests.ErrorKindConnect, requests.
 			URL("").
 			Transport(requests.ReplayString("")),
 		},
-		{ctx, requests.KindInvalidErr, requests.
+		{ctx, requests.ErrorKindValidator, requests.
 			URL("").
 			Transport(requests.ReplayString("HTTP/1.1 404 Nope\n\n")),
 		},
-		{ctx, requests.KindHandlerErr, requests.
+		{ctx, requests.ErrorKindHandler, requests.
 			URL("").
 			Transport(res200).
 			ToJSON(nil),
 		},
 	} {
 		err := tc.b.Fetch(tc.ctx)
-		be.Equal(t, tc.want, requests.HasKindErr(err))
+		be.Equal(t, tc.want, kind(err))
 	}
 
 	be.Equal(t,
-		requests.KindUnknown,
-		requests.HasKindErr(errors.New("")))
+		requests.ErrorKindUnknown,
+		kind(errors.New("")))
 }
