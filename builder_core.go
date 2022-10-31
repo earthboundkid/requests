@@ -194,7 +194,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	u, err := url.Parse(rb.baseurl)
 	if err != nil {
 		err = fmt.Errorf("could not initialize with base URL %q: %w", u, err)
-		return nil, rb.handleErr(KindURLErr, err, nil, nil)
+		return nil, rb.handleErr(ErrorKindURL, err, nil, nil)
 	}
 	if u.Scheme == "" {
 		u.Scheme = "https"
@@ -218,7 +218,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
-			return nil, rb.handleErr(KindBodyGetErr, err, nil, nil)
+			return nil, rb.handleErr(ErrorKindBodyGet, err, nil, nil)
 		}
 		if nopper, ok := body.(nopCloser); ok {
 			body = nopper.Reader
@@ -233,11 +233,11 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	}
 	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
-		kind := KindMethodErr
+		kind := ErrorKindMethod
 		if _, urlerr := url.Parse(u.String()); urlerr != nil {
-			kind = KindURLErr
+			kind = ErrorKindURL
 		} else if ctx == nil {
-			kind = KindContextErr
+			kind = ErrorKindContext
 		}
 
 		return nil, rb.handleErr(kind, err, nil, nil)
@@ -269,7 +269,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	res, err := cl.Do(req)
 	if err != nil {
-		return rb.handleErr(KindConnectErr, err, req, nil)
+		return rb.handleErr(ErrorKindConnect, err, req, nil)
 	}
 	defer res.Body.Close()
 
@@ -278,14 +278,14 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		validators = []ResponseHandler{DefaultValidator}
 	}
 	if err = ChainHandlers(validators...)(res); err != nil {
-		return rb.handleErr(KindInvalidErr, err, req, res)
+		return rb.handleErr(ErrorKindValidator, err, req, res)
 	}
 	h := consumeBody
 	if rb.handler != nil {
 		h = rb.handler
 	}
 	if err = h(res); err != nil {
-		return rb.handleErr(KindHandlerErr, err, req, res)
+		return rb.handleErr(ErrorKindHandler, err, req, res)
 	}
 	return nil
 }
