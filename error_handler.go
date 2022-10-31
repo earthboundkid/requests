@@ -15,7 +15,7 @@ type ErrorHandler = func(ErrorKind, error, *http.Request, *http.Response) error
 // If the ResponseHandler succeeds, ErrInvalidHandled is returned.
 func ValidatorHandler(h ResponseHandler) ErrorHandler {
 	return func(kind ErrorKind, err error, req *http.Request, res *http.Response) error {
-		if kind == KindInvalidErr && res != nil {
+		if kind == ErrorKindValidator && res != nil {
 			if err := h(res); err != nil {
 				return err
 			}
