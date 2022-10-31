@@ -194,9 +194,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	u, err := url.Parse(rb.baseurl)
 	if err != nil {
 		err = fmt.Errorf("could not initialize with base URL %q: %w", u, err)
-		err = ek{KindURLErr, err}
-		rb.handleErr(err, nil, nil)
-		return nil, err
+		return nil, rb.handleErr(KindURLErr, err, nil, nil)
 	}
 	if u.Scheme == "" {
 		u.Scheme = "https"
@@ -220,9 +218,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
-			err = ek{KindBodyGetErr, err}
-			rb.handleErr(err, nil, nil)
-			return nil, err
+			return nil, rb.handleErr(KindBodyGetErr, err, nil, nil)
 		}
 		if nopper, ok := body.(nopCloser); ok {
 			body = nopper.Reader
@@ -237,15 +233,14 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	}
 	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
+		kind := KindMethodErr
 		if _, urlerr := url.Parse(u.String()); urlerr != nil {
-			err = ek{KindURLErr, err}
+			kind = KindURLErr
 		} else if ctx == nil {
-			err = ek{KindContextErr, err}
-		} else {
-			err = ek{KindMethodErr, err}
+			kind = KindContextErr
 		}
-		rb.handleErr(err, nil, nil)
-		return nil, err
+
+		return nil, rb.handleErr(kind, err, nil, nil)
 	}
 	req.GetBody = rb.getBody
 
@@ -274,9 +269,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	res, err := cl.Do(req)
 	if err != nil {
-		err = ek{KindConnectErr, err}
-		rb.handleErr(err, req, nil)
-		return err
+		return rb.handleErr(KindConnectErr, err, req, nil)
 	}
 	defer res.Body.Close()
 
@@ -285,18 +278,14 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		validators = []ResponseHandler{DefaultValidator}
 	}
 	if err = ChainHandlers(validators...)(res); err != nil {
-		err = ek{KindInvalidErr, err}
-		rb.handleErr(err, req, res)
-		return err
+		return rb.handleErr(KindInvalidErr, err, req, res)
 	}
 	h := consumeBody
 	if rb.handler != nil {
 		h = rb.handler
 	}
 	if err = h(res); err != nil {
-		err = ek{KindHandlerErr, err}
-		rb.handleErr(err, req, res)
-		return err
+		return rb.handleErr(KindHandlerErr, err, req, res)
 	}
 	return nil
 }
@@ -310,8 +299,10 @@ func (rb *Builder) Fetch(ctx context.Context) (err error) {
 	return rb.Do(req)
 }
 
-func (rb *Builder) handleErr(err error, req *http.Request, res *http.Response) {
+func (rb *Builder) handleErr(kind ErrorKind, err error, req *http.Request, res *http.Response) error {
+	err = ek{kind, err}
 	for _, h := range rb.errhandlers {
-		h(err, req, res)
+		err = h(kind, err, req, res)
 	}
+	return err
 }

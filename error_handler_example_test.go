@@ -10,7 +10,7 @@ import (
 )
 
 func ExampleBuilder_OnError() {
-	logError := func(err error, req *http.Request, res *http.Response) {
+	logError := func(kind requests.ErrorKind, err error, req *http.Request, res *http.Response) error {
 		url := "<no url>"
 		if req != nil {
 			url = req.URL.String()
@@ -20,7 +20,8 @@ func ExampleBuilder_OnError() {
 			resCode = res.Status
 		}
 		fmt.Printf("[error] kind=%q url=%q status=%q message=%q\n",
-			requests.HasKindErr(err), url, resCode, err)
+			kind, url, resCode, err)
+		return err
 	}
 	var (
 		body    string
@@ -38,9 +39,11 @@ func ExampleBuilder_OnError() {
 		OnValidatorError(
 			requests.ToString(&errBody)).
 		Fetch(context.Background())
-	if err != nil {
+	if err == requests.ErrInvalidHandled {
 		fmt.Println("got errBody:",
 			strings.Contains(errBody, "Example Domain"))
+	} else if err != nil {
+		fmt.Println("unknown error", err)
 	}
 	fmt.Println("got body:", strings.Contains(body, "Example Domain"))
 	// Output:
