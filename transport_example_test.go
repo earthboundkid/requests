@@ -33,10 +33,10 @@ An example response.`
 func ExamplePermitURLTransport() {
 	// Wrap an existing transport or use nil for http.DefaultTransport
 	baseTrans := http.DefaultClient.Transport
-	trans := requests.PermitURLTransport(baseTrans, `^http://example\.com/?`)
+	trans := requests.PermitURLTransport(baseTrans, `^http://example\.com/`)
 	var s string
 	if err := requests.
-		URL("http://example.com").
+		URL("http://example.com/").
 		Transport(trans).
 		ToString(&s).
 		Fetch(context.Background()); err != nil {
@@ -45,7 +45,7 @@ func ExamplePermitURLTransport() {
 	fmt.Println(strings.Contains(s, "Example Domain"))
 
 	if err := requests.
-		URL("http://unauthorized.example.com").
+		URL("http://unauthorized.example.com/").
 		Transport(trans).
 		ToString(&s).
 		Fetch(context.Background()); err != nil {
@@ -53,7 +53,7 @@ func ExamplePermitURLTransport() {
 	}
 	// Output:
 	// true
-	// Get "http://unauthorized.example.com": requested URL not permitted by regexp: ^http://example\.com/?
+	// Get "http://unauthorized.example.com/": requested URL not permitted by regexp: ^http://example\.com/
 }
 
 func ExampleRoundTripFunc() {
