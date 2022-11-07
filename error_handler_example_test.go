@@ -2,6 +2,7 @@ package requests_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -21,7 +22,7 @@ func ExampleBuilder_OnError() {
 		}
 		fmt.Printf("[error] kind=%q url=%q status=%q message=%q\n",
 			kind, url, resCode, err)
-		return err
+		return fmt.Errorf("my app error: %w", err)
 	}
 	var (
 		body    string
@@ -39,7 +40,9 @@ func ExampleBuilder_OnError() {
 		OnValidatorError(
 			requests.ToString(&errBody)).
 		Fetch(context.Background())
-	if err == requests.ErrInvalidHandled {
+	if errors.Is(err, requests.ErrInvalidHandled) {
+		fmt.Println("is a my-app-error:",
+			strings.Contains(err.Error(), "my app error:"))
 		fmt.Println("got errBody:",
 			strings.Contains(errBody, "Example Domain"))
 	} else if err != nil {
@@ -48,6 +51,7 @@ func ExampleBuilder_OnError() {
 	fmt.Println("got body:", strings.Contains(body, "Example Domain"))
 	// Output:
 	// [error] kind="ErrorKindValidator" url="http://example.com/404" status="404 Not Found" message="handled recovery from invalid response"
+	// is a my-app-error: true
 	// got errBody: true
 	// got body: false
 }
