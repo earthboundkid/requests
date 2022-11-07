@@ -17,9 +17,9 @@ import (
 // Set the base URL for a request with requests.URL then customize it with
 // Scheme, Host, Hostf, Path, Pathf, and Param.
 //
-// Set the method for a request with Method or use the Delete, Patch, and Put
-// methods. By default, requests without a body are GET and those with a
-// body are POST.
+// Set the method for a request with Method or use the Delete, Head, Patch,
+// and Put methods. By default, requests without a body are GET and those with
+// a body are POST.
 //
 // Set headers with Header or set conventional header keys with Accept,
 // CacheControl, ContentType, Cookie, UserAgent, BasicAuth, and Bearer.
