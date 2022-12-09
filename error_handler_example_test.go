@@ -4,25 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/carlmjohnson/requests"
 )
 
 func ExampleBuilder_OnError() {
-	logError := func(kind requests.ErrorKind, err error, req *http.Request, res *http.Response) error {
-		url := "<no url>"
-		if req != nil {
-			url = req.URL.String()
-		}
-		resCode := "---"
-		if res != nil {
-			resCode = res.Status
-		}
-		fmt.Printf("[error] kind=%q url=%q status=%q message=%q\n",
-			kind, url, resCode, err)
-		return fmt.Errorf("my app error: %w", err)
+	logError := func(ep *requests.OnErrorParams) {
+		fmt.Printf("[error] kind=%q method=%s url=%q status=%3d message=%q\n",
+			ep.Kind(), ep.Method(), ep.URL(), ep.StatusCode(), ep.Error)
+		ep.Error = fmt.Errorf("my app error: %w", ep.Error)
 	}
 	var (
 		body    string
@@ -50,7 +41,7 @@ func ExampleBuilder_OnError() {
 	}
 	fmt.Println("got body:", strings.Contains(body, "Example Domain"))
 	// Output:
-	// [error] kind="ErrorKindValidator" url="http://example.com/404" status="404 Not Found" message="handled recovery from invalid response"
+	// [error] kind="ErrorKindValidator" method=GET url="http://example.com/404" status=404 message="handled recovery from invalid response"
 	// is a my-app-error: true
 	// got errBody: true
 	// got body: false
