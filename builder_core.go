@@ -191,12 +191,15 @@ func (rb *Builder) Clone() *Builder {
 	return &rb2
 }
 
-// Request builds a new http.Request with its context set.
-func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
-	u, err := url.Parse(rb.baseurl)
+// URL builds a new *url.URL.
+// If a valid url.URL cannot be built,
+// URL() nevertheless returns an empty url.URL,
+// so u.String() should always be safe.
+func (rb *Builder) URL() (u *url.URL, err error) {
+	u, err = url.Parse(rb.baseurl)
 	if err != nil {
 		err = fmt.Errorf("could not initialize with base URL %q: %w", u, err)
-		return nil, rb.handleErr(ErrorKindURL, err, nil, nil)
+		return new(url.URL), rb.handleErr(ErrorKindURL, err, nil, nil)
 	}
 	if u.Scheme == "" {
 		u.Scheme = "https"
@@ -217,32 +220,33 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 		}
 		u.RawQuery = q.Encode()
 	}
+	// Reparsing, in case the path rewriting broke the URL
+	u, err = url.Parse(u.String())
+	if err != nil {
+		return new(url.URL), rb.handleErr(ErrorKindURL, err, nil, nil)
+	}
+	return u, nil
+}
+
+// Request builds a new http.Request with its context set.
+func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
+	u, err := rb.URL()
+	if err != nil {
+		return nil, err
+	}
 	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
-			return nil, rb.handleErr(ErrorKindBodyGet, err, nil, nil)
+			return nil, rb.handleErr(ErrorKindRequest, err, nil, nil)
 		}
 		if nopper, ok := body.(nopCloser); ok {
 			body = nopper.Reader
 		}
 	}
-	method := http.MethodGet
-	if rb.getBody != nil {
-		method = http.MethodPost
-	}
-	if rb.method != "" {
-		method = rb.method
-	}
+	method := rb.getMethod()
 	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
-		kind := ErrorKindMethod
-		if _, urlerr := url.Parse(u.String()); urlerr != nil {
-			kind = ErrorKindURL
-		} else if ctx == nil {
-			kind = ErrorKindContext
-		}
-
-		return nil, rb.handleErr(kind, err, nil, nil)
+		return nil, rb.handleErr(ErrorKindRequest, err, nil, nil)
 	}
 	req.GetBody = rb.getBody
 
@@ -256,6 +260,17 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 		})
 	}
 	return req, nil
+}
+
+func (rb *Builder) getMethod() string {
+	method := http.MethodGet
+	if rb.getBody != nil {
+		method = http.MethodPost
+	}
+	if rb.method != "" {
+		method = rb.method
+	}
+	return method
 }
 
 // Do calls the underlying http.Client and validates and handles any resulting response. The response body is closed after all validators and the handler run.
@@ -302,10 +317,9 @@ func (rb *Builder) Fetch(ctx context.Context) (err error) {
 }
 
 func (rb *Builder) handleErr(kind ErrorKind, err error, req *http.Request, res *http.Response) error {
-	err = ek{kind, err}
+	ep := OnErrorParams{err, req, res, kind, rb}
 	for i := len(rb.errhandlers) - 1; i >= 0; i-- {
-		h := rb.errhandlers[i]
-		err = h(kind, err, req, res)
+		rb.errhandlers[i](&ep)
 	}
-	return err
+	return ep.Error
 }

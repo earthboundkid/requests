@@ -10,15 +10,11 @@ import (
 	"github.com/carlmjohnson/requests/internal/be"
 )
 
-func kind(err error) requests.ErrorKind {
-	var e requests.ErrorKindError
-	if errors.As(err, &e) {
-		return e.Kind()
-	}
-	return requests.ErrorKindUnknown
-}
-
 func TestErrorKind(t *testing.T) {
+	var kind requests.ErrorKind = -1
+	setKind := func(ep *requests.OnErrorParams) {
+		kind = ep.Kind()
+	}
 	ctx := context.Background()
 	res200 := requests.ReplayString("HTTP/1.1 200 OK\n\n")
 	for _, tc := range []struct {
@@ -26,53 +22,64 @@ func TestErrorKind(t *testing.T) {
 		want requests.ErrorKind
 		b    *requests.Builder
 	}{
-		{ctx, requests.ErrorKindUnknown, requests.
+		{ctx, -1, requests.
 			URL("").
-			Transport(res200),
+			Transport(res200).
+			OnError(setKind),
 		},
 		{ctx, requests.ErrorKindURL, requests.
 			URL("http://%2020").
-			Transport(res200),
+			Transport(res200).
+			OnError(setKind),
 		},
 		{ctx, requests.ErrorKindURL, requests.
 			URL("hello world").
-			Transport(res200),
+			Transport(res200).
+			OnError(setKind),
 		},
-		{ctx, requests.ErrorKindBodyGet, requests.
+		{ctx, -1, requests.
+			URL("http://world/#hello").
+			Transport(res200).
+			OnError(setKind),
+		},
+		{ctx, requests.ErrorKindRequest, requests.
 			URL("").
 			Body(func() (io.ReadCloser, error) {
 				return nil, errors.New("x")
 			}).
-			Transport(res200),
+			Transport(res200).
+			OnError(setKind),
 		},
-		{ctx, requests.ErrorKindMethod, requests.
+		{ctx, requests.ErrorKindRequest, requests.
 			URL("").
 			Method(" ").
-			Transport(res200),
+			Transport(res200).
+			OnError(setKind),
 		},
-		{nil, requests.ErrorKindContext, requests.
+		{nil, requests.ErrorKindRequest, requests.
 			URL("").
-			Transport(res200),
+			Transport(res200).
+			OnError(setKind),
 		},
 		{ctx, requests.ErrorKindConnect, requests.
 			URL("").
-			Transport(requests.ReplayString("")),
+			Transport(requests.ReplayString("")).
+			OnError(setKind),
 		},
 		{ctx, requests.ErrorKindValidator, requests.
 			URL("").
-			Transport(requests.ReplayString("HTTP/1.1 404 Nope\n\n")),
+			Transport(requests.ReplayString("HTTP/1.1 404 Nope\n\n")).
+			OnError(setKind),
 		},
 		{ctx, requests.ErrorKindHandler, requests.
 			URL("").
 			Transport(res200).
-			ToJSON(nil),
+			ToJSON(nil).
+			OnError(setKind),
 		},
 	} {
-		err := tc.b.Fetch(tc.ctx)
-		be.Equal(t, tc.want, kind(err))
+		_ = tc.b.Fetch(tc.ctx)
+		be.Equal(t, tc.want, kind)
+		kind = -1
 	}
-
-	be.Equal(t,
-		requests.ErrorKindUnknown,
-		kind(errors.New("")))
 }
