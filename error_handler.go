@@ -33,10 +33,7 @@ type ekwrapper struct {
 }
 
 func (ekw ekwrapper) Is(err error) bool {
-	if ek, ok := err.(ErrorKind); ok {
-		return ekw.kind == ek
-	}
-	return false
+	return ekw.kind == err
 }
 
 func (ekw ekwrapper) As(err any) bool {
