@@ -32,12 +32,12 @@ type ekwrapper struct {
 	error
 }
 
-func (ekw ekwrapper) Is(err error) bool {
-	return ekw.kind == err
+func (ekw ekwrapper) Is(target error) bool {
+	return ekw.kind == target
 }
 
-func (ekw ekwrapper) As(err any) bool {
-	if ekp, ok := err.(*ErrorKind); ok {
+func (ekw ekwrapper) As(target any) bool {
+	if ekp, ok := target.(*ErrorKind); ok {
 		*ekp = ekw.kind
 		return true
 	}
