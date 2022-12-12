@@ -41,7 +41,7 @@ func ExampleBuilder_OnError() {
 	}
 	fmt.Println("got body:", strings.Contains(body, "Example Domain"))
 	// Output:
-	// [error] kind="ErrorKindValidator" method=GET url="http://example.com/404" status=404 message="handled recovery from invalid response"
+	// [error] kind="ErrValidator" method=GET url="http://example.com/404" status=404 message="handled recovery from invalid response"
 	// is a my-app-error: true
 	// got errBody: true
 	// got body: false
