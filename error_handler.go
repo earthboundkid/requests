@@ -54,6 +54,7 @@ type OnErrorParams struct {
 }
 
 // Kind returns ErrorKind that created the OnErrorParams.
+// It will stay the same even if OnErrorParams.Error is changed.
 func (ep *OnErrorParams) Kind() ErrorKind {
 	return ep.kind
 }
