@@ -2,7 +2,6 @@ package requests
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -198,7 +197,6 @@ func (rb *Builder) Clone() *Builder {
 func (rb *Builder) URL() (u *url.URL, err error) {
 	u, err = url.Parse(rb.baseurl)
 	if err != nil {
-		err = fmt.Errorf("could not initialize with base URL %q: %w", u, err)
 		return new(url.URL), rb.handleErr(ErrURL, err, nil, nil)
 	}
 	if u.Scheme == "" {
