@@ -199,7 +199,7 @@ func (rb *Builder) URL() (u *url.URL, err error) {
 	u, err = url.Parse(rb.baseurl)
 	if err != nil {
 		err = fmt.Errorf("could not initialize with base URL %q: %w", u, err)
-		return new(url.URL), rb.handleErr(ErrorKindURL, err, nil, nil)
+		return new(url.URL), rb.handleErr(ErrURL, err, nil, nil)
 	}
 	if u.Scheme == "" {
 		u.Scheme = "https"
@@ -223,7 +223,7 @@ func (rb *Builder) URL() (u *url.URL, err error) {
 	// Reparsing, in case the path rewriting broke the URL
 	u, err = url.Parse(u.String())
 	if err != nil {
-		return new(url.URL), rb.handleErr(ErrorKindURL, err, nil, nil)
+		return new(url.URL), rb.handleErr(ErrURL, err, nil, nil)
 	}
 	return u, nil
 }
@@ -237,7 +237,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
-			return nil, rb.handleErr(ErrorKindRequest, err, nil, nil)
+			return nil, rb.handleErr(ErrRequest, err, nil, nil)
 		}
 		if nopper, ok := body.(nopCloser); ok {
 			body = nopper.Reader
@@ -246,7 +246,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	method := rb.getMethod()
 	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
-		return nil, rb.handleErr(ErrorKindRequest, err, nil, nil)
+		return nil, rb.handleErr(ErrRequest, err, nil, nil)
 	}
 	req.GetBody = rb.getBody
 
@@ -286,7 +286,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	res, err := cl.Do(req)
 	if err != nil {
-		return rb.handleErr(ErrorKindConnect, err, req, nil)
+		return rb.handleErr(ErrConnect, err, req, nil)
 	}
 	defer res.Body.Close()
 
@@ -295,14 +295,14 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		validators = []ResponseHandler{DefaultValidator}
 	}
 	if err = ChainHandlers(validators...)(res); err != nil {
-		return rb.handleErr(ErrorKindValidator, err, req, res)
+		return rb.handleErr(ErrValidator, err, req, res)
 	}
 	h := consumeBody
 	if rb.handler != nil {
 		h = rb.handler
 	}
 	if err = h(res); err != nil {
-		return rb.handleErr(ErrorKindHandler, err, req, res)
+		return rb.handleErr(ErrHandler, err, req, res)
 	}
 	return nil
 }
@@ -317,7 +317,7 @@ func (rb *Builder) Fetch(ctx context.Context) (err error) {
 }
 
 func (rb *Builder) handleErr(kind ErrorKind, err error, req *http.Request, res *http.Response) error {
-	ep := OnErrorParams{err, req, res, kind, rb}
+	ep := OnErrorParams{ekwrapper{kind, err}, req, res, kind, rb}
 	for i := len(rb.errhandlers) - 1; i >= 0; i-- {
 		rb.errhandlers[i](&ep)
 	}
