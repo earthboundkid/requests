@@ -11,7 +11,7 @@ import (
 )
 
 func TestErrorKind(t *testing.T) {
-	var kind requests.ErrorKind = -1
+	kind := requests.ErrUnknown
 	setKind := func(ep *requests.OnErrorParams) {
 		kind = ep.Kind()
 	}
@@ -22,7 +22,7 @@ func TestErrorKind(t *testing.T) {
 		want requests.ErrorKind
 		b    *requests.Builder
 	}{
-		{ctx, -1, requests.
+		{ctx, requests.ErrUnknown, requests.
 			URL("").
 			Transport(res200).
 			OnError(setKind),
@@ -37,7 +37,7 @@ func TestErrorKind(t *testing.T) {
 			Transport(res200).
 			OnError(setKind),
 		},
-		{ctx, -1, requests.
+		{ctx, requests.ErrUnknown, requests.
 			URL("http://world/#hello").
 			Transport(res200).
 			OnError(setKind),
@@ -80,7 +80,10 @@ func TestErrorKind(t *testing.T) {
 	} {
 		err := tc.b.Fetch(tc.ctx)
 		be.Equal(t, tc.want, kind)
-		be.Equal(t, tc.want != -1, errors.Is(err, tc.want))
-		kind = -1
+		be.Equal(t, tc.want != requests.ErrUnknown, errors.Is(err, tc.want))
+		var askind requests.ErrorKind
+		be.Equal(t, tc.want != requests.ErrUnknown, errors.As(err, &askind))
+		be.Equal(t, tc.want, askind)
+		kind = requests.ErrUnknown
 	}
 }

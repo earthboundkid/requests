@@ -8,14 +8,15 @@ import (
 )
 
 // ErrorKind indicates where an error was returned in the process of building, validating, and handling a request.
-// Errors returned by Builder can be tested for their ErrorKind using errors.Is.
+// Errors returned by Builder can be tested for their ErrorKind using errors.Is or errors.As.
 type ErrorKind int8
 
 //go:generate stringer -type=ErrorKind
 
 // Enum values for type ErrorKind
 const (
-	ErrURL       ErrorKind = iota // error building URL
+	ErrUnknown   ErrorKind = iota // error not from requests.Builder
+	ErrURL                        // error building URL
 	ErrRequest                    // error building the request
 	ErrConnect                    // error connecting
 	ErrValidator                  // validator error
@@ -34,6 +35,14 @@ type ekwrapper struct {
 func (ekw ekwrapper) Is(err error) bool {
 	if ek, ok := err.(ErrorKind); ok {
 		return ekw.kind == ek
+	}
+	return false
+}
+
+func (ekw ekwrapper) As(err any) bool {
+	if ekp, ok := err.(*ErrorKind); ok {
+		*ekp = ekw.kind
+		return true
 	}
 	return false
 }
