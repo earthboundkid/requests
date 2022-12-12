@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/url"
@@ -86,6 +87,14 @@ func (ep *OnErrorParams) StatusCode() int {
 		return 0
 	}
 	return ep.Response.StatusCode
+}
+
+// Context returns Request.Context() or context.Background if Request is nil.
+func (ep *OnErrorParams) Context() context.Context {
+	if ep.Request == nil {
+		return context.Background()
+	}
+	return ep.Request.Context()
 }
 
 // ErrorHandler is a function accepted by Builder.OnError.
