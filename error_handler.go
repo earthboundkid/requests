@@ -7,18 +7,39 @@ import (
 )
 
 // ErrorKind indicates where an error was returned in the process of building, validating, and handling a request.
+// Errors returned by Builder can be tested for their ErrorKind using errors.Is.
 type ErrorKind int8
 
 //go:generate stringer -type=ErrorKind
 
 // Enum values for type ErrorKind
 const (
-	ErrorKindURL       ErrorKind = iota // error building URL
-	ErrorKindRequest                    // error building the request
-	ErrorKindConnect                    // error connecting
-	ErrorKindValidator                  // validator error
-	ErrorKindHandler                    // handler error
+	ErrURL       ErrorKind = iota // error building URL
+	ErrRequest                    // error building the request
+	ErrConnect                    // error connecting
+	ErrValidator                  // validator error
+	ErrHandler                    // handler error
 )
+
+func (ek ErrorKind) Error() string {
+	return ek.String()
+}
+
+type ekwrapper struct {
+	kind ErrorKind
+	error
+}
+
+func (ekw ekwrapper) Is(err error) bool {
+	if ek, ok := err.(ErrorKind); ok {
+		return ekw.kind == ek
+	}
+	return false
+}
+
+func (ekw ekwrapper) Unwrap() error {
+	return ekw.error
+}
 
 // OnErrorParams is a struct used by ErrorHandlers to describe an error encounted by a Builder.
 // Note that Error, Request, and Response may all be nil
@@ -59,7 +80,7 @@ func (ep *OnErrorParams) URL() *url.URL {
 	return u
 }
 
-// StatusCode returns Response.StatusCode or 0 if Response is nil
+// StatusCode returns Response.StatusCode or 0 if Response is nil.
 func (ep *OnErrorParams) StatusCode() int {
 	if ep.Response == nil {
 		return 0
@@ -76,7 +97,7 @@ type ErrorHandler = func(*OnErrorParams)
 // If the ResponseHandler succeeds, ErrInvalidHandled is returned.
 func ValidatorHandler(h ResponseHandler) ErrorHandler {
 	return func(ep *OnErrorParams) {
-		if ep.Kind() == ErrorKindValidator && ep.Response != nil {
+		if ep.Kind() == ErrValidator && ep.Response != nil {
 			if err := h(ep.Response); err == nil { // recovered handler
 				ep.Error = ErrInvalidHandled
 			}

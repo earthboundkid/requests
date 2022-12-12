@@ -27,12 +27,12 @@ func TestErrorKind(t *testing.T) {
 			Transport(res200).
 			OnError(setKind),
 		},
-		{ctx, requests.ErrorKindURL, requests.
+		{ctx, requests.ErrURL, requests.
 			URL("http://%2020").
 			Transport(res200).
 			OnError(setKind),
 		},
-		{ctx, requests.ErrorKindURL, requests.
+		{ctx, requests.ErrURL, requests.
 			URL("hello world").
 			Transport(res200).
 			OnError(setKind),
@@ -42,7 +42,7 @@ func TestErrorKind(t *testing.T) {
 			Transport(res200).
 			OnError(setKind),
 		},
-		{ctx, requests.ErrorKindRequest, requests.
+		{ctx, requests.ErrRequest, requests.
 			URL("").
 			Body(func() (io.ReadCloser, error) {
 				return nil, errors.New("x")
@@ -50,36 +50,37 @@ func TestErrorKind(t *testing.T) {
 			Transport(res200).
 			OnError(setKind),
 		},
-		{ctx, requests.ErrorKindRequest, requests.
+		{ctx, requests.ErrRequest, requests.
 			URL("").
 			Method(" ").
 			Transport(res200).
 			OnError(setKind),
 		},
-		{nil, requests.ErrorKindRequest, requests.
+		{nil, requests.ErrRequest, requests.
 			URL("").
 			Transport(res200).
 			OnError(setKind),
 		},
-		{ctx, requests.ErrorKindConnect, requests.
+		{ctx, requests.ErrConnect, requests.
 			URL("").
 			Transport(requests.ReplayString("")).
 			OnError(setKind),
 		},
-		{ctx, requests.ErrorKindValidator, requests.
+		{ctx, requests.ErrValidator, requests.
 			URL("").
 			Transport(requests.ReplayString("HTTP/1.1 404 Nope\n\n")).
 			OnError(setKind),
 		},
-		{ctx, requests.ErrorKindHandler, requests.
+		{ctx, requests.ErrHandler, requests.
 			URL("").
 			Transport(res200).
 			ToJSON(nil).
 			OnError(setKind),
 		},
 	} {
-		_ = tc.b.Fetch(tc.ctx)
+		err := tc.b.Fetch(tc.ctx)
 		be.Equal(t, tc.want, kind)
+		be.Equal(t, tc.want != -1, errors.Is(err, tc.want))
 		kind = -1
 	}
 }
