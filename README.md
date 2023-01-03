@@ -13,9 +13,20 @@ Requests also comes with tools for building custom http transports, include a re
 ## Examples
 ### Simple GET into a string
 
+<table>
+<thead>
+<tr>
+<th><strong>code with net/http</strong></th>
+<th><strong>code with requests</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+
 ```go
-// code with net/http
-req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://example.com", nil)
+req, err := http.NewRequestWithContext(ctx, 
+	http.MethodGet, "http://example.com", nil)
 if err != nil {
 	// ...
 }
@@ -29,29 +40,53 @@ if err != nil {
 	// ...
 }
 s := string(b)
+```
 
-// equivalent code using requests
+</td>
+<td>
+
+```go
 var s string
 err := requests.
 	URL("http://example.com").
 	ToString(&s).
-	Fetch(context.Background())
-
-// 5 lines vs. 13 lines
+	Fetch(ctx)
 ```
 
+</td>
+</tr>
+<tr><td>11+ lines</td><td>5 lines</td></tr>
+</tbody>
+</table>
+
+
 ### POST a raw body
+
+<table>
+<thead>
+<tr>
+<th><strong>code with requests</strong></th>
+<th><strong>code with net/http</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
 
 ```go
 err := requests.
 	URL("https://postman-echo.com/post").
 	BodyBytes([]byte(`hello, world`)).
 	ContentType("text/plain").
-	Fetch(context.Background())
+	Fetch(ctx)
+```
 
-// Equivalent code with net/http
+</td><td>
+
+```go
 body := bytes.NewReader(([]byte(`hello, world`))
-req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://postman-echo.com/post", body)
+req, err := http.NewRequestWithContext(ctx, http.MethodPost, 
+	"https://postman-echo.com/post", body)
 if err != nil {
 	// ...
 }
@@ -65,10 +100,23 @@ _, err := io.ReadAll(res.Body)
 if err != nil {
 	// ...
 }
-// 5 lines vs. 14 lines
 ```
 
+</td></tr>
+<tr><td>5 lines</td><td>12+ lines</td></tr></tbody></table>
+
 ### GET a JSON object
+
+<table>
+<thead>
+<tr>
+<th><strong>code with requests</strong></th>
+<th><strong>code with net/http</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
 
 ```go
 var post placeholder
@@ -76,16 +124,20 @@ err := requests.
 	URL("https://jsonplaceholder.typicode.com").
 	Pathf("/posts/%d", 1).
 	ToJSON(&post).
-	Fetch(context.Background())
+	Fetch(ctx)
+```
 
-// Equivalent code with net/http
+</td><td>
+
+```go
 var post placeholder
 u, err := url.Parse("https://jsonplaceholder.typicode.com")
 if err != nil {
 	// ...
 }
 u.Path = fmt.Sprintf("/posts/%d", 1)
-req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+req, err := http.NewRequestWithContext(ctx, 
+	http.MethodGet, u.String(), nil)
 if err != nil {
 	// ...
 }
@@ -102,8 +154,9 @@ err := json.Unmarshal(b, &post)
 if err != nil {
 	// ...
 }
-// 6 lines vs. 23 lines
 ```
+</td></tr>
+<tr><td>7 lines</td><td>18+ lines</td></tr></tbody></table>
 
 ### POST a JSON object and parse the response
 
@@ -119,7 +172,7 @@ err := requests.
 	Host("jsonplaceholder.typicode.com").
 	BodyJSON(&req).
 	ToJSON(&res).
-	Fetch(context.Background())
+	Fetch(ctx)
 // net/http equivalent left as an exercise for the reader
 ```
 
@@ -133,7 +186,7 @@ err := requests.
 	UserAgent("bond/james-bond").
 	ContentType("secret").
 	Header("martini", "shaken").
-	Fetch(context.Background())
+	Fetch(ctx)
 ```
 
 ### Easily manipulate query parameters
@@ -144,7 +197,7 @@ err := requests.
 	URL("https://postman-echo.com/get?a=1&b=2").
 	Param("b", "3").
 	Param("c", "4").
-	Fetch(context.Background())
+	Fetch(ctx)
 	// URL is https://postman-echo.com/get?a=1&b=3&c=4
 ```
 
@@ -156,14 +209,14 @@ var s1, s2 string
 err := requests.URL("http://example.com").
 	Transport(requests.Record(nil, "somedir")).
 	ToString(&s1).
-	Fetch(context.Background())
+	Fetch(ctx)
 check(err)
 
 // now replay the request in tests
 err = requests.URL("http://example.com").
 	Transport(requests.Replay("somedir")).
 	ToString(&s2).
-	Fetch(context.Background())
+	Fetch(ctx)
 check(err)
 assert(s1 == s2) // true
 ```
@@ -194,7 +247,7 @@ var data SomeDataType
 err := requests.
 	URL("https://example.com/my-json").
 	ToJSON(&data).
-	Fetch(context.Background())
+	Fetch(ctx)
 ```
 
 ### How do I post JSON and read the response JSON?
@@ -206,7 +259,7 @@ err := requests.
 	URL("https://example.com/my-json").
 	BodyJSON(&body).
 	ToJSON(&resp).
-	Fetch(context.Background())
+	Fetch(ctx)
 ```
 
 ### How do I just save a file to disk?
@@ -217,7 +270,7 @@ It depends on exactly what you need in terms of file atomicity and buffering, bu
 	err := requests.
 		URL("http://example.com").
 		ToFile("myfile.txt").
-		Fetch(context.Background())
+		Fetch(ctx)
 ```
 
 For more advanced use case, use `ToWriter`.
@@ -229,7 +282,7 @@ var s string
 err := requests.
 	URL("http://example.com").
 	ToString(&s).
-	Fetch(context.Background())
+	Fetch(ctx)
 ```
 
 ### How do I validate the response status?
