@@ -11,39 +11,61 @@ import (
 // Builder has a fluent API with methods returning a pointer to the same
 // struct, which allows for declaratively describing a request by method chaining.
 //
-// Builder can be thought of as having the following phases:
+// Builder can build a url.URL,
+// build an http.Request,
+// or handle a full http.Client request and response with validation.
 //
-// Set the base URL for a request with requests.URL then customize it with
-// Scheme, Host, Hostf, Path, Pathf, and Param.
+// # Build a url.URL with Builder.URL
 //
-// Set the method for a request with Method or use the Delete, Head, Patch,
-// and Put methods. By default, requests without a body are GET and those with
-// a body are POST.
+// Set the base URL by creating a new Builder with [requests.URL] then customize it with
+// [Builder.Scheme], [Builder.Host], [Builder.Hostf], [Builder.Path],
+// [Builder.Pathf], [Builder.Param], and [Builder.ParamInt].
 //
-// Set headers with Header or set conventional header keys with Accept,
-// CacheControl, ContentType, Cookie, UserAgent, BasicAuth, and Bearer.
+// # Build an http.Request with Builder.Request
 //
-// Set the http.Client to use for a request with Client and/or set an
-// http.RoundTripper with Transport.
+// Set the method for a request with [Builder.Method]
+// or use the [Builder.Delete], [Builder.Head], [Builder.Patch], and [Builder.Put] methods.
+// By default, requests without a body are GET,
+// and those with a body are POST.
 //
-// Set the body of the request, if any, with Body or use built in BodyBytes,
-// BodyFile, BodyForm, BodyJSON, BodyReader, or BodyWriter.
+// Set headers with [Builder.Header]
+// or set conventional header keys with
+// [Builder.Accept], [Builder.BasicAuth], [Builder.Bearer], [Builder.CacheControl],
+// [Builder.ContentType], [Builder.Cookie], and [Builder.UserAgent].
 //
-// Add a response validator to the Builder with AddValidator or use the built
-// in CheckStatus, CheckContentType, CopyHeaders, and Peek.
+// Set the body of the request, if any, with [Builder.Body]
+// or use built in [Builder.BodyBytes], [Builder.BodyFile], [Builder.BodyForm],
+// [Builder.BodyJSON], [Builder.BodyReader], or [Builder.BodyWriter].
 //
-// Set a handler for a response with Handle or use the built in ToHeaders,
-// ToJSON, ToString, ToBytesBuffer, or ToWriter.
+// # Handle a request and response with Builder.Do or Builder.Fetch
 //
-// Fetch creates an http.Request with Request and sends it via the underlying
-// http.Client with Do.
+// Set the http.Client to use for a request with [Builder.Client]
+// and/or set an http.RoundTripper with [Builder.Transport].
 //
-// Config can be used to set several options on a Builder at once.
+// Add a response validator to the Builder with [Builder.AddValidator]
+// or use the built in [Builder.CheckStatus], [Builder.CheckContentType],
+// [Builder.CheckPeek], [Builder.CopyHeaders], and [Builder.ErrorJSON].
+// If no validator has been added, Builder will use [DefaultValidator].
+//
+// Set a handler for a response with [Builder.Handle]
+// or use the built in [Builder.ToHeaders], [Builder.ToJSON], [Builder.ToString],
+// [Builder.ToBytesBuffer], or [Builder.ToWriter].
+//
+// [Builder.Fetch] creates an http.Request with [Builder.Request]
+// and validates and handles it with [Builder.Do].
+//
+// # Other methods
+//
+// [Builder.Config] can be used to set several options on a Builder at once.
 //
 // In many cases, it will be possible to set most options for an API endpoint
-// in a Builder at the package or struct level and then call Clone in a
-// function to add request specific details for the URL, parameters, headers,
-// body, or handler. The zero value of Builder is usable.
+// in a Builder at the package or struct level
+// and then call [Builder.Clone] in a function
+// to add request specific details for the URL, parameters, headers, body, or handler.
+//
+// Errors returned by Builder methods will have an [ErrorKind] indicating their origin.
+//
+// The zero value of Builder is usable.
 type Builder struct {
 	baseurl      string
 	scheme, host string
@@ -128,6 +150,8 @@ func (rb *Builder) Cookie(name, value string) *Builder {
 }
 
 // Method sets the HTTP method for a request.
+// By default, requests without a body are GET,
+// and those with a body are POST.
 func (rb *Builder) Method(method string) *Builder {
 	rb.method = method
 	return rb
