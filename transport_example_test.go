@@ -18,9 +18,7 @@ An example response.`
 	const expected = `An example response.`
 	if err := requests.
 		URL("http://response.example").
-		Client(&http.Client{
-			Transport: requests.ReplayString(res),
-		}).
+		Transport(requests.ReplayString(res)).
 		ToString(&s).
 		Fetch(context.Background()); err != nil {
 		panic(err)
