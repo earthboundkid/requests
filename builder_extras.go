@@ -175,8 +175,9 @@ func (rb *Builder) ToHeaders(h map[string][]string) *Builder {
 		Handle(ChainHandlers(CopyHeaders(h), consumeBody))
 }
 
-// OnValidatorError calls OnError by converting h with ValidatorHandler into an ErrorHandler.
-// It only runs if the Builder encounters a validation error.
-func (rb *Builder) OnValidatorError(h ResponseHandler) *Builder {
-	return rb.OnError(ValidatorHandler(h))
+// ErrorJSON adds a validator that applies DefaultValidator
+// and decodes the response as a JSON object
+// if the DefaultValidator check fails.
+func (rb *Builder) ErrorJSON(v any) *Builder {
+	return rb.AddValidator(ErrorJSON(v))
 }

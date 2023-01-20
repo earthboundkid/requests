@@ -11,9 +11,13 @@ import (
 )
 
 func TestErrorKind(t *testing.T) {
-	kind := requests.ErrUnknown
-	setKind := func(ep *requests.OnErrorParams) {
-		kind = ep.Kind()
+	var none requests.ErrorKind = -1
+	kinds := []requests.ErrorKind{
+		requests.ErrURL,
+		requests.ErrRequest,
+		requests.ErrTransport,
+		requests.ErrValidator,
+		requests.ErrHandler,
 	}
 	ctx := context.Background()
 	res200 := requests.ReplayString("HTTP/1.1 200 OK\n\n")
@@ -22,68 +26,59 @@ func TestErrorKind(t *testing.T) {
 		want requests.ErrorKind
 		b    *requests.Builder
 	}{
-		{ctx, requests.ErrUnknown, requests.
+		{ctx, none, requests.
 			URL("").
-			Transport(res200).
-			OnError(setKind),
+			Transport(res200),
 		},
 		{ctx, requests.ErrURL, requests.
 			URL("http://%2020").
-			Transport(res200).
-			OnError(setKind),
+			Transport(res200),
 		},
 		{ctx, requests.ErrURL, requests.
 			URL("hello world").
-			Transport(res200).
-			OnError(setKind),
+			Transport(res200),
 		},
-		{ctx, requests.ErrUnknown, requests.
+		{ctx, none, requests.
 			URL("http://world/#hello").
-			Transport(res200).
-			OnError(setKind),
+			Transport(res200),
 		},
 		{ctx, requests.ErrRequest, requests.
 			URL("").
 			Body(func() (io.ReadCloser, error) {
 				return nil, errors.New("x")
 			}).
-			Transport(res200).
-			OnError(setKind),
+			Transport(res200),
 		},
 		{ctx, requests.ErrRequest, requests.
 			URL("").
 			Method(" ").
-			Transport(res200).
-			OnError(setKind),
+			Transport(res200),
 		},
 		{nil, requests.ErrRequest, requests.
 			URL("").
-			Transport(res200).
-			OnError(setKind),
+			Transport(res200),
 		},
-		{ctx, requests.ErrConnect, requests.
+		{ctx, requests.ErrTransport, requests.
 			URL("").
-			Transport(requests.ReplayString("")).
-			OnError(setKind),
+			Transport(requests.ReplayString("")),
 		},
 		{ctx, requests.ErrValidator, requests.
 			URL("").
-			Transport(requests.ReplayString("HTTP/1.1 404 Nope\n\n")).
-			OnError(setKind),
+			Transport(requests.ReplayString("HTTP/1.1 404 Nope\n\n")),
 		},
 		{ctx, requests.ErrHandler, requests.
 			URL("").
 			Transport(res200).
-			ToJSON(nil).
-			OnError(setKind),
+			ToJSON(nil),
 		},
 	} {
 		err := tc.b.Fetch(tc.ctx)
-		be.Equal(t, tc.want, kind)
-		be.Equal(t, tc.want != requests.ErrUnknown, errors.Is(err, tc.want))
-		var askind requests.ErrorKind
-		be.Equal(t, tc.want != requests.ErrUnknown, errors.As(err, &askind))
+		for _, kind := range kinds {
+			match := errors.Is(err, kind)
+			be.Equal(t, kind == tc.want, match)
+		}
+		var askind = none
+		be.Equal(t, tc.want != none, errors.As(err, &askind))
 		be.Equal(t, tc.want, askind)
-		kind = requests.ErrUnknown
 	}
 }
