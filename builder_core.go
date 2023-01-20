@@ -204,10 +204,10 @@ func (rb *Builder) Clone() *Builder {
 	return &rb2
 }
 
-// URL builds a new *url.URL.
+// URL builds a *url.URL from the base URL and options set on the Builder.
 // If a valid url.URL cannot be built,
-// URL() nevertheless returns an empty url.URL,
-// so u.String() should always be safe.
+// URL() nevertheless returns a new url.URL,
+// so it is always safe to call u.String().
 func (rb *Builder) URL() (u *url.URL, err error) {
 	u, err = url.Parse(rb.baseurl)
 	if err != nil {
