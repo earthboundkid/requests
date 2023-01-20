@@ -57,7 +57,6 @@ type Builder struct {
 	rt           http.RoundTripper
 	validators   []ResponseHandler
 	handler      ResponseHandler
-	errhandlers  []ErrorHandler
 }
 
 type multimap struct {
@@ -165,14 +164,6 @@ func (rb *Builder) Config(cfgs ...Config) *Builder {
 	return rb
 }
 
-// OnError adds an ErrorHandler to run if any part of building, validating, or handling a request fails.
-// ErrorHandlers are run in reverse order and may modify the error returned
-// to the caller and other ErrorHandlers.
-func (rb *Builder) OnError(h ErrorHandler) *Builder {
-	rb.errhandlers = append(rb.errhandlers, h)
-	return rb
-}
-
 func clip[T any](sp *[]T) {
 	s := *sp
 	*sp = s[:len(s):len(s)]
@@ -186,7 +177,6 @@ func (rb *Builder) Clone() *Builder {
 	clip(&rb2.params)
 	clip(&rb2.cookies)
 	clip(&rb2.validators)
-	clip(&rb2.errhandlers)
 	return &rb2
 }
 
@@ -197,7 +187,7 @@ func (rb *Builder) Clone() *Builder {
 func (rb *Builder) URL() (u *url.URL, err error) {
 	u, err = url.Parse(rb.baseurl)
 	if err != nil {
-		return new(url.URL), rb.handleErr(ErrURL, err, nil, nil)
+		return new(url.URL), ekwrapper{ErrURL, err}
 	}
 	if u.Scheme == "" {
 		u.Scheme = "https"
@@ -221,7 +211,7 @@ func (rb *Builder) URL() (u *url.URL, err error) {
 	// Reparsing, in case the path rewriting broke the URL
 	u, err = url.Parse(u.String())
 	if err != nil {
-		return new(url.URL), rb.handleErr(ErrURL, err, nil, nil)
+		return new(url.URL), ekwrapper{ErrURL, err}
 	}
 	return u, nil
 }
@@ -235,7 +225,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
-			return nil, rb.handleErr(ErrRequest, err, nil, nil)
+			return nil, ekwrapper{ErrRequest, err}
 		}
 		if nopper, ok := body.(nopCloser); ok {
 			body = nopper.Reader
@@ -244,7 +234,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	method := rb.getMethod()
 	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
-		return nil, rb.handleErr(ErrRequest, err, nil, nil)
+		return nil, ekwrapper{ErrRequest, err}
 	}
 	req.GetBody = rb.getBody
 
@@ -284,7 +274,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	res, err := cl.Do(req)
 	if err != nil {
-		return rb.handleErr(ErrConnect, err, req, nil)
+		return ekwrapper{ErrTransport, err}
 	}
 	defer res.Body.Close()
 
@@ -293,14 +283,14 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		validators = []ResponseHandler{DefaultValidator}
 	}
 	if err = ChainHandlers(validators...)(res); err != nil {
-		return rb.handleErr(ErrValidator, err, req, res)
+		return ekwrapper{ErrValidator, err}
 	}
 	h := consumeBody
 	if rb.handler != nil {
 		h = rb.handler
 	}
 	if err = h(res); err != nil {
-		return rb.handleErr(ErrHandler, err, req, res)
+		return ekwrapper{ErrHandler, err}
 	}
 	return nil
 }
@@ -312,12 +302,4 @@ func (rb *Builder) Fetch(ctx context.Context) (err error) {
 		return err
 	}
 	return rb.Do(req)
-}
-
-func (rb *Builder) handleErr(kind ErrorKind, err error, req *http.Request, res *http.Response) error {
-	ep := OnErrorParams{ekwrapper{kind, err}, req, res, kind, rb}
-	for i := len(rb.errhandlers) - 1; i >= 0; i-- {
-		rb.errhandlers[i](&ep)
-	}
-	return ep.Error
 }
