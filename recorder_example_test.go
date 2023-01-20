@@ -3,7 +3,6 @@ package requests_test
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"testing/fstest"
 
 	"github.com/carlmjohnson/requests"
@@ -23,9 +22,7 @@ An example response.`),
 	const expected = `An example response.`
 	if err := requests.
 		URL("http://fsys.example").
-		Client(&http.Client{
-			Transport: requests.ReplayFS(fsys),
-		}).
+		Transport(requests.ReplayFS(fsys)).
 		ToString(&s).
 		Fetch(context.Background()); err != nil {
 		panic(err)

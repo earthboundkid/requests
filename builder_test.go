@@ -131,9 +131,7 @@ An example response.`
 	err := requests.
 		URL("example").
 		Scheme("string").
-		Client(&http.Client{
-			Transport: &trans,
-		}).
+		Transport(&trans).
 		ToString(&s).
 		Fetch(context.Background())
 	be.NilErr(t, err)
