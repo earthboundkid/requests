@@ -2,7 +2,6 @@ package requests
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 )
 
@@ -18,9 +17,9 @@ func ValidatorHandler(v, h ResponseHandler) ResponseHandler {
 		}
 		err2 := h(res)
 		if err2 == nil { // successfully handled
-			return fmt.Errorf("%w: %w", ErrInvalidHandled, err1)
+			return joinerrs(ErrInvalidHandled, err1, "%v: %v", ErrInvalidHandled, err1)
 		}
-		return errors.Join(err1, err2)
+		return joinerrs(err1, err2, "%v\n%v", err1, err2)
 	}
 }
 
