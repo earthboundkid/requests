@@ -18,24 +18,3 @@ const (
 func (ek ErrorKind) Error() string {
 	return ek.String()
 }
-
-type ekwrapper struct {
-	kind ErrorKind
-	error
-}
-
-func (ekw ekwrapper) Is(target error) bool {
-	return ekw.kind == target
-}
-
-func (ekw ekwrapper) As(target any) bool {
-	if ekp, ok := target.(*ErrorKind); ok {
-		*ekp = ekw.kind
-		return true
-	}
-	return false
-}
-
-func (ekw ekwrapper) Unwrap() error {
-	return ekw.error
-}

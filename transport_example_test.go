@@ -51,7 +51,7 @@ func ExamplePermitURLTransport() {
 	}
 	// Output:
 	// true
-	// Get "http://unauthorized.example.com/": requested URL not permitted by regexp: ^http://example\.com/
+	// ErrTransport: Get "http://unauthorized.example.com/": requested URL not permitted by regexp: ^http://example\.com/
 }
 
 func ExampleRoundTripFunc() {

@@ -2,6 +2,7 @@ package requests
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -215,6 +216,10 @@ func first[T comparable](a, b T) T {
 	return cond(a != *new(T), a, b)
 }
 
+func joinerrs(a, b error) error {
+	return fmt.Errorf("%w: %w", a, b)
+}
+
 // URL builds a *url.URL from the base URL and options set on the Builder.
 // If a valid url.URL cannot be built,
 // URL() nevertheless returns a new url.URL,
@@ -222,7 +227,7 @@ func first[T comparable](a, b T) T {
 func (rb *Builder) URL() (u *url.URL, err error) {
 	u, err = url.Parse(rb.baseurl)
 	if err != nil {
-		return new(url.URL), ekwrapper{ErrURL, err}
+		return new(url.URL), joinerrs(ErrURL, err)
 	}
 	u.Scheme = first(rb.scheme, first(u.Scheme, "https"))
 	u.Host = first(rb.host, u.Host)
@@ -239,7 +244,7 @@ func (rb *Builder) URL() (u *url.URL, err error) {
 	// Reparsing, in case the path rewriting broke the URL
 	u, err = url.Parse(u.String())
 	if err != nil {
-		return new(url.URL), ekwrapper{ErrURL, err}
+		return new(url.URL), joinerrs(ErrURL, err)
 	}
 	return u, nil
 }
@@ -253,7 +258,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
-			return nil, ekwrapper{ErrRequest, err}
+			return nil, joinerrs(ErrRequest, err)
 		}
 		if nopper, ok := body.(nopCloser); ok {
 			body = nopper.Reader
@@ -266,7 +271,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 
 	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
-		return nil, ekwrapper{ErrRequest, err}
+		return nil, joinerrs(ErrRequest, err)
 	}
 	req.GetBody = rb.getBody
 
@@ -292,7 +297,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	res, err := cl.Do(req)
 	if err != nil {
-		return ekwrapper{ErrTransport, err}
+		return joinerrs(ErrTransport, err)
 	}
 	defer res.Body.Close()
 
@@ -301,13 +306,13 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		validators = []ResponseHandler{DefaultValidator}
 	}
 	if err = ChainHandlers(validators...)(res); err != nil {
-		return ekwrapper{ErrValidator, err}
+		return joinerrs(ErrValidator, err)
 	}
 	h := cond(rb.handler != nil,
 		rb.handler,
 		consumeBody)
 	if err = h(res); err != nil {
-		return ekwrapper{ErrHandler, err}
+		return joinerrs(ErrHandler, err)
 	}
 	return nil
 }
