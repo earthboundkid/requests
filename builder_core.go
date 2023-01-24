@@ -204,6 +204,17 @@ func (rb *Builder) Clone() *Builder {
 	return &rb2
 }
 
+func cond[T any](val bool, a, b T) T {
+	if val {
+		return a
+	}
+	return b
+}
+
+func first[T comparable](a, b T) T {
+	return cond(a != *new(T), a, b)
+}
+
 // URL builds a *url.URL from the base URL and options set on the Builder.
 // If a valid url.URL cannot be built,
 // URL() nevertheless returns a new url.URL,
@@ -213,15 +224,8 @@ func (rb *Builder) URL() (u *url.URL, err error) {
 	if err != nil {
 		return new(url.URL), ekwrapper{ErrURL, err}
 	}
-	if u.Scheme == "" {
-		u.Scheme = "https"
-	}
-	if rb.scheme != "" {
-		u.Scheme = rb.scheme
-	}
-	if rb.host != "" {
-		u.Host = rb.host
-	}
+	u.Scheme = first(rb.scheme, first(u.Scheme, "https"))
+	u.Host = first(rb.host, u.Host)
 	for _, p := range rb.paths {
 		u.Path = u.ResolveReference(&url.URL{Path: p}).Path
 	}
@@ -255,7 +259,11 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 			body = nopper.Reader
 		}
 	}
-	method := rb.getMethod()
+	method := first(rb.method,
+		cond(rb.getBody != nil,
+			http.MethodPost,
+			http.MethodGet))
+
 	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {
 		return nil, ekwrapper{ErrRequest, err}
@@ -274,23 +282,9 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	return req, nil
 }
 
-func (rb *Builder) getMethod() string {
-	method := http.MethodGet
-	if rb.getBody != nil {
-		method = http.MethodPost
-	}
-	if rb.method != "" {
-		method = rb.method
-	}
-	return method
-}
-
 // Do calls the underlying http.Client and validates and handles any resulting response. The response body is closed after all validators and the handler run.
 func (rb *Builder) Do(req *http.Request) (err error) {
-	cl := http.DefaultClient
-	if rb.cl != nil {
-		cl = rb.cl
-	}
+	cl := first(rb.cl, http.DefaultClient)
 	if rb.rt != nil {
 		cl2 := *cl
 		cl2.Transport = rb.rt
@@ -309,10 +303,9 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	if err = ChainHandlers(validators...)(res); err != nil {
 		return ekwrapper{ErrValidator, err}
 	}
-	h := consumeBody
-	if rb.handler != nil {
-		h = rb.handler
-	}
+	h := cond(rb.handler != nil,
+		rb.handler,
+		consumeBody)
 	if err = h(res); err != nil {
 		return ekwrapper{ErrHandler, err}
 	}
