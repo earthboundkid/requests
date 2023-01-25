@@ -81,12 +81,8 @@ func ExampleRoundTripFunc() {
 
 func ExampleLogTransport() {
 	logger := func(req *http.Request, res *http.Response, err error, d time.Duration) {
-		status := ""
-		if res != nil {
-			status = res.Status
-		}
 		fmt.Printf("method=%q url=%q err=%v status=%q duration=%v\n",
-			req.Method, req.URL, err, status, d.Round(1*time.Second))
+			req.Method, req.URL, err, res.Status, d.Round(1*time.Second))
 	}
 	// Wrap an existing transport or use nil for http.DefaultTransport
 	baseTrans := http.DefaultClient.Transport
@@ -99,6 +95,21 @@ func ExampleLogTransport() {
 		Fetch(context.Background()); err != nil {
 		panic(err)
 	}
+	// Works for bad responses too
+	baseTrans = requests.RoundTripFunc(func(req *http.Request) (*http.Response, error) {
+		return nil, fmt.Errorf("can't connect")
+	})
+	trans = requests.LogTransport(baseTrans, logger)
+
+	if err := requests.
+		URL("http://example.com/").
+		Transport(trans).
+		ToString(&s).
+		Fetch(context.Background()); err != nil {
+		fmt.Println(err)
+	}
 	// Output:
 	// method="GET" url="http://example.com/" err=<nil> status="200 OK" duration=0s
+	// method="GET" url="http://example.com/" err=can't connect status="" duration=0s
+	// ErrTransport: Get "http://example.com/": can't connect
 }
