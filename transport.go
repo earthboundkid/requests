@@ -3,9 +3,11 @@ package requests
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // Transport is an alias of http.RoundTripper for documentation purposes.
@@ -59,4 +61,38 @@ func PermitURLTransport(rt http.RoundTripper, regex string) Transport {
 		}
 		return rt.RoundTrip(req)
 	})
+}
+
+// LogTransport returns a wrapped http.RoundTripper
+// that calls fn with details of a request when its response has finished.
+// A response is finished when the wrapper http.RoundTripper returns an error
+// or the Response.Body is closed,
+// whichever comes first.
+func LogTransport(rt http.RoundTripper, fn func(req *http.Request, res *http.Response, err error, duration time.Duration)) Transport {
+	if rt == nil {
+		rt = http.DefaultTransport
+	}
+	return RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
+		start := time.Now()
+		res, err = rt.RoundTrip(req)
+		if err != nil {
+			fn(req, res, err, time.Since(start))
+			return
+		}
+		res.Body = closeLogger{start, req, res, fn, res.Body}
+		return
+	})
+}
+
+type closeLogger struct {
+	start time.Time
+	req   *http.Request
+	res   *http.Response
+	fn    func(req *http.Request, res *http.Response, err error, duration time.Duration)
+	io.ReadCloser
+}
+
+func (cl closeLogger) Close() error {
+	cl.fn(cl.req, cl.res, nil, time.Since(cl.start))
+	return cl.ReadCloser.Close()
 }
