@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/carlmjohnson/requests"
 )
@@ -76,4 +77,28 @@ func ExampleRoundTripFunc() {
 	// Output:
 	// req [GET] http://example.com
 	// res [200 OK] http://example.com
+}
+
+func ExampleLogTransport() {
+	logger := func(req *http.Request, res *http.Response, err error, d time.Duration) {
+		status := ""
+		if res != nil {
+			status = res.Status
+		}
+		fmt.Printf("method=%q url=%q err=%v status=%q duration=%v\n",
+			req.Method, req.URL, err, status, d.Round(1*time.Second))
+	}
+	// Wrap an existing transport or use nil for http.DefaultTransport
+	baseTrans := http.DefaultClient.Transport
+	trans := requests.LogTransport(baseTrans, logger)
+	var s string
+	if err := requests.
+		URL("http://example.com/").
+		Transport(trans).
+		ToString(&s).
+		Fetch(context.Background()); err != nil {
+		panic(err)
+	}
+	// Output:
+	// method="GET" url="http://example.com/" err=<nil> status="200 OK" duration=0s
 }
