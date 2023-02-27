@@ -3,9 +3,11 @@ package requests
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/carlmjohnson/requests/internal/core"
+	"github.com/carlmjohnson/requests/internal/util"
 )
 
 // Builder is a convenient way to build, send, and handle HTTP requests.
@@ -68,34 +70,74 @@ import (
 //
 // The zero value of Builder is usable.
 type Builder struct {
-	baseurl      string
-	scheme, host string
-	paths        []string
-	params       []multimap
-	headers      []multimap
-	cookies      []kvpair
-	getBody      BodyGetter
-	method       string
-	cl           *http.Client
-	rt           http.RoundTripper
-	validators   []ResponseHandler
-	handler      ResponseHandler
-}
-
-type multimap struct {
-	key    string
-	values []string
-}
-
-type kvpair struct {
-	key, value string
+	ub         core.URLBuilder
+	rb         core.RequestBuilder
+	cl         *http.Client
+	rt         http.RoundTripper
+	validators []ResponseHandler
+	handler    ResponseHandler
 }
 
 // URL creates a new Builder suitable for method chaining.
 func URL(baseurl string) *Builder {
 	var rb Builder
-	rb.baseurl = baseurl
+	rb.ub.BaseURL(baseurl)
 	return &rb
+}
+
+// Scheme sets the scheme for a request. It overrides the URL function.
+func (rb *Builder) Scheme(scheme string) *Builder {
+	rb.ub.Scheme(scheme)
+	return rb
+}
+
+// Host sets the host for a request. It overrides the URL function.
+func (rb *Builder) Host(host string) *Builder {
+	rb.ub.Host(host)
+	return rb
+}
+
+// Path joins a path to a request per the path joining rules of RFC 3986.
+// If the path begins with /, it overrides any existing path.
+// If the path begins with ./ or ../, the final path will be rewritten in its absolute form when creating a request.
+func (rb *Builder) Path(path string) *Builder {
+	rb.ub.Path(path)
+	return rb
+}
+
+// Param sets a query parameter on a request. It overwrites the existing values of a key.
+func (rb *Builder) Param(key string, values ...string) *Builder {
+	rb.ub.Param(key, values...)
+	return rb
+}
+
+// Header sets a header on a request. It overwrites the existing values of a key.
+func (rb *Builder) Header(key string, values ...string) *Builder {
+	rb.rb.Header(key, values...)
+	return rb
+}
+
+// Cookie adds a cookie to a request.
+// Unlike other headers, adding a cookie does not overwrite existing values.
+func (rb *Builder) Cookie(name, value string) *Builder {
+	rb.rb.Cookie(name, value)
+	return rb
+}
+
+// Method sets the HTTP method for a request.
+// By default, requests without a body are GET,
+// and those with a body are POST.
+func (rb *Builder) Method(method string) *Builder {
+	rb.rb.Method(method)
+	return rb
+}
+
+// Body sets the BodyGetter to use to build the body of a request.
+// The provided BodyGetter is used as an http.Request.GetBody func.
+// It implicitly sets method to POST.
+func (rb *Builder) Body(src BodyGetter) *Builder {
+	rb.rb.Body(src)
+	return rb
 }
 
 // Client sets the http.Client to use for requests. If nil, it uses http.DefaultClient.
@@ -108,61 +150,6 @@ func (rb *Builder) Client(cl *http.Client) *Builder {
 // If set, it makes a shallow copy of the http.Client before modifying it.
 func (rb *Builder) Transport(rt http.RoundTripper) *Builder {
 	rb.rt = rt
-	return rb
-}
-
-// Scheme sets the scheme for a request. It overrides the URL function.
-func (rb *Builder) Scheme(scheme string) *Builder {
-	rb.scheme = scheme
-	return rb
-}
-
-// Host sets the host for a request. It overrides the URL function.
-func (rb *Builder) Host(host string) *Builder {
-	rb.host = host
-	return rb
-}
-
-// Path joins a path to a request per the path joining rules of RFC 3986.
-// If the path begins with /, it overrides any existing path.
-// If the path begins with ./ or ../, the final path will be rewritten in its absolute form when creating a request.
-func (rb *Builder) Path(path string) *Builder {
-	rb.paths = append(rb.paths, path)
-	return rb
-}
-
-// Param sets a query parameter on a request. It overwrites the existing values of a key.
-func (rb *Builder) Param(key string, values ...string) *Builder {
-	rb.params = append(rb.params, multimap{key, values})
-	return rb
-}
-
-// Header sets a header on a request. It overwrites the existing values of a key.
-func (rb *Builder) Header(key string, values ...string) *Builder {
-	rb.headers = append(rb.headers, multimap{key, values})
-	return rb
-}
-
-// Cookie adds a cookie to a request.
-// Unlike other headers, adding a cookie does not overwrite existing values.
-func (rb *Builder) Cookie(name, value string) *Builder {
-	rb.cookies = append(rb.cookies, kvpair{name, value})
-	return rb
-}
-
-// Method sets the HTTP method for a request.
-// By default, requests without a body are GET,
-// and those with a body are POST.
-func (rb *Builder) Method(method string) *Builder {
-	rb.method = method
-	return rb
-}
-
-// Body sets the BodyGetter to use to build the body of a request.
-// The provided BodyGetter is used as an http.Request.GetBody func.
-// It implicitly sets method to POST.
-func (rb *Builder) Body(src BodyGetter) *Builder {
-	rb.getBody = src
 	return rb
 }
 
@@ -189,31 +176,13 @@ func (rb *Builder) Config(cfgs ...Config) *Builder {
 	return rb
 }
 
-func clip[T any](sp *[]T) {
-	s := *sp
-	*sp = s[:len(s):len(s)]
-}
-
 // Clone creates a new Builder suitable for independent mutation.
 func (rb *Builder) Clone() *Builder {
 	rb2 := *rb
-	clip(&rb2.paths)
-	clip(&rb2.headers)
-	clip(&rb2.params)
-	clip(&rb2.cookies)
-	clip(&rb2.validators)
+	rb2.ub = *rb.ub.Clone()
+	rb2.rb = *rb.rb.Clone()
+	util.Clip(&rb2.validators)
 	return &rb2
-}
-
-func cond[T any](val bool, a, b T) T {
-	if val {
-		return a
-	}
-	return b
-}
-
-func first[T comparable](a, b T) T {
-	return cond(a != *new(T), a, b)
 }
 
 func joinerrs(a, b error) error {
@@ -225,26 +194,9 @@ func joinerrs(a, b error) error {
 // URL() nevertheless returns a new url.URL,
 // so it is always safe to call u.String().
 func (rb *Builder) URL() (u *url.URL, err error) {
-	u, err = url.Parse(rb.baseurl)
+	u, err = rb.ub.URL()
 	if err != nil {
-		return new(url.URL), joinerrs(ErrURL, err)
-	}
-	u.Scheme = first(rb.scheme, first(u.Scheme, "https"))
-	u.Host = first(rb.host, u.Host)
-	for _, p := range rb.paths {
-		u.Path = u.ResolveReference(&url.URL{Path: p}).Path
-	}
-	if len(rb.params) > 0 {
-		q := u.Query()
-		for _, kv := range rb.params {
-			q[kv.key] = kv.values
-		}
-		u.RawQuery = q.Encode()
-	}
-	// Reparsing, in case the path rewriting broke the URL
-	u, err = url.Parse(u.String())
-	if err != nil {
-		return new(url.URL), joinerrs(ErrURL, err)
+		return u, joinerrs(ErrURL, err)
 	}
 	return u, nil
 }
@@ -255,41 +207,16 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	if err != nil {
 		return nil, err
 	}
-	var body io.Reader
-	if rb.getBody != nil {
-		if body, err = rb.getBody(); err != nil {
-			return nil, joinerrs(ErrRequest, err)
-		}
-		if nopper, ok := body.(nopCloser); ok {
-			body = nopper.Reader
-		}
-	}
-	method := first(rb.method,
-		cond(rb.getBody != nil,
-			http.MethodPost,
-			http.MethodGet))
-
-	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
+	req, err = rb.rb.Request(ctx, u)
 	if err != nil {
 		return nil, joinerrs(ErrRequest, err)
-	}
-	req.GetBody = rb.getBody
-
-	for _, kv := range rb.headers {
-		req.Header[http.CanonicalHeaderKey(kv.key)] = kv.values
-	}
-	for _, kv := range rb.cookies {
-		req.AddCookie(&http.Cookie{
-			Name:  kv.key,
-			Value: kv.value,
-		})
 	}
 	return req, nil
 }
 
 // Do calls the underlying http.Client and validates and handles any resulting response. The response body is closed after all validators and the handler run.
 func (rb *Builder) Do(req *http.Request) (err error) {
-	cl := first(rb.cl, http.DefaultClient)
+	cl := util.First(rb.cl, http.DefaultClient)
 	if rb.rt != nil {
 		cl2 := *cl
 		cl2.Transport = rb.rt
@@ -308,7 +235,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	if err = ChainHandlers(validators...)(res); err != nil {
 		return joinerrs(ErrValidator, err)
 	}
-	h := cond(rb.handler != nil,
+	h := util.Cond(rb.handler != nil,
 		rb.handler,
 		consumeBody)
 	if err = h(res); err != nil {
