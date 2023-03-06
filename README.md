@@ -191,16 +191,17 @@ err := requests.
 	Fetch(ctx)
 ```
 
-### Easily manipulate query parameters
+### Easily manipulate URLs and query parameters
 
 ```go
-var params postman
-err := requests.
-	URL("https://postman-echo.com/get?a=1&b=2").
+u, err := requests.
+	URL("https://prod.example.com/get?a=1&b=2").
+	Hostf("%s.example.com", "dev1").
 	Param("b", "3").
-	Param("c", "4").
-	Fetch(ctx)
-	// URL is https://postman-echo.com/get?a=1&b=3&c=4
+	ParamInt("c", 4).
+	URL()
+if err != nil { /* ... */ }
+fmt.Println(u.String()) // https://dev1.example.com/get?a=1&b=3&c=4
 ```
 
 ### Record and replay responses
