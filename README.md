@@ -41,7 +41,6 @@ if err != nil {
 }
 s := string(b)
 ```
-
 </td>
 <td>
 
@@ -65,23 +64,13 @@ err := requests.
 <table>
 <thead>
 <tr>
-<th><strong>code with requests</strong></th>
 <th><strong>code with net/http</strong></th>
+<th><strong>code with requests</strong></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>
-
-```go
-err := requests.
-	URL("https://postman-echo.com/post").
-	BodyBytes([]byte(`hello, world`)).
-	ContentType("text/plain").
-	Fetch(ctx)
-```
-
-</td><td>
 
 ```go
 body := bytes.NewReader(([]byte(`hello, world`))
@@ -102,32 +91,33 @@ if err != nil {
 }
 ```
 
-</td></tr>
-<tr><td>5 lines</td><td>12+ lines</td></tr></tbody></table>
+</td>
+<td>
+
+```go
+err := requests.
+	URL("https://postman-echo.com/post").
+	BodyBytes([]byte(`hello, world`)).
+	ContentType("text/plain").
+	Fetch(ctx)
+```
+
+</td>
+</tr>
+<tr><td>12+ lines</td><td>5 lines</td></tr></tbody></table>
 
 ### GET a JSON object
 
 <table>
 <thead>
 <tr>
-<th><strong>code with requests</strong></th>
 <th><strong>code with net/http</strong></th>
+<th><strong>code with requests</strong></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>
-
-```go
-var post placeholder
-err := requests.
-	URL("https://jsonplaceholder.typicode.com").
-	Pathf("/posts/%d", 1).
-	ToJSON(&post).
-	Fetch(ctx)
-```
-
-</td><td>
 
 ```go
 var post placeholder
@@ -155,8 +145,20 @@ if err != nil {
 	// ...
 }
 ```
-</td></tr>
-<tr><td>7 lines</td><td>18+ lines</td></tr></tbody></table>
+</td><td>
+
+```go
+var post placeholder
+err := requests.
+	URL("https://jsonplaceholder.typicode.com").
+	Pathf("/posts/%d", 1).
+	ToJSON(&post).
+	Fetch(ctx)
+```
+
+</td>
+</tr>
+<tr><td>18+ lines</td><td>7 lines</td></tr></tbody></table>
 
 ### POST a JSON object and parse the response
 
