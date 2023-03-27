@@ -20,7 +20,9 @@ import (
 //
 // # Build a url.URL with Builder.URL
 //
-// Set the base URL by creating a new Builder with [requests.URL] then customize it with
+// Set the base URL by creating a new Builder with [requests.URL]
+// or by calling [Builder.BaseURL]
+// then customize it with
 // [Builder.Scheme], [Builder.Host], [Builder.Hostf], [Builder.Path],
 // [Builder.Pathf], [Builder.Param], and [Builder.ParamInt].
 //
@@ -78,26 +80,28 @@ type Builder struct {
 	handler    ResponseHandler
 }
 
-// URL creates a new Builder suitable for method chaining.
-func URL(baseurl string) *Builder {
-	var rb Builder
+// BaseURL sets the base URL, which other methods modify.
+// It is usually more convenient to use [URL] instead.
+func (rb *Builder) BaseURL(baseurl string) *Builder {
 	rb.ub.BaseURL(baseurl)
-	return &rb
+	return rb
 }
 
-// Scheme sets the scheme for a request. It overrides the URL function.
+// Scheme sets the scheme for a Builder's URL.
+// It overrides the scheme set by BaseURL.
 func (rb *Builder) Scheme(scheme string) *Builder {
 	rb.ub.Scheme(scheme)
 	return rb
 }
 
-// Host sets the host for a request. It overrides the URL function.
+// Host sets the host for a Builder's URL.
+// It overrides the host set by BaseURL.
 func (rb *Builder) Host(host string) *Builder {
 	rb.ub.Host(host)
 	return rb
 }
 
-// Path joins a path to a request per the path joining rules of RFC 3986.
+// Path joins a path to a Builder's URL per the path joining rules of RFC 3986.
 // If the path begins with /, it overrides any existing path.
 // If the path begins with ./ or ../, the final path will be rewritten in its absolute form when creating a request.
 func (rb *Builder) Path(path string) *Builder {
@@ -105,7 +109,8 @@ func (rb *Builder) Path(path string) *Builder {
 	return rb
 }
 
-// Param sets a query parameter on a request. It overwrites the existing values of a key.
+// Param sets a query parameter on a Builder's URL.
+// It overwrites the existing values of a key.
 func (rb *Builder) Param(key string, values ...string) *Builder {
 	rb.ub.Param(key, values...)
 	return rb
