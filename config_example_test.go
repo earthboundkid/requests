@@ -58,7 +58,7 @@ func ExampleGzipConfig() {
 	// hello, world
 }
 
-func ExampleTestServer() {
+func ExampleTestServerConfig() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/greeting", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello, world!")
@@ -73,7 +73,7 @@ func ExampleTestServer() {
 	{
 		var s string
 		err := requests.
-			New(requests.TestServer(srv)).
+			New(requests.TestServerConfig(srv)).
 			Path("/greeting").
 			ToString(&s).
 			Fetch(context.Background())
@@ -85,7 +85,7 @@ func ExampleTestServer() {
 	{
 		var s string
 		err := requests.
-			New(requests.TestServer(srv)).
+			New(requests.TestServerConfig(srv)).
 			Path("/salutation").
 			ToString(&s).
 			Fetch(context.Background())
