@@ -16,9 +16,12 @@ func URL(baseurl string) *Builder {
 	return (&Builder{}).BaseURL(baseurl)
 }
 
-// Configure creates a new Builder suitable for method chaining by applying the specified Configs.
+// New creates a new Builder suitable for method chaining by applying the specified Configs.
 // It is equivalent to calling Config on an empty Builder.
-func Configure(cfgs ...Config) *Builder {
+// The zero value of Builder is usable,
+// so it is not necessary to call New
+// when you do not have any Configs to apply.
+func New(cfgs ...Config) *Builder {
 	return (&Builder{}).Config(cfgs...)
 }
 
