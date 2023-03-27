@@ -15,8 +15,8 @@ func ExampleConfigure() {
 	// Suppose all requests in your project need some common options set.
 	// First, define a Config function in your project...
 	myProjectConfig := func(rb *requests.Builder) {
-		*rb = *requests.
-			URL("http://example.com").
+		rb.
+			BaseURL("http://example.com").
 			UserAgent("myproj/1.0").
 			Accept("application/vnd.myproj+json;charset=utf-8")
 	}
