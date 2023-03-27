@@ -76,10 +76,16 @@ type Builder struct {
 	cookies      []kvpair
 	getBody      BodyGetter
 	method       string
-	cl           *http.Client
+	cl           Client
 	rt           http.RoundTripper
 	validators   []ResponseHandler
 	handler      ResponseHandler
+}
+
+// Client is an HTTP client that follows the same semantics as the HTTP client
+// provided by the standard library.
+type Client interface {
+	Do(req *http.Request) (*http.Response, error)
 }
 
 type multimap struct {
@@ -99,7 +105,7 @@ func URL(baseurl string) *Builder {
 }
 
 // Client sets the http.Client to use for requests. If nil, it uses http.DefaultClient.
-func (rb *Builder) Client(cl *http.Client) *Builder {
+func (rb *Builder) Client(cl Client) *Builder {
 	rb.cl = cl
 	return rb
 }
@@ -289,11 +295,13 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 
 // Do calls the underlying http.Client and validates and handles any resulting response. The response body is closed after all validators and the handler run.
 func (rb *Builder) Do(req *http.Request) (err error) {
-	cl := first(rb.cl, http.DefaultClient)
+	cl := first[Client](rb.cl, http.DefaultClient)
 	if rb.rt != nil {
-		cl2 := *cl
-		cl2.Transport = rb.rt
-		cl = &cl2
+		if httpClient, ok := cl.(*http.Client); ok {
+			cl2 := *httpClient
+			cl2.Transport = rb.rt
+			cl = &cl2
+		}
 	}
 	res, err := cl.Do(req)
 	if err != nil {
