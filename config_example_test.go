@@ -37,7 +37,7 @@ func ExampleNew() {
 	// true
 }
 
-func Example_GzipConfig() {
+func ExampleGzipConfig() {
 	var echo postman
 	err := requests.
 		URL("https://postman-echo.com/post").
