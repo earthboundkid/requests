@@ -1,9 +1,4 @@
-package util
-
-func Clip[T any](sp *[]T) {
-	s := *sp
-	*sp = s[:len(s):len(s)]
-}
+package minitrue
 
 func Cond[T any](val bool, a, b T) T {
 	if val {

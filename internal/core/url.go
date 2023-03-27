@@ -6,7 +6,8 @@ import (
 	"io"
 	"net/url"
 
-	"github.com/carlmjohnson/requests/internal/util"
+	"github.com/carlmjohnson/requests/internal/minitrue"
+	"github.com/carlmjohnson/requests/internal/slicex"
 )
 
 type multimap struct {
@@ -48,8 +49,8 @@ func (ub *URLBuilder) Param(key string, values ...string) {
 
 func (ub *URLBuilder) Clone() *URLBuilder {
 	ub2 := *ub
-	util.Clip(&ub2.paths)
-	util.Clip(&ub2.params)
+	slicex.Clip(&ub2.paths)
+	slicex.Clip(&ub2.params)
 	return &ub2
 }
 
@@ -58,8 +59,8 @@ func (ub *URLBuilder) URL() (u *url.URL, err error) {
 	if err != nil {
 		return new(url.URL), err
 	}
-	u.Scheme = util.First(ub.scheme, util.First(u.Scheme, "https"))
-	u.Host = util.First(ub.host, u.Host)
+	u.Scheme = minitrue.First(ub.scheme, minitrue.First(u.Scheme, "https"))
+	u.Host = minitrue.First(ub.host, u.Host)
 	for _, p := range ub.paths {
 		u.Path = u.ResolveReference(&url.URL{Path: p}).Path
 	}
@@ -106,7 +107,7 @@ func (rb *RequestBuilder) Body(src BodyGetter) {
 // Clone creates a new Builder suitable for independent mutation.
 func (rb *RequestBuilder) Clone() *RequestBuilder {
 	rb2 := *rb
-	util.Clip(&rb2.headers)
-	util.Clip(&rb2.cookies)
+	slicex.Clip(&rb2.headers)
+	slicex.Clip(&rb2.cookies)
 	return &rb2
 }
