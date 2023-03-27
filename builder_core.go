@@ -7,7 +7,8 @@ import (
 	"net/url"
 
 	"github.com/carlmjohnson/requests/internal/core"
-	"github.com/carlmjohnson/requests/internal/util"
+	"github.com/carlmjohnson/requests/internal/minitrue"
+	"github.com/carlmjohnson/requests/internal/slicex"
 )
 
 // Builder is a convenient way to build, send, and handle HTTP requests.
@@ -186,7 +187,7 @@ func (rb *Builder) Clone() *Builder {
 	rb2 := *rb
 	rb2.ub = *rb.ub.Clone()
 	rb2.rb = *rb.rb.Clone()
-	util.Clip(&rb2.validators)
+	slicex.Clip(&rb2.validators)
 	return &rb2
 }
 
@@ -221,7 +222,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 
 // Do calls the underlying http.Client and validates and handles any resulting response. The response body is closed after all validators and the handler run.
 func (rb *Builder) Do(req *http.Request) (err error) {
-	cl := util.First(rb.cl, http.DefaultClient)
+	cl := minitrue.First(rb.cl, http.DefaultClient)
 	if rb.rt != nil {
 		cl2 := *cl
 		cl2.Transport = rb.rt
@@ -240,7 +241,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	if err = ChainHandlers(validators...)(res); err != nil {
 		return joinerrs(ErrValidator, err)
 	}
-	h := util.Cond(rb.handler != nil,
+	h := minitrue.Cond(rb.handler != nil,
 		rb.handler,
 		consumeBody)
 	if err = h(res); err != nil {

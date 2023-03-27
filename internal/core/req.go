@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/carlmjohnson/requests/internal/util"
+	"github.com/carlmjohnson/requests/internal/minitrue"
 )
 
 // NopCloser is like io.NopCloser(),
@@ -36,8 +36,8 @@ func (rb *RequestBuilder) Request(ctx context.Context, u *url.URL) (req *http.Re
 			body = nopper.Reader
 		}
 	}
-	method := util.First(rb.method,
-		util.Cond(rb.getBody != nil,
+	method := minitrue.First(rb.method,
+		minitrue.Cond(rb.getBody != nil,
 			http.MethodPost,
 			http.MethodGet))
 
