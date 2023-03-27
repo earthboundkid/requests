@@ -59,21 +59,42 @@ func Example_GzipConfig() {
 }
 
 func ExampleTestServer() {
-	h := func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/greeting", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello, world!")
-	}
-	srv := httptest.NewServer(http.HandlerFunc(h))
+	})
+	mux.HandleFunc("/salutation", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Howdy, planet!")
+	})
+
+	srv := httptest.NewServer(mux)
 	defer srv.Close()
 
-	var s string
-	err := requests.
-		Configure(requests.TestServer(srv)).
-		ToString(&s).
-		Fetch(context.Background())
-	if err != nil {
-		fmt.Println("Error!", err)
+	{
+		var s string
+		err := requests.
+			Configure(requests.TestServer(srv)).
+			Path("/greeting").
+			ToString(&s).
+			Fetch(context.Background())
+		if err != nil {
+			fmt.Println("Error!", err)
+		}
+		fmt.Println(s)
 	}
-	fmt.Println(s)
+	{
+		var s string
+		err := requests.
+			Configure(requests.TestServer(srv)).
+			Path("/salutation").
+			ToString(&s).
+			Fetch(context.Background())
+		if err != nil {
+			fmt.Println("Error!", err)
+		}
+		fmt.Println(s)
+	}
 	// Output:
 	// Hello, world!
+	// Howdy, planet!
 }
