@@ -11,7 +11,7 @@ import (
 	"github.com/carlmjohnson/requests"
 )
 
-func ExampleConfigure() {
+func ExampleNew() {
 	// Suppose all requests in your project need some common options set.
 	// First, define a Config function in your project...
 	myProjectConfig := func(rb *requests.Builder) {
@@ -24,7 +24,7 @@ func ExampleConfigure() {
 	// Then build your requests using that Config as the base Builder.
 	var s string
 	err := requests.
-		Configure(myProjectConfig).
+		New(myProjectConfig).
 		Path("/").
 		Param("some_param", "some-value").
 		ToString(&s).
@@ -73,7 +73,7 @@ func ExampleTestServer() {
 	{
 		var s string
 		err := requests.
-			Configure(requests.TestServer(srv)).
+			New(requests.TestServer(srv)).
 			Path("/greeting").
 			ToString(&s).
 			Fetch(context.Background())
@@ -85,7 +85,7 @@ func ExampleTestServer() {
 	{
 		var s string
 		err := requests.
-			Configure(requests.TestServer(srv)).
+			New(requests.TestServer(srv)).
 			Path("/salutation").
 			ToString(&s).
 			Fetch(context.Background())
