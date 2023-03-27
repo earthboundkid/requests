@@ -17,6 +17,10 @@ type NopCloser struct {
 	io.Reader
 }
 
+func RC(r io.Reader) NopCloser {
+	return NopCloser{r}
+}
+
 func (NopCloser) Close() error { return nil }
 
 var _ io.ReadCloser = NopCloser{}

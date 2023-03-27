@@ -20,7 +20,7 @@ func BodyReader(r io.Reader) BodyGetter {
 		if rc, ok := r.(io.ReadCloser); ok {
 			return rc, nil
 		}
-		return core.NopCloser{r}, nil
+		return core.RC(r), nil
 	}
 }
 
@@ -42,7 +42,7 @@ func BodyWriter(f func(w io.Writer) error) BodyGetter {
 // BodyBytes is a BodyGetter that returns the provided raw bytes.
 func BodyBytes(b []byte) BodyGetter {
 	return func() (io.ReadCloser, error) {
-		return core.NopCloser{bytes.NewReader(b)}, nil
+		return core.RC(bytes.NewReader(b)), nil
 	}
 }
 
@@ -53,14 +53,14 @@ func BodyJSON(v any) BodyGetter {
 		if err != nil {
 			return nil, err
 		}
-		return core.NopCloser{bytes.NewReader(b)}, nil
+		return core.RC(bytes.NewReader(b)), nil
 	}
 }
 
 // BodyForm is a BodyGetter that builds an encoded form body.
 func BodyForm(data url.Values) BodyGetter {
 	return func() (r io.ReadCloser, err error) {
-		return core.NopCloser{strings.NewReader(data.Encode())}, nil
+		return core.RC(strings.NewReader(data.Encode())), nil
 	}
 }
 
