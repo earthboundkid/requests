@@ -108,7 +108,7 @@ func ExampleLogTransport() {
 		Transport(trans).
 		ToString(&s).
 		Fetch(context.Background()); err != nil {
-		panic(err)
+		fmt.Println("Error!", err)
 	}
 	// Works for bad responses too
 	baseTrans = requests.RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -121,10 +121,10 @@ func ExampleLogTransport() {
 		Transport(trans).
 		ToString(&s).
 		Fetch(context.Background()); err != nil {
-		fmt.Println(err)
+		fmt.Println("Error!", err)
 	}
 	// Output:
 	// method="GET" url="http://example.com/" err=<nil> status="200 OK" duration=0s
 	// method="GET" url="http://example.com/" err=can't connect status="" duration=0s
-	// ErrTransport: Get "http://example.com/": can't connect
+	// Error! ErrTransport: Get "http://example.com/": can't connect
 }
