@@ -63,6 +63,7 @@ import (
 // # Other methods
 //
 // [Builder.Config] can be used to set several options on a Builder at once.
+// [New] creates a new Builder and applies [Config] options to it.
 //
 // In many cases, it will be possible to set most options for an API endpoint
 // in a Builder at the package or struct level
