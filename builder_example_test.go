@@ -496,41 +496,44 @@ func ExampleBuilder_Transport() {
 }
 
 func ExampleBuilder_ErrorJSON() {
-	goodRes := requests.ReplayString(`HTTP/1.1 200 OK
+	{
+		trans := requests.ReplayString(`HTTP/1.1 200 OK
 
-		{"x": 1}`)
+	{"x": 1}`)
 
-	var goodJSON1 struct{ X int }
-	var errJSON1 struct{ Error string }
-	err := requests.
-		URL("http://example.com/").
-		Transport(goodRes).
-		ToJSON(&goodJSON1).
-		ErrorJSON(&errJSON1).
-		Fetch(context.Background())
-	if err != nil {
-		fmt.Println("problem", err)
-	} else {
-		fmt.Println("X", goodJSON1.X)
+		var goodJSON1 struct{ X int }
+		var errJSON1 struct{ Error string }
+		err := requests.
+			URL("http://example.com/").
+			Transport(trans).
+			ToJSON(&goodJSON1).
+			ErrorJSON(&errJSON1).
+			Fetch(context.Background())
+		if err != nil {
+			fmt.Println("Error!", err)
+		} else {
+			fmt.Println("X", goodJSON1.X)
+		}
 	}
-
-	badRes := requests.ReplayString(`HTTP/1.1 418 OK
+	{
+		trans := requests.ReplayString(`HTTP/1.1 418 I'm a teapot
 
 	{"error": "brewing"}`)
 
-	var goodJSON2 struct{ X int }
-	var errJSON2 struct{ Error string }
-	err = requests.
-		URL("http://example.com/").
-		Transport(badRes).
-		ToJSON(&goodJSON2).
-		ErrorJSON(&errJSON2).
-		Fetch(context.Background())
-	if err != nil {
-		fmt.Println(errors.Is(err, requests.ErrInvalidHandled))
-		fmt.Println(errJSON2.Error)
-	} else {
-		fmt.Println("unexpected success")
+		var goodJSON2 struct{ X int }
+		var errJSON2 struct{ Error string }
+		err := requests.
+			URL("http://example.com/").
+			Transport(trans).
+			ToJSON(&goodJSON2).
+			ErrorJSON(&errJSON2).
+			Fetch(context.Background())
+		if err != nil {
+			fmt.Println(errors.Is(err, requests.ErrInvalidHandled))
+			fmt.Println(errJSON2.Error)
+		} else {
+			fmt.Println("unexpected success")
+		}
 	}
 	// Output:
 	// X 1
