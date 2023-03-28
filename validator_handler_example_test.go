@@ -27,12 +27,16 @@ func ExampleValidatorHandler() {
 				requests.ToString(&errBody),
 			)).
 		Fetch(context.Background())
-	if errors.Is(err, requests.ErrInvalidHandled) {
+	switch {
+	case errors.Is(err, requests.ErrInvalidHandled):
 		fmt.Println("got errBody:",
 			strings.Contains(errBody, "Example Domain"))
-	} else {
+	case err != nil:
 		fmt.Println("unexpected error", err)
+	case err == nil:
+		fmt.Println("unexpected success")
 	}
+
 	fmt.Println("got regularBody:", strings.Contains(regularBody, "Example Domain"))
 	// Output:
 	// got errBody: true

@@ -525,15 +525,16 @@ func ExampleBuilder_ErrorJSON() {
 			ToJSON(&goodJSON).
 			ErrorJSON(&errJSON).
 			Fetch(context.Background())
-		if err != nil {
-			fmt.Println(errors.Is(err, requests.ErrInvalidHandled))
+		switch {
+		case errors.Is(err, requests.ErrInvalidHandled):
 			fmt.Println(errJSON.Error)
-		} else {
+		case err != nil:
+			fmt.Println("Error!", err)
+		case err == nil:
 			fmt.Println("unexpected success")
 		}
 	}
 	// Output:
 	// X 1
-	// true
 	// brewing
 }
