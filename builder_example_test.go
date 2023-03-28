@@ -153,22 +153,19 @@ type placeholder struct {
 }
 
 func ExampleBuilder_Path() {
-	// Add an ID to a base path
+	// Add an ID to a base URL path
 	id := 1
-	var post placeholder
-	err := requests.
-		URL("https://jsonplaceholder.typicode.com/posts/").
-		// inherits path /posts from baseurl
+	u, err := requests.
+		URL("https://api.example.com/posts/").
+		// inherits path /posts from base URL
 		Pathf("%d", id).
-		// URL is now https://jsonplaceholder.typicode.com/posts/1
-		ToJSON(&post).
-		Fetch(context.Background())
+		URL()
 	if err != nil {
-		fmt.Println("could not connect to jsonplaceholder.typicode.com:", err)
+		fmt.Println("Error!", err)
 	}
-	fmt.Println(post.ID)
+	fmt.Println(u.String())
 	// Output:
-	// 1
+	// https://api.example.com/posts/1
 }
 func ExampleBuilder_CheckStatus() {
 	// Expect a specific status code
@@ -501,18 +498,18 @@ func ExampleBuilder_ErrorJSON() {
 
 	{"x": 1}`)
 
-		var goodJSON1 struct{ X int }
-		var errJSON1 struct{ Error string }
+		var goodJSON struct{ X int }
+		var errJSON struct{ Error string }
 		err := requests.
 			URL("http://example.com/").
 			Transport(trans).
-			ToJSON(&goodJSON1).
-			ErrorJSON(&errJSON1).
+			ToJSON(&goodJSON).
+			ErrorJSON(&errJSON).
 			Fetch(context.Background())
 		if err != nil {
 			fmt.Println("Error!", err)
 		} else {
-			fmt.Println("X", goodJSON1.X)
+			fmt.Println("X", goodJSON.X)
 		}
 	}
 	{
@@ -520,17 +517,17 @@ func ExampleBuilder_ErrorJSON() {
 
 	{"error": "brewing"}`)
 
-		var goodJSON2 struct{ X int }
-		var errJSON2 struct{ Error string }
+		var goodJSON struct{ X int }
+		var errJSON struct{ Error string }
 		err := requests.
 			URL("http://example.com/").
 			Transport(trans).
-			ToJSON(&goodJSON2).
-			ErrorJSON(&errJSON2).
+			ToJSON(&goodJSON).
+			ErrorJSON(&errJSON).
 			Fetch(context.Background())
 		if err != nil {
 			fmt.Println(errors.Is(err, requests.ErrInvalidHandled))
-			fmt.Println(errJSON2.Error)
+			fmt.Println(errJSON.Error)
 		} else {
 			fmt.Println("unexpected success")
 		}
