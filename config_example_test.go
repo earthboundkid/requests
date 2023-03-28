@@ -59,6 +59,7 @@ func ExampleGzipConfig() {
 }
 
 func ExampleTestServerConfig() {
+	// Create an httptest.Server for your project's router
 	mux := http.NewServeMux()
 	mux.HandleFunc("/greeting", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello, world!")
@@ -70,6 +71,7 @@ func ExampleTestServerConfig() {
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
 
+	// Now test that the handler has the expected return values
 	{
 		var s string
 		err := requests.
@@ -80,7 +82,7 @@ func ExampleTestServerConfig() {
 		if err != nil {
 			fmt.Println("Error!", err)
 		}
-		fmt.Println(s)
+		fmt.Println(s) // Hello, world!
 	}
 	{
 		var s string
@@ -92,7 +94,7 @@ func ExampleTestServerConfig() {
 		if err != nil {
 			fmt.Println("Error!", err)
 		}
-		fmt.Println(s)
+		fmt.Println(s) // Howdy, planet!
 	}
 	// Output:
 	// Hello, world!
