@@ -81,7 +81,7 @@ type Builder struct {
 	handler    ResponseHandler
 }
 
-// BaseURL sets the base URL, which other methods modify.
+// BaseURL sets the base URL that other URL methods modify.
 // It is usually more convenient to use [URL] instead.
 func (rb *Builder) BaseURL(baseurl string) *Builder {
 	rb.ub.BaseURL(baseurl)
