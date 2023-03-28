@@ -212,21 +212,22 @@ type postman struct {
 }
 
 func Example_queryParam() {
+	subdomain := "dev1"
 	c := 4
-	// Set a query parameter
-	var params postman
-	err := requests.
-		URL("https://postman-echo.com/get?a=1&b=2").
+
+	u, err := requests.
+		URL("https://prod.example.com/get?a=1&b=2").
+		Hostf("%s.example.com", subdomain).
 		Param("b", "3").
 		ParamInt("c", c).
-		ToJSON(&params).
-		Fetch(context.Background())
+		URL()
 	if err != nil {
-		fmt.Println("problem with postman:", err)
+		fmt.Println("Error!", err)
 	}
-	fmt.Println(params.Args)
+	fmt.Println(u.String())
+
 	// Output:
-	// map[a:1 b:3 c:4]
+	// https://dev1.example.com/get?a=1&b=3&c=4
 }
 
 func ExampleBuilder_Header() {
