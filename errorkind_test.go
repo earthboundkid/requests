@@ -11,6 +11,7 @@ import (
 )
 
 func TestErrorKind(t *testing.T) {
+	t.Parallel()
 	var none requests.ErrorKind = -1
 	kinds := []requests.ErrorKind{
 		requests.ErrURL,

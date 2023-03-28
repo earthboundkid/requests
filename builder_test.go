@@ -3,16 +3,17 @@ package requests_test
 import (
 	"bytes"
 	"context"
-	"net/http"
 	"net/url"
 	"strings"
 	"testing"
 
 	"github.com/carlmjohnson/requests"
 	"github.com/carlmjohnson/requests/internal/be"
+	"github.com/carlmjohnson/requests/internal/core"
 )
 
 func TestClone(t *testing.T) {
+	t.Parallel()
 	t.Run("from URL", func(t *testing.T) {
 		rb1 := requests.
 			URL("http://example.com").
@@ -119,126 +120,34 @@ func TestClone(t *testing.T) {
 }
 
 func TestScheme(t *testing.T) {
-	const res = `HTTP/1.1 200 OK
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 24 May 2021 18:48:50 GMT
-
-An example response.`
-	var s string
-	const expected = `An example response.`
-	var trans http.Transport
-	trans.RegisterProtocol("string", requests.ReplayString(res))
-	err := requests.
+	u, err := requests.
 		URL("example").
 		Scheme("string").
-		Transport(&trans).
-		ToString(&s).
-		Fetch(context.Background())
+		URL()
 	be.NilErr(t, err)
-	be.Equal(t, expected, s)
+	be.Equal(t, "string", u.Scheme)
+	be.Equal(t, "example", u.Host)
+	be.Equal(t, "string://example", u.String())
 }
 
 func TestPath(t *testing.T) {
-	cases := map[string]struct {
-		base   string
-		paths  []string
-		result string
-	}{
-		"base-only": {
-			"example",
-			[]string{},
-			"https://example",
-		},
-		"base+abspath": {
-			"https://example",
-			[]string{"/a"},
-			"https://example/a",
-		},
-		"multi-abs-paths": {
-			"https://example",
-			[]string{"/a", "/b/", "/c"},
-			"https://example/c",
-		},
-		"base+rel-path": {
-			"https://example/a/",
-			[]string{"./b"},
-			"https://example/a/b",
-		},
-		"base+rel-paths": {
-			"https://example/a/",
-			[]string{"./b/", "./c"},
-			"https://example/a/b/c",
-		},
-		"rel-path": {
-			"https://example/",
-			[]string{"a/", "./b"},
-			"https://example/a/b",
-		},
-		"base+multi-paths": {
-			"https://example/a/",
-			[]string{"b/", "c"},
-			"https://example/a/b/c",
-		},
-		"base+slash+multi-paths": {
-			"https://example/a/",
-			[]string{"b/", "c"},
-			"https://example/a/b/c",
-		},
-		"multi-root": {
-			"https://example/",
-			[]string{"a", "b", "c"},
-			"https://example/c",
-		},
-		"dot-dot-paths": {
-			"https://example/",
-			[]string{"a/", "b/", "../c"},
-			"https://example/a/c",
-		},
-		"more-dot-dot-paths": {
-			"https://example/",
-			[]string{"a/b/c/", "../d/", "../e"},
-			"https://example/a/b/e",
-		},
-		"more-dot-dot-paths+rel-path": {
-			"https://example/",
-			[]string{"a/b/c/", "../d/", "../e/", "./f"},
-			"https://example/a/b/e/f",
-		},
-		"even-more-dot-dot-paths+base": {
-			"https://example/a/b/c/",
-			[]string{"../../d"},
-			"https://example/a/d",
-		},
-		"too-many-dot-dot-paths": {
-			"https://example",
-			[]string{"../a"},
-			"https://example/a",
-		},
-		"too-many-dot-dot-paths+base": {
-			"https://example/",
-			[]string{"../a"},
-			"https://example/a",
-		},
-		"last-abs-path-wins": {
-			"https://example/a/",
-			[]string{"b/", "c/", "/d"},
-			"https://example/d",
-		},
-	}
-	for name, tc := range cases {
+	t.Parallel()
+	for name, tc := range core.PathCases {
 		t.Run(name, func(t *testing.T) {
-			b := requests.URL(tc.base)
-			for _, p := range tc.paths {
+			var b requests.Builder
+			b.BaseURL(tc.Base)
+			for _, p := range tc.Paths {
 				b.Path(p)
 			}
-			r, err := b.Request(context.Background())
+			u, err := b.URL()
 			be.NilErr(t, err)
-			be.Equal(t, tc.result, r.URL.String())
+			be.Equal(t, tc.Result, u.String())
 		})
 	}
 }
 
 func TestContentLength(t *testing.T) {
+	t.Parallel()
 	for _, n := range []int{0, 1, 10, 1000, 100_000} {
 		req, err := requests.
 			URL("http://example.com").
