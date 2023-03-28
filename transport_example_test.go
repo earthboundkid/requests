@@ -1,8 +1,11 @@
 package requests_test
 
 import (
+	"bytes"
 	"context"
+	"crypto/md5"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -57,26 +60,38 @@ func ExamplePermitURLTransport() {
 
 func ExampleRoundTripFunc() {
 	// Wrap an underlying transport in order to add request middleware
-	var logTripper requests.RoundTripFunc = func(req *http.Request) (res *http.Response, err error) {
-		fmt.Printf("req [%s] %s\n", req.Method, req.URL)
-		res, err = http.DefaultClient.Transport.RoundTrip(req)
+	baseTrans := http.DefaultClient.Transport
+	var checksumTransport requests.RoundTripFunc = func(req *http.Request) (res *http.Response, err error) {
+		// Read and checksum the body
+		b, err := io.ReadAll(req.Body)
 		if err != nil {
-			fmt.Printf("res [error] %s %s\n", err, req.URL)
-		} else {
-			fmt.Printf("res [%s] %s\n", res.Status, req.URL)
+			return nil, err
 		}
-		return
+		h := md5.New()
+		h.Write(b)
+		checksum := fmt.Sprintf("%X", h.Sum(nil))
+		// Must clone requests before modifying them
+		req2 := *req
+		req2.Header = req.Header.Clone()
+		// Add header and body to the clone
+		req2.Header.Add("Checksum", checksum)
+		req2.Body = io.NopCloser(bytes.NewBuffer(b))
+		return baseTrans.RoundTrip(&req2)
 	}
+	var data postman
 	err := requests.
-		URL("http://example.com").
-		Transport(logTripper).
+		URL("https://postman-echo.com/post").
+		BodyBytes([]byte(`Hello, World!`)).
+		ContentType("text/plain").
+		Transport(checksumTransport).
+		ToJSON(&data).
 		Fetch(context.Background())
 	if err != nil {
-		fmt.Println("something went wrong:", err)
+		fmt.Println("Error!", err)
 	}
+	fmt.Println(data.Headers["checksum"])
 	// Output:
-	// req [GET] http://example.com
-	// res [200 OK] http://example.com
+	// 65A8E27D8879283831B664BD8B7F0AD4
 }
 
 func ExampleLogTransport() {
