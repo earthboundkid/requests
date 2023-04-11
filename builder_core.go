@@ -229,26 +229,26 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		cl2.Transport = rb.rt
 		cl = &cl2
 	}
-	res, err := cl.Do(req)
-	if err != nil {
-		return joinerrs(ErrTransport, err)
-	}
-	defer res.Body.Close()
-
 	validators := rb.validators
 	if len(validators) == 0 {
 		validators = []ResponseHandler{DefaultValidator}
 	}
-	if err = ChainHandlers(validators...)(res); err != nil {
-		return joinerrs(ErrValidator, err)
-	}
 	h := minitrue.Cond(rb.handler != nil,
 		rb.handler,
 		consumeBody)
-	if err = h(res); err != nil {
-		return joinerrs(ErrHandler, err)
+
+	code, err := core.Do(cl, req, validators, h)
+	switch code {
+	case core.DoerOK:
+		return nil
+	case core.DoerConnect:
+		err = joinerrs(ErrTransport, err)
+	case core.DoerValidate:
+		err = joinerrs(ErrValidator, err)
+	case core.DoerHandle:
+		err = joinerrs(ErrHandler, err)
 	}
-	return nil
+	return err
 }
 
 // Fetch builds a request, sends it, and handles the response.
