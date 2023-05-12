@@ -30,6 +30,11 @@ func (rb *Builder) Head() *Builder {
 	return rb.Method(http.MethodHead)
 }
 
+// Post sets HTTP method to POST.
+func (rb *Builder) Post() *Builder {
+	return rb.Method(http.MethodPost)
+}
+
 // Put sets HTTP method to PUT.
 func (rb *Builder) Put() *Builder {
 	return rb.Method(http.MethodPut)
