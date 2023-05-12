@@ -273,6 +273,32 @@ func ExampleBuilder_Header() {
 	// shaken
 }
 
+func ExampleBuilder_Headers() {
+	// Set headers
+	var headers postman
+	err := requests.
+		URL("https://postman-echo.com/get").
+		Headers(map[string][]string{
+			"user-agent":    {"bond/james-bond"},
+			"authorization": {"Basic Ym9uZGo6MDA3IQ=="},
+			"content-type":  {"secret"},
+			"martini":       {"shaken"},
+		}).
+		ToJSON(&headers).
+		Fetch(context.Background())
+	if err != nil {
+		fmt.Println("problem with postman:", err)
+	}
+	fmt.Println(headers.Headers["user-agent"])
+	fmt.Println(headers.Headers["authorization"])
+	fmt.Println(headers.Headers["content-type"])
+	fmt.Println(headers.Headers["martini"])
+	// Output:
+	// bond/james-bond
+	// Basic Ym9uZGo6MDA3IQ==
+	// secret
+	// shaken
+}
 func ExampleBuilder_Bearer() {
 	// We get a 401 response if no bearer token is provided
 	err := requests.

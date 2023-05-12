@@ -76,6 +76,14 @@ func (rb *Builder) Params(m map[string][]string) *Builder {
 	return rb
 }
 
+// Headers calls Header with all the members of m.
+func (rb *Builder) Headers(m map[string][]string) *Builder {
+	for k, vv := range m {
+		rb.Header(k, vv...)
+	}
+	return rb
+}
+
 // Accept sets the Accept header for a request.
 func (rb *Builder) Accept(contentTypes string) *Builder {
 	return rb.Header("Accept", contentTypes)
