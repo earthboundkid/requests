@@ -227,6 +227,27 @@ func Example_queryParam() {
 	// https://dev1.example.com/get?a=1&b=3&c=4
 }
 
+func ExampleBuilder_Params() {
+	values := url.Values{"a": []string{"1"}}
+	values.Set("b", "3")
+	if "cond" != "example" {
+		values.Add("b", "4")
+		values.Set("c", "5")
+	}
+
+	u, err := requests.
+		URL("https://www.example.com/get?a=0&z=6").
+		Params(values).
+		URL()
+	if err != nil {
+		fmt.Println("Error!", err)
+	}
+	fmt.Println(u.String())
+
+	// Output:
+	// https://www.example.com/get?a=1&b=3&b=4&c=5&z=6
+}
+
 func ExampleBuilder_Header() {
 	// Set headers
 	var headers postman

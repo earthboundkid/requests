@@ -68,6 +68,14 @@ func (rb *Builder) ParamInt(key string, value int) *Builder {
 	return rb.Param(key, strconv.Itoa(value))
 }
 
+// Params calls Param with all the members of m.
+func (rb *Builder) Params(m map[string][]string) *Builder {
+	for k, vv := range m {
+		rb.Param(k, vv...)
+	}
+	return rb
+}
+
 // Accept sets the Accept header for a request.
 func (rb *Builder) Accept(contentTypes string) *Builder {
 	return rb.Header("Accept", contentTypes)
