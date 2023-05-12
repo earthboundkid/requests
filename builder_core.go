@@ -30,7 +30,7 @@ import (
 // # Build an http.Request with Builder.Request
 //
 // Set the method for a request with [Builder.Method]
-// or use the [Builder.Delete], [Builder.Head], [Builder.Patch], and [Builder.Put] methods.
+// or use the [Builder.Delete], [Builder.Head], [Builder.Patch], [Builder.Post], and [Builder.Put] methods.
 // By default, requests without a body are GET,
 // and those with a body are POST.
 //
