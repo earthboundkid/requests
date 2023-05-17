@@ -15,4 +15,7 @@ jobs:
     - name: Get dependencies
       run: go mod download
     - name: Test
-      run: go test -race -v ./...
+      run: go test -race -v -coverprofile=profile.cov ./...
+    - uses: shogo82148/actions-goveralls@v1
+      with:
+        path-to-profile: profile.cov
