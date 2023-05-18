@@ -10,7 +10,7 @@ import (
 	"github.com/carlmjohnson/requests/internal/slicex"
 )
 
-// nopCloser is like io.nopCloser(),
+// nopCloser is like io.NopCloser(),
 // but it is a concrete type so we can strip it out
 // before setting a body on a request.
 // See https://github.com/carlmjohnson/requests/discussions/49
