@@ -228,13 +228,15 @@ func Example_queryParam() {
 }
 
 func ExampleBuilder_Params() {
-	values := url.Values{"a": []string{"1"}}
+	// Conditionally add parameters
+	values := url.Values{"a": {"1"}}
 	values.Set("b", "3")
 	if "cond" != "example" {
 		values.Add("b", "4")
 		values.Set("c", "5")
 	}
 
+	// Then add them to the URL
 	u, err := requests.
 		URL("https://www.example.com/get?a=0&z=6").
 		Params(values).
