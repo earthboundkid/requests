@@ -1,12 +1,10 @@
 package reqxml
 
 import (
-	"bytes"
 	"encoding/xml"
 	"io"
 
 	"github.com/carlmjohnson/requests"
-	"github.com/carlmjohnson/requests/internal/core"
 )
 
 // Body is a BodyGetter that marshals a XML object.
@@ -16,7 +14,7 @@ func Body(v any) requests.BodyGetter {
 		if err != nil {
 			return nil, err
 		}
-		return core.RC(bytes.NewReader(b)), nil
+		return requests.BodyBytes(b)()
 	}
 }
 

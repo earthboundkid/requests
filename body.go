@@ -7,8 +7,6 @@ import (
 	"net/url"
 	"os"
 	"strings"
-
-	"github.com/carlmjohnson/requests/internal/core"
 )
 
 // BodyGetter provides a Builder with a source for a request body.
@@ -20,7 +18,7 @@ func BodyReader(r io.Reader) BodyGetter {
 		if rc, ok := r.(io.ReadCloser); ok {
 			return rc, nil
 		}
-		return core.RC(r), nil
+		return rc(r), nil
 	}
 }
 
@@ -42,7 +40,7 @@ func BodyWriter(f func(w io.Writer) error) BodyGetter {
 // BodyBytes is a BodyGetter that returns the provided raw bytes.
 func BodyBytes(b []byte) BodyGetter {
 	return func() (io.ReadCloser, error) {
-		return core.RC(bytes.NewReader(b)), nil
+		return rc(bytes.NewReader(b)), nil
 	}
 }
 
@@ -53,14 +51,14 @@ func BodyJSON(v any) BodyGetter {
 		if err != nil {
 			return nil, err
 		}
-		return core.RC(bytes.NewReader(b)), nil
+		return rc(bytes.NewReader(b)), nil
 	}
 }
 
 // BodyForm is a BodyGetter that builds an encoded form body.
 func BodyForm(data url.Values) BodyGetter {
 	return func() (r io.ReadCloser, err error) {
-		return core.RC(strings.NewReader(data.Encode())), nil
+		return rc(strings.NewReader(data.Encode())), nil
 	}
 }
 

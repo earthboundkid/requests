@@ -1,6 +1,4 @@
-// Package core handles the core functionality of requests
-// apart from any convenience functions and patterns.
-package core
+package requests
 
 import (
 	"net/url"
@@ -18,42 +16,42 @@ type kvpair struct {
 	key, value string
 }
 
-type URLBuilder struct {
+type urlBuilder struct {
 	baseurl      string
 	scheme, host string
 	paths        []string
 	params       []multimap
 }
 
-func (ub *URLBuilder) BaseURL(baseurl string) {
+func (ub *urlBuilder) BaseURL(baseurl string) {
 	ub.baseurl = baseurl
 }
 
-func (ub *URLBuilder) Scheme(scheme string) {
+func (ub *urlBuilder) Scheme(scheme string) {
 	ub.scheme = scheme
 }
 
-func (ub *URLBuilder) Host(host string) {
+func (ub *urlBuilder) Host(host string) {
 	ub.host = host
 
 }
 
-func (ub *URLBuilder) Path(path string) {
+func (ub *urlBuilder) Path(path string) {
 	ub.paths = append(ub.paths, path)
 }
 
-func (ub *URLBuilder) Param(key string, values ...string) {
+func (ub *urlBuilder) Param(key string, values ...string) {
 	ub.params = append(ub.params, multimap{key, values})
 }
 
-func (ub *URLBuilder) Clone() *URLBuilder {
+func (ub *urlBuilder) Clone() *urlBuilder {
 	ub2 := *ub
 	slicex.Clip(&ub2.paths)
 	slicex.Clip(&ub2.params)
 	return &ub2
 }
 
-func (ub *URLBuilder) URL() (u *url.URL, err error) {
+func (ub *urlBuilder) URL() (u *url.URL, err error) {
 	u, err = url.Parse(ub.baseurl)
 	if err != nil {
 		return new(url.URL), err

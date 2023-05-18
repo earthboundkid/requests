@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/carlmjohnson/requests/internal/core"
 	"github.com/carlmjohnson/requests/internal/minitrue"
 	"github.com/carlmjohnson/requests/internal/slicex"
 )
@@ -74,8 +73,8 @@ import (
 //
 // The zero value of Builder is usable.
 type Builder struct {
-	ub         core.URLBuilder
-	rb         core.RequestBuilder
+	ub         urlBuilder
+	rb         requestBuilder
 	cl         *http.Client
 	rt         http.RoundTripper
 	validators []ResponseHandler
@@ -237,15 +236,15 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 		rb.handler,
 		consumeBody)
 
-	code, err := core.Do(cl, req, validators, h)
+	code, err := do(cl, req, validators, h)
 	switch code {
-	case core.DoerOK:
+	case doOK:
 		return nil
-	case core.DoerConnect:
+	case doConnect:
 		err = joinerrs(ErrTransport, err)
-	case core.DoerValidate:
+	case doValidate:
 		err = joinerrs(ErrValidator, err)
-	case core.DoerHandle:
+	case doHandle:
 		err = joinerrs(ErrHandler, err)
 	}
 	return err

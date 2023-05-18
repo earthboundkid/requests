@@ -1,6 +1,12 @@
-package core
+package requests
 
-// PathCases is exported to share tests with requests
+import (
+	"testing"
+
+	"github.com/carlmjohnson/requests/internal/be"
+)
+
+// PathCases is exported to share tests with requests_test
 var PathCases = map[string]struct {
 	Base   string
 	Paths  []string
@@ -86,4 +92,20 @@ var PathCases = map[string]struct {
 		[]string{"b/", "c/", "/d"},
 		"https://example/d",
 	},
+}
+
+func TestCorePath(t *testing.T) {
+	t.Parallel()
+	for name, tc := range PathCases {
+		t.Run(name, func(t *testing.T) {
+			var b urlBuilder
+			b.BaseURL(tc.Base)
+			for _, p := range tc.Paths {
+				b.Path(p)
+			}
+			u, err := b.URL()
+			be.NilErr(t, err)
+			be.Equal(t, tc.Result, u.String())
+		})
+	}
 }

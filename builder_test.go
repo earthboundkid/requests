@@ -9,7 +9,6 @@ import (
 
 	"github.com/carlmjohnson/requests"
 	"github.com/carlmjohnson/requests/internal/be"
-	"github.com/carlmjohnson/requests/internal/core"
 )
 
 func TestClone(t *testing.T) {
@@ -132,7 +131,7 @@ func TestScheme(t *testing.T) {
 
 func TestPath(t *testing.T) {
 	t.Parallel()
-	for name, tc := range core.PathCases {
+	for name, tc := range requests.PathCases {
 		t.Run(name, func(t *testing.T) {
 			var b requests.Builder
 			b.BaseURL(tc.Base)
