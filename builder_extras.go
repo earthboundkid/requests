@@ -139,14 +139,6 @@ func (rb *Builder) BodyJSON(v any) *Builder {
 		ContentType("application/json")
 }
 
-// BodyXML sets the Builder's request body to the marshaled XML.
-// It also sets ContentType to "application/xml".
-func (rb *Builder) BodyXML(v any) *Builder {
-	return rb.
-		Body(BodyXML(v)).
-		ContentType("application/xml")
-}
-
 // BodyForm sets the Builder's request body to the encoded form.
 // It also sets the ContentType to "application/x-www-form-urlencoded".
 func (rb *Builder) BodyForm(data url.Values) *Builder {
@@ -178,11 +170,6 @@ func (rb *Builder) CheckPeek(n int, f func([]byte) error) *Builder {
 // ToJSON sets the Builder to decode a response as a JSON object
 func (rb *Builder) ToJSON(v any) *Builder {
 	return rb.Handle(ToJSON(v))
-}
-
-// ToXML sets the Builder to decode a response as an XML object
-func (rb *Builder) ToXML(v any) *Builder {
-	return rb.Handle(ToXML(v))
 }
 
 // ToString sets the Builder to write the response body to the provided string pointer.

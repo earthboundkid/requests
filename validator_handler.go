@@ -32,10 +32,3 @@ var ErrInvalidHandled = errors.New("handled recovery from invalid response")
 func ErrorJSON(v any) ResponseHandler {
 	return ValidatorHandler(DefaultValidator, ToJSON(v))
 }
-
-// ErrorXML is a ValidatorHandler that applies DefaultValidator
-// and decodes the response as an XML object
-// if the DefaultValidator check fails.
-func ErrorXML(v any) ResponseHandler {
-	return ValidatorHandler(DefaultValidator, ToXML(v))
-}
