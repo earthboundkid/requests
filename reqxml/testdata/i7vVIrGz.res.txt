@@ -1,0 +1,14 @@
+HTTP/1.1 403 Forbidden
+Transfer-Encoding: chunked
+Content-Type: application/xml
+Date: Thu, 18 May 2023 16:05:33 GMT
+Server: AmazonS3
+X-Amz-Bucket-Region: us-east-1
+X-Amz-Id-2: ZyTEY7V/EnnHRN0v3XYmPycLz2sX4GvMA2AhZ3HegkyUM94JcDrYKclCJQA56AkmCu7q3R9n+AY=
+X-Amz-Request-Id: MRS5T7GQSJYGP5VC
+
+f3
+<?xml version="1.0" encoding="UTF-8"?>
+<Error><Code>AccessDenied</Code><Message>Access Denied</Message><RequestId>MRS5T7GQSJYGP5VC</RequestId><HostId>ZyTEY7V/EnnHRN0v3XYmPycLz2sX4GvMA2AhZ3HegkyUM94JcDrYKclCJQA56AkmCu7q3R9n+AY=</HostId></Error>
+0
+

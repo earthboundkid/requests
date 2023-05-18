@@ -3,7 +3,6 @@ package requests
 import (
 	"bytes"
 	"encoding/json"
-	"encoding/xml"
 	"io"
 	"net/url"
 	"os"
@@ -51,17 +50,6 @@ func BodyBytes(b []byte) BodyGetter {
 func BodyJSON(v any) BodyGetter {
 	return func() (io.ReadCloser, error) {
 		b, err := json.Marshal(v)
-		if err != nil {
-			return nil, err
-		}
-		return core.RC(bytes.NewReader(b)), nil
-	}
-}
-
-// BodyXML is a BodyGetter that marshals a XML object.
-func BodyXML(v any) BodyGetter {
-	return func() (io.ReadCloser, error) {
-		b, err := xml.Marshal(v)
 		if err != nil {
 			return nil, err
 		}

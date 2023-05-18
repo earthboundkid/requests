@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"encoding/xml"
 	"io"
 	"net/http"
 	"os"
@@ -48,20 +47,6 @@ func ToJSON(v any) ResponseHandler {
 			return err
 		}
 		if err = json.Unmarshal(data, v); err != nil {
-			return err
-		}
-		return nil
-	}
-}
-
-// ToXML decodes a response as an XML object.
-func ToXML(v any) ResponseHandler {
-	return func(res *http.Response) error {
-		data, err := io.ReadAll(res.Body)
-		if err != nil {
-			return err
-		}
-		if err = xml.Unmarshal(data, v); err != nil {
 			return err
 		}
 		return nil
