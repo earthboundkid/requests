@@ -1,4 +1,4 @@
-package core
+package requests
 
 import (
 	"context"
@@ -10,49 +10,47 @@ import (
 	"github.com/carlmjohnson/requests/internal/slicex"
 )
 
-// NopCloser is like io.NopCloser(),
+// nopCloser is like io.nopCloser(),
 // but it is a concrete type so we can strip it out
 // before setting a body on a request.
 // See https://github.com/carlmjohnson/requests/discussions/49
-type NopCloser struct {
+type nopCloser struct {
 	io.Reader
 }
 
-func RC(r io.Reader) NopCloser {
-	return NopCloser{r}
+func rc(r io.Reader) nopCloser {
+	return nopCloser{r}
 }
 
-func (NopCloser) Close() error { return nil }
+func (nopCloser) Close() error { return nil }
 
-var _ io.ReadCloser = NopCloser{}
+var _ io.ReadCloser = nopCloser{}
 
-type BodyGetter = func() (io.ReadCloser, error)
-
-type RequestBuilder struct {
+type requestBuilder struct {
 	headers []multimap
 	cookies []kvpair
 	getBody BodyGetter
 	method  string
 }
 
-func (rb *RequestBuilder) Header(key string, values ...string) {
+func (rb *requestBuilder) Header(key string, values ...string) {
 	rb.headers = append(rb.headers, multimap{key, values})
 }
 
-func (rb *RequestBuilder) Cookie(name, value string) {
+func (rb *requestBuilder) Cookie(name, value string) {
 	rb.cookies = append(rb.cookies, kvpair{name, value})
 }
 
-func (rb *RequestBuilder) Method(method string) {
+func (rb *requestBuilder) Method(method string) {
 	rb.method = method
 }
 
-func (rb *RequestBuilder) Body(src BodyGetter) {
+func (rb *requestBuilder) Body(src BodyGetter) {
 	rb.getBody = src
 }
 
 // Clone creates a new Builder suitable for independent mutation.
-func (rb *RequestBuilder) Clone() *RequestBuilder {
+func (rb *requestBuilder) Clone() *requestBuilder {
 	rb2 := *rb
 	slicex.Clip(&rb2.headers)
 	slicex.Clip(&rb2.cookies)
@@ -60,13 +58,13 @@ func (rb *RequestBuilder) Clone() *RequestBuilder {
 }
 
 // Request builds a new http.Request with its context set.
-func (rb *RequestBuilder) Request(ctx context.Context, u *url.URL) (req *http.Request, err error) {
+func (rb *requestBuilder) Request(ctx context.Context, u *url.URL) (req *http.Request, err error) {
 	var body io.Reader
 	if rb.getBody != nil {
 		if body, err = rb.getBody(); err != nil {
 			return nil, err
 		}
-		if nopper, ok := body.(NopCloser); ok {
+		if nopper, ok := body.(nopCloser); ok {
 			body = nopper.Reader
 		}
 	}
