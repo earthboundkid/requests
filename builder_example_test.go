@@ -274,30 +274,26 @@ func ExampleBuilder_Header() {
 }
 
 func ExampleBuilder_Headers() {
-	// Set headers
-	var headers postman
-	err := requests.
-		URL("https://postman-echo.com/get").
-		Headers(map[string][]string{
-			"user-agent":    {"bond/james-bond"},
-			"authorization": {"Basic Ym9uZGo6MDA3IQ=="},
-			"content-type":  {"secret"},
-			"martini":       {"shaken"},
-		}).
-		ToJSON(&headers).
-		Fetch(context.Background())
-	if err != nil {
-		fmt.Println("problem with postman:", err)
+	// Set headers conditionally
+	h := make(http.Header)
+	if "x-forwarded-for" != "true" {
+		h.Add("x-forwarded-for", "127.0.0.1")
 	}
-	fmt.Println(headers.Headers["user-agent"])
-	fmt.Println(headers.Headers["authorization"])
-	fmt.Println(headers.Headers["content-type"])
-	fmt.Println(headers.Headers["martini"])
+	if "has-trace-id" != "true" {
+		h.Add("x-trace-id", "abc123")
+	}
+	// Then add them to a request
+	req, err := requests.
+		URL("https://example.com").
+		Headers(h).
+		Request(context.Background())
+	if err != nil {
+		fmt.Println("Error!", err)
+	}
+	fmt.Println(req.Header)
 	// Output:
-	// bond/james-bond
-	// Basic Ym9uZGo6MDA3IQ==
-	// secret
-	// shaken
+	// map[X-Forwarded-For:[127.0.0.1] X-Trace-Id:[abc123]]
+
 }
 func ExampleBuilder_Bearer() {
 	// We get a 401 response if no bearer token is provided
