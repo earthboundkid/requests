@@ -68,10 +68,10 @@ func (rb *requestBuilder) Request(ctx context.Context, u *url.URL) (req *http.Re
 			body = nopper.Reader
 		}
 	}
-	method := minitrue.First(rb.method,
-		minitrue.Cond(rb.getBody != nil,
-			http.MethodPost,
-			http.MethodGet))
+	method := minitrue.Or(rb.method,
+		minitrue.Cond(rb.getBody == nil,
+			http.MethodGet,
+			http.MethodPost))
 
 	req, err = http.NewRequestWithContext(ctx, method, u.String(), body)
 	if err != nil {

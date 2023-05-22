@@ -56,8 +56,12 @@ func (ub *urlBuilder) URL() (u *url.URL, err error) {
 	if err != nil {
 		return new(url.URL), err
 	}
-	u.Scheme = minitrue.First(ub.scheme, minitrue.First(u.Scheme, "https"))
-	u.Host = minitrue.First(ub.host, u.Host)
+	u.Scheme = minitrue.Or(
+		ub.scheme,
+		u.Scheme,
+		"https",
+	)
+	u.Host = minitrue.Or(ub.host, u.Host)
 	for _, p := range ub.paths {
 		u.Path = u.ResolveReference(&url.URL{Path: p}).Path
 	}
