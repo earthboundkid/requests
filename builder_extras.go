@@ -31,6 +31,8 @@ func (rb *Builder) Head() *Builder {
 }
 
 // Post sets HTTP method to POST.
+//
+// Note that setting a Body causes a request to be POST by default.
 func (rb *Builder) Post() *Builder {
 	return rb.Method(http.MethodPost)
 }
