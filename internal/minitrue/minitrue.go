@@ -8,6 +8,13 @@ func Cond[T any](val bool, a, b T) T {
 	return b
 }
 
-func First[T comparable](a, b T) T {
-	return Cond(a != *new(T), a, b)
+// Or returns the first non-empty argument it receives
+// or the zero value for T.
+func Or[T comparable](vals ...T) T {
+	for _, val := range vals {
+		if val != *new(T) {
+			return val
+		}
+	}
+	return *new(T)
 }
