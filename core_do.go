@@ -4,16 +4,16 @@ import (
 	"net/http"
 )
 
-type doerResponse int
+type doResponse int
 
 const (
-	doOK doerResponse = iota
+	doOK doResponse = iota
 	doConnect
 	doValidate
 	doHandle
 )
 
-func do(cl *http.Client, req *http.Request, validators []ResponseHandler, h ResponseHandler) (doerResponse, error) {
+func do(cl *http.Client, req *http.Request, validators []ResponseHandler, h ResponseHandler) (doResponse, error) {
 	res, err := cl.Do(req)
 	if err != nil {
 		return doConnect, err
