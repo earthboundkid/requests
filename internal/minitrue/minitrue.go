@@ -11,10 +11,11 @@ func Cond[T any](val bool, a, b T) T {
 // Or returns the first non-empty argument it receives
 // or the zero value for T.
 func Or[T comparable](vals ...T) T {
+	var zero T
 	for _, val := range vals {
-		if val != *new(T) {
+		if val != zero {
 			return val
 		}
 	}
-	return *new(T)
+	return zero
 }

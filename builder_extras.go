@@ -13,7 +13,7 @@ import (
 // URL creates a new Builder suitable for method chaining.
 // It is equivalent to calling BaseURL on an empty Builder.
 func URL(baseurl string) *Builder {
-	return (&Builder{}).BaseURL(baseurl)
+	return new(Builder).BaseURL(baseurl)
 }
 
 // New creates a new Builder suitable for method chaining by applying the specified Configs.
@@ -22,7 +22,7 @@ func URL(baseurl string) *Builder {
 // so it is not necessary to call New
 // when you do not have any Configs to apply.
 func New(cfgs ...Config) *Builder {
-	return (&Builder{}).Config(cfgs...)
+	return new(Builder).Config(cfgs...)
 }
 
 // Head sets HTTP method to HEAD.

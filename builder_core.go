@@ -2,7 +2,7 @@ package requests
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"net/http"
 	"net/url"
 
@@ -191,10 +191,6 @@ func (rb *Builder) Clone() *Builder {
 	return &rb2
 }
 
-func joinerrs(a, b error) error {
-	return fmt.Errorf("%w: %w", a, b)
-}
-
 // URL builds a *url.URL from the base URL and options set on the Builder.
 // If a valid url.URL cannot be built,
 // URL() nevertheless returns a new url.URL,
@@ -202,7 +198,7 @@ func joinerrs(a, b error) error {
 func (rb *Builder) URL() (u *url.URL, err error) {
 	u, err = rb.ub.URL()
 	if err != nil {
-		return u, joinerrs(ErrURL, err)
+		return u, errors.Join(ErrURL, err)
 	}
 	return u, nil
 }
@@ -215,7 +211,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	}
 	req, err = rb.rb.Request(ctx, u)
 	if err != nil {
-		return nil, joinerrs(ErrRequest, err)
+		return nil, errors.Join(ErrRequest, err)
 	}
 	return req, nil
 }
@@ -241,11 +237,11 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	case doOK:
 		return nil
 	case doConnect:
-		err = joinerrs(ErrTransport, err)
+		err = errors.Join(ErrTransport, err)
 	case doValidate:
-		err = joinerrs(ErrValidator, err)
+		err = errors.Join(ErrValidator, err)
 	case doHandle:
-		err = joinerrs(ErrHandler, err)
+		err = errors.Join(ErrHandler, err)
 	}
 	return err
 }

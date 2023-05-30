@@ -54,7 +54,7 @@ func (ub *urlBuilder) Clone() *urlBuilder {
 func (ub *urlBuilder) URL() (u *url.URL, err error) {
 	u, err = url.Parse(ub.baseurl)
 	if err != nil {
-		return new(url.URL), err
+		return nil, err
 	}
 	u.Scheme = minitrue.Or(
 		ub.scheme,
@@ -73,9 +73,5 @@ func (ub *urlBuilder) URL() (u *url.URL, err error) {
 		u.RawQuery = q.Encode()
 	}
 	// Reparsing, in case the path rewriting broke the URL
-	u, err = url.Parse(u.String())
-	if err != nil {
-		return new(url.URL), err
-	}
-	return u, nil
+	return url.Parse(u.String())
 }
