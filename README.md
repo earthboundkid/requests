@@ -18,9 +18,8 @@ Requests also comes with tools for building custom http transports, include a re
 - Supports context.Context
 - JSON serialization and deserialization helpers 
 - Easily manipulate URLs and query parameters
-- Save responses to string, file, or custom writer
 - Request recording and replaying for tests
-- Customizable transports and validators that are compatible with the standard library
+- Customizable transports and validators that are compatible with the standard library and third party libraries
 
 ## Examples
 ### Simple GET into a string
