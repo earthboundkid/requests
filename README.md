@@ -10,6 +10,18 @@
 
 Requests also comes with tools for building custom http transports, include a request recorder and replayer for testing.
 
+## Features
+
+- Simplifies HTTP client usage compared to net/http 
+- Can't forget to close response body
+- Checks status codes by default
+- Supports context.Context
+- JSON serialization and deserialization helpers 
+- Easily manipulate URLs and query parameters
+- Save responses to string, file, or custom writer
+- Request recording and replaying for tests
+- Customizable transports and validators that are compatible with the standard library
+
 ## Examples
 ### Simple GET into a string
 
