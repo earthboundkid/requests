@@ -20,6 +20,8 @@ Requests also comes with tools for building custom http transports, include a re
 - Easily manipulate URLs and query parameters
 - Request recording and replaying for tests
 - Customizable transports and validators that are compatible with the standard library and third party libraries
+- No third party dependencies
+- Good test coverage
 
 ## Examples
 ### Simple GET into a string
