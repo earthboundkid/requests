@@ -10,6 +10,19 @@
 
 Requests also comes with tools for building custom http transports, include a request recorder and replayer for testing.
 
+## Features
+
+- Simplifies HTTP client usage compared to net/http 
+- Can't forget to close response body
+- Checks status codes by default
+- Supports context.Context
+- JSON serialization and deserialization helpers 
+- Easily manipulate URLs and query parameters
+- Request recording and replaying for tests
+- Customizable transports and validators that are compatible with the standard library and third party libraries
+- No third party dependencies
+- Good test coverage
+
 ## Examples
 ### Simple GET into a string
 
@@ -270,10 +283,10 @@ err := requests.
 It depends on exactly what you need in terms of file atomicity and buffering, but this will work for most cases:
 
 ```go
-	err := requests.
-		URL("http://example.com").
-		ToFile("myfile.txt").
-		Fetch(ctx)
+err := requests.
+	URL("http://example.com").
+	ToFile("myfile.txt").
+	Fetch(ctx)
 ```
 
 For more advanced use case, use `ToWriter`.
