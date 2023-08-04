@@ -270,10 +270,10 @@ err := requests.
 It depends on exactly what you need in terms of file atomicity and buffering, but this will work for most cases:
 
 ```go
-	err := requests.
-		URL("http://example.com").
-		ToFile("myfile.txt").
-		Fetch(ctx)
+err := requests.
+	URL("http://example.com").
+	ToFile("myfile.txt").
+	Fetch(ctx)
 ```
 
 For more advanced use case, use `ToWriter`.
