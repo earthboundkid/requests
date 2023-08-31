@@ -3,13 +3,13 @@ package requests
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/goccy/go-json"
 	"golang.org/x/net/html"
 )
 
