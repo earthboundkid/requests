@@ -2,7 +2,6 @@ package requests
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/url"
 	"os"
@@ -47,7 +46,7 @@ func BodyBytes(b []byte) BodyGetter {
 // BodyJSON is a BodyGetter that marshals a JSON object.
 func BodyJSON(v any) BodyGetter {
 	return func() (io.ReadCloser, error) {
-		b, err := json.Marshal(v)
+		b, err := jsonMarshal(v)
 		if err != nil {
 			return nil, err
 		}
