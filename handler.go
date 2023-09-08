@@ -3,7 +3,6 @@ package requests
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -46,7 +45,7 @@ func ToJSON(v any) ResponseHandler {
 		if err != nil {
 			return err
 		}
-		if err = json.Unmarshal(data, v); err != nil {
+		if err = jsonUnmarshal(data, v); err != nil {
 			return err
 		}
 		return nil
