@@ -20,6 +20,8 @@ func SetJSONMarshaller(j jsonMarshaller) {
 	jsonMarshal = j
 }
 
+// SetJSONSerializers is a function to set global json.Marshal/json.Unmarshal function
+// For faster serialization/deserialization you can use functions from, for instance, https://github.com/goccy/go-json
 func SetJSONSerializers(marshaller jsonMarshaller, unmarshaller jsonUnmarshaller) {
 	jsonMarshal = marshaller
 	jsonUnmarshal = unmarshaller
