@@ -38,18 +38,22 @@ func consumeBody(res *http.Response) (err error) {
 	return err
 }
 
-// ToJSON decodes a response as a JSON object.
-func ToJSON(v any) ResponseHandler {
+func ToDeserializer(d Deserializer, v any) ResponseHandler {
 	return func(res *http.Response) error {
 		data, err := io.ReadAll(res.Body)
 		if err != nil {
 			return err
 		}
-		if err = jsonUnmarshal(data, v); err != nil {
+		if err = d(data, v); err != nil {
 			return err
 		}
 		return nil
 	}
+}
+
+// ToJSON decodes a response as a JSON object.
+func ToJSON(v any) ResponseHandler {
+	return ToDeserializer(JSONDeserializer, v)
 }
 
 // ToString writes the response body to the provided string pointer.
