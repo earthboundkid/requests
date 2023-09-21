@@ -43,15 +43,19 @@ func BodyBytes(b []byte) BodyGetter {
 	}
 }
 
-// BodyJSON is a BodyGetter that marshals a JSON object.
-func BodyJSON(v any) BodyGetter {
+func BodySerializer(s Serializer, v any) BodyGetter {
 	return func() (io.ReadCloser, error) {
-		b, err := jsonMarshal(v)
+		b, err := s(v)
 		if err != nil {
 			return nil, err
 		}
 		return rc(bytes.NewReader(b)), nil
 	}
+}
+
+// BodyJSON is a BodyGetter that marshals a JSON object.
+func BodyJSON(v any) BodyGetter {
+	return BodySerializer(JSONSerializer, v)
 }
 
 // BodyForm is a BodyGetter that builds an encoded form body.

@@ -133,6 +133,11 @@ func (rb *Builder) BodyBytes(b []byte) *Builder {
 	return rb.Body(BodyBytes(b))
 }
 
+func (rb *Builder) BodySerializer(s Serializer, v any) *Builder {
+	return rb.
+		Body(BodySerializer(s, v))
+}
+
 // BodyJSON sets the Builder's request body to the marshaled JSON.
 // It also sets ContentType to "application/json".
 func (rb *Builder) BodyJSON(v any) *Builder {
@@ -167,6 +172,11 @@ func (rb *Builder) CheckContentType(cts ...string) *Builder {
 // CheckPeek adds a validator that peeks at the first n bytes of a response body.
 func (rb *Builder) CheckPeek(n int, f func([]byte) error) *Builder {
 	return rb.AddValidator(CheckPeek(n, f))
+}
+
+func (rb *Builder) ToDeserializer(d Deserializer, v any) *Builder {
+	return rb.
+		Handle(ToDeserializer(d, v))
 }
 
 // ToJSON sets the Builder to decode a response as a JSON object
