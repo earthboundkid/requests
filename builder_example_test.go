@@ -3,6 +3,7 @@ package requests_test
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -582,4 +583,37 @@ func ExampleBuilder_ErrorJSON() {
 	// Output:
 	// X 1
 	// brewing
+}
+
+func ExampleBuilder_BodySerializer() {
+	// Have some binary data
+	data := struct {
+		Header [3]byte
+		Data   uint32
+	}{
+		Header: [3]byte([]byte("ABC")),
+		Data:   0xbadc0fee,
+	}
+	// Serialize it by just shoving data onto the wire
+	serializer := func(v any) ([]byte, error) {
+		var buf bytes.Buffer
+		err := binary.Write(&buf, binary.BigEndian, v)
+		return buf.Bytes(), err
+	}
+	// Make a request using the serializer
+	req, err := requests.
+		New().
+		BodySerializer(serializer, data).
+		Request(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	b, err := io.ReadAll(req.Body)
+	if err != nil {
+		panic(err)
+	}
+	// Request body is just serialized bytes
+	fmt.Printf("%q", b)
+	// Output:
+	// "ABC\xba\xdc\x0f\xee"
 }
