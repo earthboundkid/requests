@@ -588,11 +588,11 @@ func ExampleBuilder_ErrorJSON() {
 func ExampleBuilder_BodySerializer() {
 	// Have some binary data
 	data := struct {
-		Header [3]byte
-		Data   uint32
+		Header  [3]byte
+		Payload uint32
 	}{
-		Header: [3]byte([]byte("ABC")),
-		Data:   0xbadc0fee,
+		Header:  [3]byte([]byte("ABC")),
+		Payload: 0xbadc0fee,
 	}
 	// Serialize it by just shoving data onto the wire
 	serializer := func(v any) ([]byte, error) {
@@ -616,4 +616,34 @@ func ExampleBuilder_BodySerializer() {
 	fmt.Printf("%q", b)
 	// Output:
 	// "ABC\xba\xdc\x0f\xee"
+}
+
+func ExampleBuilder_ToDeserializer() {
+	trans := requests.ReplayString(
+		"HTTP/1.1 200 OK\r\n\r\nXYZ\x00\xde\xca\xff",
+	)
+	// Have some binary structure
+	var data struct {
+		Header  [3]byte
+		Payload uint32
+	}
+	// Deserialize it by just pulling data off the wire
+	deserializer := func(data []byte, v any) error {
+		buf := bytes.NewReader(data)
+		return binary.Read(buf, binary.BigEndian, v)
+	}
+	// Make a request using the serializer
+	err := requests.
+		New().
+		Transport(trans).
+		ToDeserializer(deserializer, &data).
+		Fetch(context.Background())
+	if err != nil {
+		panic(err)
+	}
+
+	// Request body is just serialized bytes
+	fmt.Printf("%q, %X", data.Header, data.Payload)
+	// Output:
+	// "XYZ", DECAFF
 }
