@@ -632,7 +632,7 @@ func ExampleBuilder_ToDeserializer() {
 		buf := bytes.NewReader(data)
 		return binary.Read(buf, binary.BigEndian, v)
 	}
-	// Make a request using the serializer
+	// Make a request using the deserializer
 	err := requests.
 		New().
 		Transport(trans).
