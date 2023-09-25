@@ -650,6 +650,12 @@ func ExampleBuilder_ToDeserializer() {
 }
 
 func ExampleBuilder_BodyJSON() {
+	// Restore defaults after this test
+	defaultSerializer := requests.JSONSerializer
+	defer func() {
+		requests.JSONSerializer = defaultSerializer
+	}()
+
 	data := struct {
 		A string `json:"a"`
 		B int    `json:"b"`
@@ -671,16 +677,12 @@ func ExampleBuilder_BodyJSON() {
 	io.Copy(os.Stdout, req.Body)
 	fmt.Println()
 
-	// Restore default after this test
-	defaultSerializer := requests.JSONSerializer
-	defer func() {
-		requests.JSONSerializer = defaultSerializer
-	}()
-
-	// Have the default JSON serializer indent with two spaces
+	// Change the default JSON serializer to indent with two spaces
 	requests.JSONSerializer = func(v any) ([]byte, error) {
 		return json.MarshalIndent(v, "", "  ")
 	}
+
+	// Build a new request using the new indenting serializer
 	req, err = requests.
 		New().
 		BodyJSON(&data).
