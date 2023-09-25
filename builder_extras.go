@@ -139,6 +139,7 @@ func (rb *Builder) BodySerializer(s Serializer, v any) *Builder {
 }
 
 // BodyJSON sets the Builder's request body to the marshaled JSON.
+// It uses [JSONSerializer] to marshal the object.
 // It also sets ContentType to "application/json".
 func (rb *Builder) BodyJSON(v any) *Builder {
 	return rb.
@@ -180,6 +181,8 @@ func (rb *Builder) ToDeserializer(d Deserializer, v any) *Builder {
 }
 
 // ToJSON sets the Builder to decode a response as a JSON object
+//
+// It uses [JSONDeserializer] to unmarshal the object.
 func (rb *Builder) ToJSON(v any) *Builder {
 	return rb.Handle(ToJSON(v))
 }
