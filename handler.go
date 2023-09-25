@@ -38,6 +38,7 @@ func consumeBody(res *http.Response) (err error) {
 	return err
 }
 
+// ToDeserializer decodes a response into v using a [Deserializer].
 func ToDeserializer(d Deserializer, v any) ResponseHandler {
 	return func(res *http.Response) error {
 		data, err := io.ReadAll(res.Body)
