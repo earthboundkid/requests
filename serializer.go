@@ -15,10 +15,10 @@ type Serializer = func(v any) ([]byte, error)
 type Deserializer = func(data []byte, v any) error
 
 var (
-	// JSONSerializer is used by [BodyJSON] and [Builder.BodyJSON].
+	// JSONSerializer is used by BodyJSON and Builder.BodyJSON.
 	// The default serializer may be changed in a future version of requests.
 	JSONSerializer Serializer = json.Marshal
-	// JSONDeserializer is used by [ToJSON] and [Builder.ToJSON].
+	// JSONDeserializer is used by ToJSON and Builder.ToJSON.
 	// The default deserializer may be changed in a future version of requests.
 	JSONDeserializer Deserializer = json.Unmarshal
 )
