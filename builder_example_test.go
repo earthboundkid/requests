@@ -658,7 +658,7 @@ func ExampleBuilder_BodyJSON() {
 		"Hello", 42, []bool{true, false},
 	}
 
-	// A request using the default serializer
+	// Build a request using the default JSON serializer
 	req, err := requests.
 		New().
 		BodyJSON(&data).
@@ -667,6 +667,7 @@ func ExampleBuilder_BodyJSON() {
 		panic(err)
 	}
 
+	// JSON is packed in with no whitespace
 	io.Copy(os.Stdout, req.Body)
 	fmt.Println()
 
@@ -676,7 +677,7 @@ func ExampleBuilder_BodyJSON() {
 		requests.JSONSerializer = defaultSerializer
 	}()
 
-	// Serialize with indented JSON
+	// Have the default JSON serializer indent with two spaces
 	requests.JSONSerializer = func(v any) ([]byte, error) {
 		return json.MarshalIndent(v, "", "  ")
 	}
@@ -688,7 +689,9 @@ func ExampleBuilder_BodyJSON() {
 		panic(err)
 	}
 
+	// Now the request body is indented
 	io.Copy(os.Stdout, req.Body)
+	fmt.Println()
 
 	// Output:
 	// {"a":"Hello","b":42,"c":[true,false]}
