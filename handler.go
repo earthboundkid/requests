@@ -52,6 +52,8 @@ func ToDeserializer(d Deserializer, v any) ResponseHandler {
 }
 
 // ToJSON decodes a response as a JSON object.
+//
+// It uses [JSONDeserializer] to unmarshal the object.
 func ToJSON(v any) ResponseHandler {
 	return ToDeserializer(JSONDeserializer, v)
 }
