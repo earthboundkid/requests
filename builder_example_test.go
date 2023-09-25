@@ -643,7 +643,7 @@ func ExampleBuilder_ToDeserializer() {
 		panic(err)
 	}
 
-	// Request body is just serialized bytes
+	// We read the data out of the response body
 	fmt.Printf("%q, %X", data.Header, data.Payload)
 	// Output:
 	// "XYZ", DECAFF
