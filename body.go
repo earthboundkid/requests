@@ -43,6 +43,9 @@ func BodyBytes(b []byte) BodyGetter {
 	}
 }
 
+// BodySerializer is a BodyGetter
+// that uses the provided [Serializer]
+// to build the body of a request from v.
 func BodySerializer(s Serializer, v any) BodyGetter {
 	return func() (io.ReadCloser, error) {
 		b, err := s(v)
@@ -53,9 +56,8 @@ func BodySerializer(s Serializer, v any) BodyGetter {
 	}
 }
 
-// BodyJSON is a BodyGetter that marshals a JSON object.
-//
-// It uses [JSONSerializer] to marshal the object.
+// BodyJSON is a [BodySerializer]
+// that uses [JSONSerializer] to marshal the object.
 func BodyJSON(v any) BodyGetter {
 	return BodySerializer(JSONSerializer, v)
 }

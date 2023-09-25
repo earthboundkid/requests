@@ -133,6 +133,8 @@ func (rb *Builder) BodyBytes(b []byte) *Builder {
 	return rb.Body(BodyBytes(b))
 }
 
+// BodySerializer sets the Builder's request body
+// to the serialized object.
 func (rb *Builder) BodySerializer(s Serializer, v any) *Builder {
 	return rb.
 		Body(BodySerializer(s, v))
@@ -175,12 +177,14 @@ func (rb *Builder) CheckPeek(n int, f func([]byte) error) *Builder {
 	return rb.AddValidator(CheckPeek(n, f))
 }
 
+// ToDeserializer sets the Builder to decode a response into v
+// using a [Deserializer].
 func (rb *Builder) ToDeserializer(d Deserializer, v any) *Builder {
 	return rb.
 		Handle(ToDeserializer(d, v))
 }
 
-// ToJSON sets the Builder to decode a response as a JSON object
+// ToJSON sets the Builder to decode a response as a JSON object.
 //
 // It uses [JSONDeserializer] to unmarshal the object.
 func (rb *Builder) ToJSON(v any) *Builder {
