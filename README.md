@@ -254,7 +254,7 @@ Requests solves these issues by always closing the response body, checking statu
 
 ### Why requests and not some other helper library?
 
-There are two major flaws in other libraries as I see it. One is that in other libraries support for `context.Context` tends to be bolted on if it exists at all. Two, many hide the underlying `http.Client` in such a way that it is difficult or impossible to replace or mock out. Beyond that, I believe that none have acheived the same core simplicity that the requests library has.
+There are two major flaws in other libraries as I see it. One is that in other libraries support for `context.Context` tends to be bolted on if it exists at all. Two, many hide the underlying `http.Client` in such a way that it is difficult or impossible to replace or mock out. Beyond that, I believe that none have achieved the same core simplicity that the requests library has.
 
 ### How do I just get some JSON?
 
