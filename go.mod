@@ -1,4 +1,4 @@
-module github.com/carlmjohnson/requests
+module github.com/earthboundkid/requests
 
 go 1.20
 
