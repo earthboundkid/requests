@@ -118,7 +118,8 @@ func (rb *Builder) Param(key string, values ...string) *Builder {
 }
 
 // ParamOptional sets a query parameter on a Builder's URL
-// only if it is not set by some other call to Param or ParamOptional.
+// only if it is not set by some other call to Param or ParamOptional
+// and one of the values is a non-blank string.
 func (rb *Builder) ParamOptional(key string, values ...string) *Builder {
 	rb.ub.ParamOptional(key, values...)
 	return rb
@@ -131,7 +132,8 @@ func (rb *Builder) Header(key string, values ...string) *Builder {
 }
 
 // HeaderOptional sets a header on a request
-// only if it has not already been set by another call to Header or HeaderOptional.
+// only if it has not already been set by another call to Header or HeaderOptional
+// and one of the values is a non-blank string.
 func (rb *Builder) HeaderOptional(key string, values ...string) *Builder {
 	rb.rb.HeaderOptional(key, values...)
 	return rb

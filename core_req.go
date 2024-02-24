@@ -89,7 +89,9 @@ func (rb *requestBuilder) Request(ctx context.Context, u *url.URL) (req *http.Re
 		}
 	}
 	for _, kv := range rb.headers {
-		if kv.optional && req.Header.Get(kv.key) == "" {
+		if kv.optional &&
+			req.Header.Get(kv.key) == "" &&
+			minitrue.Or(kv.values...) != "" {
 			req.Header[http.CanonicalHeaderKey(kv.key)] = kv.values
 		}
 	}
