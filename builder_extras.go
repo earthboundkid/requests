@@ -142,11 +142,12 @@ func (rb *Builder) BodySerializer(s Serializer, v any) *Builder {
 
 // BodyJSON sets the Builder's request body to the marshaled JSON.
 // It uses [JSONSerializer] to marshal the object.
-// It also sets ContentType to "application/json".
+// It also sets ContentType to "application/json"
+// if it is not otherwise set.
 func (rb *Builder) BodyJSON(v any) *Builder {
 	return rb.
 		Body(BodyJSON(v)).
-		ContentType("application/json")
+		OptionalHeader("Content-Type", "application/json")
 }
 
 // BodyForm sets the Builder's request body to the encoded form.

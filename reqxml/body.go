@@ -17,6 +17,6 @@ func BodyConfig(v any) requests.Config {
 	return func(rb *requests.Builder) {
 		rb.
 			Body(Body(v)).
-			ContentType("application/xml")
+			OptionalHeader("Content-Type", "application/xml")
 	}
 }
