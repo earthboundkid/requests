@@ -10,13 +10,15 @@
 
 Requests also comes with tools for building custom http transports, include a request recorder and replayer for testing.
 
+*[See this note on the canonical project URL.](https://gist.github.com/earthboundkid/8915002ae0e531cecdfc58bc6453ac80)*
+
 ## Features
 
-- Simplifies HTTP client usage compared to net/http 
+- Simplifies HTTP client usage compared to net/http
 - Can't forget to close response body
 - Checks status codes by default
 - Supports context.Context
-- JSON serialization and deserialization helpers 
+- JSON serialization and deserialization helpers
 - Easily manipulate URLs and query parameters
 - Request recording and replaying for tests
 - Customizable transports and validators that are compatible with the standard library and third party libraries
@@ -239,7 +241,7 @@ assert(s1 == s2) // true
 
 ## FAQs
 
-[See wiki](https://github.com/carlmjohnson/requests/wiki) for more details.
+[See wiki](https://github.com/earthboundkid/requests/wiki) for more details.
 
 ### Why not just use the standard library HTTP client?
 
@@ -309,4 +311,4 @@ To disable all response validation, run `builder.AddValidator(nil)`.
 
 ## Contributing
 
-Please [create a discussion](https://github.com/carlmjohnson/requests/discussions) before submitting a pull request for a new feature.
+Please [create a discussion](https://github.com/earthboundkid/requests/discussions) before submitting a pull request for a new feature.
