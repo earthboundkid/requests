@@ -706,3 +706,23 @@ func ExampleBuilder_BodyJSON() {
 	//   ]
 	// }
 }
+
+func ExampleBuilder_ParamOptional() {
+	// Suppose we have some variables from some external source
+	yes := "1"
+	no := ""
+
+	u, err := requests.
+		URL("https://www.example.com/?c=something").
+		ParamOptional("a", yes).
+		ParamOptional("b", no).  // Won't set ?b= because no is blank
+		ParamOptional("c", yes). // Won't set ?c= because it was already in the base URL
+		URL()
+	if err != nil {
+		fmt.Println("Error!", err)
+	}
+	fmt.Println(u.String())
+
+	// Output:
+	// https://www.example.com/?a=1&c=something
+}

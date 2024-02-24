@@ -117,9 +117,25 @@ func (rb *Builder) Param(key string, values ...string) *Builder {
 	return rb
 }
 
+// ParamOptional sets a query parameter on a Builder's URL
+// only if it is not set by some other call to Param or ParamOptional
+// and one of the values is a non-blank string.
+func (rb *Builder) ParamOptional(key string, values ...string) *Builder {
+	rb.ub.ParamOptional(key, values...)
+	return rb
+}
+
 // Header sets a header on a request. It overwrites the existing values of a key.
 func (rb *Builder) Header(key string, values ...string) *Builder {
 	rb.rb.Header(key, values...)
+	return rb
+}
+
+// HeaderOptional sets a header on a request
+// only if it has not already been set by another call to Header or HeaderOptional
+// and one of the values is a non-blank string.
+func (rb *Builder) HeaderOptional(key string, values ...string) *Builder {
+	rb.rb.HeaderOptional(key, values...)
 	return rb
 }
 
