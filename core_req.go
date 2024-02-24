@@ -37,7 +37,7 @@ func (rb *requestBuilder) Header(key string, values ...string) {
 	rb.headers = append(rb.headers, multimap{key, values, false})
 }
 
-func (rb *requestBuilder) OptionalHeader(key string, values ...string) {
+func (rb *requestBuilder) HeaderOptional(key string, values ...string) {
 	rb.headers = append(rb.headers, multimap{key, values, true})
 }
 

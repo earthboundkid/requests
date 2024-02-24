@@ -147,7 +147,7 @@ func (rb *Builder) BodySerializer(s Serializer, v any) *Builder {
 func (rb *Builder) BodyJSON(v any) *Builder {
 	return rb.
 		Body(BodyJSON(v)).
-		OptionalHeader("Content-Type", "application/json")
+		HeaderOptional("Content-Type", "application/json")
 }
 
 // BodyForm sets the Builder's request body to the encoded form.
