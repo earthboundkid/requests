@@ -1,6 +1,6 @@
 # Requests [![GoDoc](https://godoc.org/github.com/carlmjohnson/requests?status.svg)](https://godoc.org/github.com/carlmjohnson/requests) [![Go Report Card](https://goreportcard.com/badge/github.com/carlmjohnson/requests)](https://goreportcard.com/report/github.com/carlmjohnson/requests) [![Coverage Status](https://coveralls.io/repos/github/earthboundkid/requests/badge.svg)](https://coveralls.io/github/earthboundkid/requests) [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 
-![Requests logo](/img/gopher-web.png)
+![Requests logo](https://github.com/earthboundkid/requests/assets/222245/e59a9f82-c6c7-46d8-96b2-ce2f7dd58dce)
 
 ## _HTTP requests for Gophers._
 
