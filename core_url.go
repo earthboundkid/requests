@@ -78,7 +78,9 @@ func (ub *urlBuilder) URL() (u *url.URL, err error) {
 			}
 		}
 		for _, kv := range ub.params {
-			if kv.optional && q.Get(kv.key) == "" {
+			if kv.optional &&
+				q.Get(kv.key) == "" &&
+				minitrue.Or(kv.values...) != "" {
 				q[kv.key] = kv.values
 			}
 		}
