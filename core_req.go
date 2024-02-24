@@ -34,7 +34,11 @@ type requestBuilder struct {
 }
 
 func (rb *requestBuilder) Header(key string, values ...string) {
-	rb.headers = append(rb.headers, multimap{key, values})
+	rb.headers = append(rb.headers, multimap{key, values, false})
+}
+
+func (rb *requestBuilder) OptionalHeader(key string, values ...string) {
+	rb.headers = append(rb.headers, multimap{key, values, true})
 }
 
 func (rb *requestBuilder) Cookie(name, value string) {
@@ -80,7 +84,14 @@ func (rb *requestBuilder) Request(ctx context.Context, u *url.URL) (req *http.Re
 	req.GetBody = rb.getBody
 
 	for _, kv := range rb.headers {
-		req.Header[http.CanonicalHeaderKey(kv.key)] = kv.values
+		if !kv.optional {
+			req.Header[http.CanonicalHeaderKey(kv.key)] = kv.values
+		}
+	}
+	for _, kv := range rb.headers {
+		if kv.optional && req.Header.Get(kv.key) == "" {
+			req.Header[http.CanonicalHeaderKey(kv.key)] = kv.values
+		}
 	}
 	for _, kv := range rb.cookies {
 		req.AddCookie(&http.Cookie{

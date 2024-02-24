@@ -8,8 +8,9 @@ import (
 )
 
 type multimap struct {
-	key    string
-	values []string
+	key      string
+	values   []string
+	optional bool
 }
 
 type kvpair struct {
@@ -41,7 +42,11 @@ func (ub *urlBuilder) Path(path string) {
 }
 
 func (ub *urlBuilder) Param(key string, values ...string) {
-	ub.params = append(ub.params, multimap{key, values})
+	ub.params = append(ub.params, multimap{key, values, false})
+}
+
+func (ub *urlBuilder) OptionalParam(key string, values ...string) {
+	ub.params = append(ub.params, multimap{key, values, true})
 }
 
 func (ub *urlBuilder) Clone() *urlBuilder {
@@ -68,7 +73,14 @@ func (ub *urlBuilder) URL() (u *url.URL, err error) {
 	if len(ub.params) > 0 {
 		q := u.Query()
 		for _, kv := range ub.params {
-			q[kv.key] = kv.values
+			if !kv.optional {
+				q[kv.key] = kv.values
+			}
+		}
+		for _, kv := range ub.params {
+			if kv.optional && minitrue.Or(q[kv.key]...) == "" {
+				q[kv.key] = kv.values
+			}
 		}
 		u.RawQuery = q.Encode()
 	}
