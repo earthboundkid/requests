@@ -12,11 +12,12 @@ func Body(v any) requests.BodyGetter {
 }
 
 // BodyConfig sets the Builder's request body to the marshaled XML.
-// It also sets ContentType to "application/xml".
+// It also sets ContentType to "application/xml"
+// if it is not otherwise set.
 func BodyConfig(v any) requests.Config {
 	return func(rb *requests.Builder) {
 		rb.
 			Body(Body(v)).
-			OptionalHeader("Content-Type", "application/xml")
+			HeaderOptional("Content-Type", "application/xml")
 	}
 }
