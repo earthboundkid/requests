@@ -38,7 +38,7 @@ Requests also comes with tools for building custom http transports, include a re
 <td>
 
 ```go
-req, err := http.NewRequestWithContext(ctx, 
+req, err := http.NewRequestWithContext(ctx,
 	http.MethodGet, "http://example.com", nil)
 if err != nil {
 	// ...
@@ -87,7 +87,7 @@ err := requests.
 
 ```go
 body := bytes.NewReader(([]byte(`hello, world`))
-req, err := http.NewRequestWithContext(ctx, http.MethodPost, 
+req, err := http.NewRequestWithContext(ctx, http.MethodPost,
 	"https://postman-echo.com/post", body)
 if err != nil {
 	// ...
@@ -139,7 +139,7 @@ if err != nil {
 	// ...
 }
 u.Path = fmt.Sprintf("/posts/%d", 1)
-req, err := http.NewRequestWithContext(ctx, 
+req, err := http.NewRequestWithContext(ctx,
 	http.MethodGet, u.String(), nil)
 if err != nil {
 	// ...
