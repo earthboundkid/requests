@@ -45,7 +45,7 @@ func (ub *urlBuilder) Param(key string, values ...string) {
 	ub.params = append(ub.params, multimap{key, values, false})
 }
 
-func (ub *urlBuilder) OptionalParam(key string, values ...string) {
+func (ub *urlBuilder) ParamOptional(key string, values ...string) {
 	ub.params = append(ub.params, multimap{key, values, true})
 }
 
