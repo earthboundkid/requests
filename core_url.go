@@ -1,9 +1,9 @@
 package requests
 
 import (
+	"cmp"
 	"net/url"
 
-	"github.com/carlmjohnson/requests/internal/minitrue"
 	"github.com/carlmjohnson/requests/internal/slicex"
 )
 
@@ -61,12 +61,12 @@ func (ub *urlBuilder) URL() (u *url.URL, err error) {
 	if err != nil {
 		return new(url.URL), err
 	}
-	u.Scheme = minitrue.Or(
+	u.Scheme = cmp.Or(
 		ub.scheme,
 		u.Scheme,
 		"https",
 	)
-	u.Host = minitrue.Or(ub.host, u.Host)
+	u.Host = cmp.Or(ub.host, u.Host)
 	for _, p := range ub.paths {
 		u.Path = u.ResolveReference(&url.URL{Path: p}).Path
 	}
@@ -80,7 +80,7 @@ func (ub *urlBuilder) URL() (u *url.URL, err error) {
 		for _, kv := range ub.params {
 			if kv.optional &&
 				q.Get(kv.key) == "" &&
-				minitrue.Or(kv.values...) != "" {
+				cmp.Or(kv.values...) != "" {
 				q[kv.key] = kv.values
 			}
 		}

@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"cmp"
 	"context"
 	"io"
 	"net/http"
@@ -72,7 +73,7 @@ func (rb *requestBuilder) Request(ctx context.Context, u *url.URL) (req *http.Re
 			body = nopper.Reader
 		}
 	}
-	method := minitrue.Or(rb.method,
+	method := cmp.Or(rb.method,
 		minitrue.Cond(rb.getBody == nil,
 			http.MethodGet,
 			http.MethodPost))
@@ -91,7 +92,7 @@ func (rb *requestBuilder) Request(ctx context.Context, u *url.URL) (req *http.Re
 	for _, kv := range rb.headers {
 		if kv.optional &&
 			req.Header.Get(kv.key) == "" &&
-			minitrue.Or(kv.values...) != "" {
+			cmp.Or(kv.values...) != "" {
 			req.Header[http.CanonicalHeaderKey(kv.key)] = kv.values
 		}
 	}

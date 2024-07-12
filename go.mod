@@ -1,5 +1,5 @@
 module github.com/carlmjohnson/requests
 
-go 1.20
+go 1.22
 
-require golang.org/x/net v0.23.0
+require golang.org/x/net v0.27.0
