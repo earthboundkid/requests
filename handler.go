@@ -132,4 +132,6 @@ func ToFile(name string) ResponseHandler {
 }
 
 // ToHeaders is an alias for backwards compatibility.
+//
+// Deprecated: Use CopyHeaders
 var ToHeaders = CopyHeaders
