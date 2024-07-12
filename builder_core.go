@@ -25,6 +25,8 @@ import (
 // then customize it with
 // [Builder.Scheme], [Builder.Host], [Builder.Hostf], [Builder.Path],
 // [Builder.Pathf], [Builder.Param], and [Builder.ParamInt].
+// [Builder.ParamOptional] can be used to add a query parameter
+// only if it has not been otherwise set.
 //
 // # Build an http.Request with Builder.Request
 //
@@ -37,6 +39,8 @@ import (
 // or set conventional header keys with
 // [Builder.Accept], [Builder.BasicAuth], [Builder.Bearer], [Builder.CacheControl],
 // [Builder.ContentType], [Builder.Cookie], and [Builder.UserAgent].
+// [Builder.HeaderOptional] can be used to add a header
+// only if it has not been otherwise set.
 //
 // Set the body of the request, if any, with [Builder.Body]
 // or use built in [Builder.BodyBytes], [Builder.BodyFile], [Builder.BodyForm],
