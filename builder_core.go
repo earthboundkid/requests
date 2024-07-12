@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"net/http"
@@ -242,7 +243,7 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 
 // Do calls the underlying http.Client and validates and handles any resulting response. The response body is closed after all validators and the handler run.
 func (rb *Builder) Do(req *http.Request) (err error) {
-	cl := minitrue.Or(rb.cl, http.DefaultClient)
+	cl := cmp.Or(rb.cl, http.DefaultClient)
 	if rb.rt != nil {
 		cl2 := *cl
 		cl2.Transport = rb.rt
