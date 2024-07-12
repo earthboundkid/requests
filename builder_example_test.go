@@ -726,3 +726,26 @@ func ExampleBuilder_ParamOptional() {
 	// Output:
 	// https://www.example.com/?a=1&c=something
 }
+
+func ExampleBuilder_HeaderOptional() {
+	// Suppose we have some environment variables
+	// which may or may not be set
+	env := map[string]string{
+		"FOO": "1",
+		"BAR": "",
+		"BAZ": "",
+	}
+	req, err := requests.
+		URL("https://example.com").
+		HeaderOptional("X-FOO", env["FOO"]).
+		HeaderOptional("X-BAR", env["BAR"]). // Won't set because BAR is blank
+		Header("X-BAZ", env["BAZ"]).         // Will set to "" because it's not optional
+		Request(context.Background())
+	if err != nil {
+		fmt.Println("Error!", err)
+	}
+	fmt.Println(req.Header)
+
+	// Output:
+	// map[X-Baz:[] X-Foo:[1]]
+}
