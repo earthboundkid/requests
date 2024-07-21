@@ -225,14 +225,14 @@ fmt.Println(u.String()) // https://dev1.example.com/get?a=1&b=3&c=4
 // record a request to the file system
 var s1, s2 string
 err := requests.URL("http://example.com").
-	Transport(requests.Record(nil, "somedir")).
+	Transport(reqtest.Record(nil, "somedir")).
 	ToString(&s1).
 	Fetch(ctx)
 check(err)
 
 // now replay the request in tests
 err = requests.URL("http://example.com").
-	Transport(requests.Replay("somedir")).
+	Transport(reqtest.Replay("somedir")).
 	ToString(&s2).
 	Fetch(ctx)
 check(err)

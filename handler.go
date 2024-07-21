@@ -94,6 +94,8 @@ func ToBufioScanner(f func(r *bufio.Scanner) error) ResponseHandler {
 }
 
 // ToHTML parses the page with x/net/html.Parse.
+//
+// Deprecated: Use reqhtml.To.
 func ToHTML(n *html.Node) ResponseHandler {
 	return ToBufioReader(func(r *bufio.Reader) error {
 		n2, err := html.Parse(r)

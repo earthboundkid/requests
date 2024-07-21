@@ -6,12 +6,13 @@ import (
 	"net/http"
 
 	"github.com/carlmjohnson/requests"
+	"github.com/carlmjohnson/requests/reqtest"
 	"github.com/carlmjohnson/requests/reqxml"
 )
 
 func init() {
-	http.DefaultClient.Transport = requests.Replay("testdata")
-	// http.DefaultClient.Transport = requests.Caching(nil, "testdata")
+	http.DefaultClient.Transport = reqtest.Replay("testdata")
+	// http.DefaultClient.Transport = reqtest.Caching(nil, "testdata")
 }
 
 func ExampleTo() {
