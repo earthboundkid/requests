@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -111,9 +112,8 @@ func ExampleLogTransport() {
 		fmt.Println("Error!", err)
 	}
 	// Works for bad responses too
-	baseTrans = requests.RoundTripFunc(func(req *http.Request) (*http.Response, error) {
-		return nil, fmt.Errorf("can't connect")
-	})
+	baseTrans = requests.ErrorTransport(errors.New("can't connect"))
+
 	trans = requests.LogTransport(baseTrans, logger)
 
 	if err := requests.

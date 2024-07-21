@@ -115,3 +115,12 @@ func DoerTransport(cl interface {
 }) Transport {
 	return RoundTripFunc(cl.Do)
 }
+
+// ErrorTransport always returns the specified error instead of connecting.
+// It is intended for use in testing
+// or to prevent accidental use of http.DefaultClient.
+func ErrorTransport(err error) Transport {
+	return RoundTripFunc(func(req *http.Request) (*http.Response, error) {
+		return nil, err
+	})
+}
