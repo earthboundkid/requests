@@ -22,12 +22,22 @@ func ChainHandlers(handlers ...ResponseHandler) ResponseHandler {
 			if h == nil {
 				continue
 			}
+
+			var dup io.ReadCloser
+			r.Body, dup = dupReadCloser(r.Body)
 			if err := h(r); err != nil {
 				return err
 			}
+			r.Body = dup
 		}
 		return nil
 	}
+}
+
+func dupReadCloser(reader io.ReadCloser) (io.ReadCloser, io.ReadCloser) {
+	var buf bytes.Buffer
+	tee := io.TeeReader(reader, &buf)
+	return io.NopCloser(tee), io.NopCloser(&buf)
 }
 
 func consumeBody(res *http.Response) (err error) {
