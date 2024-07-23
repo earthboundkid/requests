@@ -22,6 +22,21 @@ func ChainHandlers(handlers ...ResponseHandler) ResponseHandler {
 			if h == nil {
 				continue
 			}
+			if err := h(r); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
+// KeepRespBodyHandlers Combine multiple ResponseHandler and ensure that each processor has access to the original response body
+func KeepRespBodyHandlers(handlers ...ResponseHandler) ResponseHandler {
+	return func(r *http.Response) error {
+		for _, h := range handlers {
+			if h == nil {
+				continue
+			}
 
 			var dup io.ReadCloser
 			r.Body, dup = dupReadCloser(r.Body)

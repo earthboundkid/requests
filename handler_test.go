@@ -35,8 +35,8 @@ func BenchmarkBuilder_ToFile(b *testing.B) {
 	}
 }
 
-// TestChainHandlers tests the ChainHandlers function.
-func TestChainHandlers(t *testing.T) {
+// TestKeepRespBodyHandlers tests the KeepRespBodyHandlers function.
+func TestKeepRespBodyHandlers(t *testing.T) {
 	type Common struct {
 		ID int `json:"id"`
 	}
@@ -52,7 +52,7 @@ func TestChainHandlers(t *testing.T) {
 		str    string
 	)
 
-	handler := requests.ChainHandlers(
+	handler := requests.KeepRespBodyHandlers(
 		requests.ToJSON(&common),
 		requests.ToJSON(&book),
 		requests.ToString(&str),
