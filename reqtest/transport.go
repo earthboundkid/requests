@@ -24,6 +24,7 @@ func Record(rt http.RoundTripper, basepath string) requests.Transport {
 // Replay returns an http.RoundTripper that reads its
 // responses from text files in basepath.
 // Responses are looked up according to a hash of the request.
+// Response file names may optionally be prefixed with comments for better human organization.
 func Replay(basepath string) requests.Transport {
 	return requests.Replay(basepath)
 }
