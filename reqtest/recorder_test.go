@@ -1,4 +1,4 @@
-package requests_test
+package reqtest_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/carlmjohnson/requests"
 	"github.com/carlmjohnson/requests/internal/be"
+	"github.com/carlmjohnson/requests/reqtest"
 )
 
 func TestRecordReplay(t *testing.T) {
@@ -20,13 +21,13 @@ Test Document 1`)
 
 	var s1, s2 string
 	err := requests.URL("http://example.com").
-		Transport(requests.Record(baseTrans, dir)).
+		Transport(reqtest.Record(baseTrans, dir)).
 		ToString(&s1).
 		Fetch(context.Background())
 	be.NilErr(t, err)
 
 	err = requests.URL("http://example.com").
-		Transport(requests.Replay(dir)).
+		Transport(reqtest.Replay(dir)).
 		ToString(&s2).
 		Fetch(context.Background())
 	be.NilErr(t, err)
@@ -47,7 +48,7 @@ func TestCaching(t *testing.T) {
 		}
 		return
 	}
-	trans := requests.Caching(onceTrans, dir)
+	trans := reqtest.Caching(onceTrans, dir)
 	var s1, s2 string
 	err := requests.URL("http://example.com").
 		Transport(trans).
