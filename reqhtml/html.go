@@ -13,7 +13,7 @@ func To(n *html.Node) requests.ResponseHandler {
 	return requests.ToHTML(n)
 }
 
-// Body sets the Builder's request body to the HTML document.
+// Body sets the requests.Builder's request body to the HTML document.
 // It also sets ContentType to "text/html"
 // if it is not otherwise set.
 func Body(n *html.Node) requests.Config {
