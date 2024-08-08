@@ -6,9 +6,9 @@ import (
 	"github.com/carlmjohnson/requests"
 )
 
-// TestServerConfig returns a Config
-// which sets the Builder's BaseURL to s.URL
-// and the Builder's Client to s.Client().
-func TestServerConfig(s *httptest.Server) requests.Config {
+// Server takes an httptest.Server and returns a requests.Config
+// which sets the requests.Builder's BaseURL to s.URL
+// and the requests.Builder's Client to s.Client().
+func Server(s *httptest.Server) requests.Config {
 	return requests.TestServerConfig(s)
 }

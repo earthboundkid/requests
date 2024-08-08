@@ -10,7 +10,7 @@ import (
 	"github.com/carlmjohnson/requests/reqtest"
 )
 
-func ExampleTestServerConfig() {
+func ExampleServer() {
 	// Create an httptest.Server for your project's router
 	mux := http.NewServeMux()
 	mux.HandleFunc("/greeting", func(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +27,7 @@ func ExampleTestServerConfig() {
 	{
 		var s string
 		err := requests.
-			New(reqtest.TestServerConfig(srv)).
+			New(reqtest.Server(srv)).
 			Path("/greeting").
 			ToString(&s).
 			Fetch(context.Background())
@@ -39,7 +39,7 @@ func ExampleTestServerConfig() {
 	{
 		var s string
 		err := requests.
-			New(reqtest.TestServerConfig(srv)).
+			New(reqtest.Server(srv)).
 			Path("/salutation").
 			ToString(&s).
 			Fetch(context.Background())
