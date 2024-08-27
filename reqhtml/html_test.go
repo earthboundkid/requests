@@ -64,6 +64,9 @@ func ExampleBody() {
 		URL("http://example.com").
 		Config(reqhtml.Body(&link)).
 		Request(context.Background())
+	if err != nil {
+		panic(err)
+	}
 	b, err := httputil.DumpRequest(req, true)
 	if err != nil {
 		panic(err)
