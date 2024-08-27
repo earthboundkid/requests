@@ -2,7 +2,9 @@ package requests
 
 import (
 	"compress/gzip"
+	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http/httptest"
 )
 
@@ -41,5 +43,35 @@ func TestServerConfig(s *httptest.Server) Config {
 		rb.
 			BaseURL(s.URL).
 			Client(s.Client())
+	}
+}
+
+// BodyMultipart returns a Config
+// that uses a multipart.Writer for the request body.
+// If boundary is "", a multipart boundary is chosen at random.
+// The content type of the request is set to multipart/form-data
+// with the correct boundary.
+// The multipart.Writer is automatically closed if the callback succeeds.
+func BodyMultipart(boundary string, h func(multi *multipart.Writer) error) Config {
+	return func(rb *Builder) {
+		if boundary == "" {
+			multi := multipart.NewWriter(nil)
+			boundary = multi.Boundary()
+		}
+		rb.
+			ContentType("multipart/form-data; boundary=" + boundary).
+			BodyWriter(func(w io.Writer) error {
+				multi := multipart.NewWriter(w)
+				if err := multi.SetBoundary(boundary); err != nil {
+					return fmt.Errorf("setting boundary: %w", err)
+				}
+				if err := h(multi); err != nil {
+					return err
+				}
+				if err := multi.Close(); err != nil {
+					return fmt.Errorf("closing multipart writer: %w", err)
+				}
+				return nil
+			})
 	}
 }
