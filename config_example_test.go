@@ -4,8 +4,12 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/http/httputil"
+	"net/textproto"
 	"strings"
 
 	"github.com/carlmjohnson/requests"
@@ -99,4 +103,58 @@ func ExampleTestServerConfig() {
 	// Output:
 	// Hello, world!
 	// Howdy, planet!
+}
+
+func ExampleMultipart() {
+	req, err := requests.
+		URL("http://example.com").
+		Config(requests.Multipart("abc", func(multi *multipart.Writer) error {
+			w, err := multi.CreateFormFile("file", "en.txt")
+			if err != nil {
+				return err
+			}
+			_, err = io.WriteString(w, "Hello, World!")
+			if err != nil {
+				return err
+			}
+			// Create a part with a content type
+			h := make(textproto.MIMEHeader)
+			h.Set("Content-Disposition", `form-data; name="file"; filename="jp.txt"`)
+			h.Set("Content-Type", "text/plain; charset=utf-8")
+			w, err = multi.CreatePart(h)
+			if err != nil {
+				panic(err)
+			}
+			_, err = io.WriteString(w, "こんにちは世界!")
+			if err != nil {
+				return err
+			}
+			return nil
+		})).
+		Request(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	b, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(strings.ReplaceAll(string(b), "\r", ""))
+	// Output:
+	// POST / HTTP/1.1
+	// Host: example.com
+	// Content-Type: multipart/form-data; boundary=abc
+	//
+	// --abc
+	// Content-Disposition: form-data; name="file"; filename="en.txt"
+	// Content-Type: application/octet-stream
+	//
+	// Hello, World!
+	// --abc
+	// Content-Disposition: form-data; name="file"; filename="jp.txt"
+	// Content-Type: text/plain; charset=utf-8
+	//
+	// こんにちは世界!
+	// --abc--
 }
