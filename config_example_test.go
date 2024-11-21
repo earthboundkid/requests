@@ -141,21 +141,22 @@ func ExampleBodyMultipart() {
 		panic(err)
 	}
 
-	fmt.Println(strings.ReplaceAll(string(b), "\r", ""))
+	// Make carriage return visible
+	fmt.Println(strings.ReplaceAll(string(b), "\r", "↵"))
 	// Output:
-	// POST / HTTP/1.1
-	// Host: example.com
-	// Content-Type: multipart/form-data; boundary=abc
-	//
-	// --abc
-	// Content-Disposition: form-data; name="file"; filename="en.txt"
-	// Content-Type: application/octet-stream
-	//
-	// Hello, World!
-	// --abc
-	// Content-Disposition: form-data; name="file"; filename="jp.txt"
-	// Content-Type: text/plain; charset=utf-8
-	//
-	// こんにちは世界!
-	// --abc--
+	// POST / HTTP/1.1↵
+	// Host: example.com↵
+	// Content-Type: multipart/form-data; boundary=abc↵
+	// ↵
+	// --abc↵
+	// Content-Disposition: form-data; name="file"; filename="en.txt"↵
+	// Content-Type: application/octet-stream↵
+	// ↵
+	// Hello, World!↵
+	// --abc↵
+	// Content-Disposition: form-data; name="file"; filename="jp.txt"↵
+	// Content-Type: text/plain; charset=utf-8↵
+	// ↵
+	// こんにちは世界!↵
+	// --abc--↵
 }
