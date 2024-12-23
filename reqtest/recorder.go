@@ -2,8 +2,6 @@ package reqtest
 
 import (
 	"net/http"
-
-	"github.com/carlmjohnson/requests"
 )
 
 // RecorderMode is an argument type controlling [Recorder].
@@ -18,7 +16,7 @@ const (
 	// Replay responses from pre-recorded text files.
 	ModeReplay
 	// Replay responses from pre-recorded files if present,
-	// otherwise record a new request response pair.
+	// otherwise record a new request/response pair.
 	ModeCache
 )
 
@@ -26,9 +24,9 @@ const (
 // Requests and responses are read from or written to
 // text files in basepath according to a hash of their contents.
 // File names may optionally be prefixed with comments for better human organization.
-// The http.RoundTripper is only used in ModeRecord and ModeCache
-// and if nil defaults to http.DefaultTransport.
-func Recorder(mode RecorderMode, rt http.RoundTripper, basepath string) requests.Transport {
+// The http.RoundTripper is only used in [ModeRecord] and [ModeCache]
+// and if nil defaults to [http.DefaultTransport].
+func Recorder(mode RecorderMode, rt http.RoundTripper, basepath string) http.RoundTripper {
 	switch mode {
 	case ModeReplay:
 		return Replay(basepath)
