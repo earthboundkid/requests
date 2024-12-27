@@ -1,8 +1,10 @@
 package requests_test
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -31,4 +33,38 @@ func BenchmarkBuilder_ToFile(b *testing.B) {
 			Fetch(context.Background())
 		be.NilErr(b, err)
 	}
+}
+
+// TestKeepRespBodyHandlers tests the KeepRespBodyHandlers function.
+func TestKeepRespBodyHandlers(t *testing.T) {
+	type Common struct {
+		ID int `json:"id"`
+	}
+
+	type Book struct {
+		Common
+		Name string `json:"name"`
+	}
+
+	var (
+		book   Book
+		common Common
+		str    string
+	)
+
+	handler := requests.KeepRespBodyHandlers(
+		requests.ToJSON(&common),
+		requests.ToJSON(&book),
+		requests.ToString(&str),
+	)
+
+	err := handler(&http.Response{
+		Body: io.NopCloser(bytes.NewReader([]byte(`{"id":1, "name":"孙子兵法"}`))),
+	})
+
+	be.NilErr(t, err)
+	be.Equal(t, 1, common.ID)
+	be.Equal(t, 1, book.ID)
+	be.Equal(t, "孙子兵法", book.Name)
+	be.Equal(t, `{"id":1, "name":"孙子兵法"}`, str)
 }
