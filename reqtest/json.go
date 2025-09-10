@@ -20,7 +20,7 @@ import (
 // wrapped marshaling error.
 func ReplayJSON(code int, obj any) requests.Transport {
 	return requests.RoundTripFunc(func(req *http.Request) (*http.Response, error) {
-		data, err := json.Marshal(obj)
+		data, err := json.MarshalIndent(obj, "", "  ")
 		if err != nil {
 			return nil, fmt.Errorf("marshal error in ReplayJSON: %v", err)
 		}
