@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/carlmjohnson/requests"
+	"github.com/carlmjohnson/requests/reqtest"
 )
 
 func ExampleNew() {
@@ -52,6 +53,7 @@ func ExampleGzipConfig() {
 				_, err := gw.Write([]byte(`hello, world`))
 				return err
 			})).
+		Transport(reqtest.ReplayFile("testdata/postman-echo POST gzip pL_wuhOy.res.txt")).
 		ToJSON(&echo).
 		Fetch(context.Background())
 	if err != nil {
