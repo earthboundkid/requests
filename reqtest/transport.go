@@ -1,8 +1,11 @@
 package reqtest
 
 import (
+	"bufio"
+	"bytes"
 	"io/fs"
 	"net/http"
+	"os"
 
 	"github.com/carlmjohnson/requests"
 )
@@ -27,6 +30,19 @@ func Record(rt http.RoundTripper, basepath string) requests.Transport {
 // Response file names may optionally be prefixed with comments for better human organization.
 func Replay(basepath string) requests.Transport {
 	return requests.Replay(basepath)
+}
+
+// ReplayFile returns an http.RoundTripper that reads its
+// response from the response file at path.
+func ReplayFile(path string) requests.Transport {
+	return requests.RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		r := bufio.NewReader(bytes.NewReader(b))
+		return http.ReadResponse(r, req)
+	})
 }
 
 // ReplayFS returns an http.RoundTripper that reads its
