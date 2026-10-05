@@ -3,9 +3,13 @@ package requests_test
 import (
 	"bytes"
 	"context"
+	"errors"
+	"io"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/carlmjohnson/requests"
 	"github.com/carlmjohnson/requests/internal/be"
@@ -180,5 +184,115 @@ func TestContentLength(t *testing.T) {
 			Request(context.Background())
 		be.NilErr(t, err)
 		be.Equal(t, len(qs) > 0, req.ContentLength > 0)
+	}
+}
+
+func TestRequestClosesBodyOnError(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name   string
+		ctx    context.Context
+		method string
+		want   string
+	}{
+		{"invalid method", context.Background(), "bad method", "invalid method"},
+		{"nil context", nil, "POST", "nil Context"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var file *os.File
+			getter := requests.BodyFile("go.mod")
+			req, err := requests.URL("https://example.com").
+				Method(tc.method).
+				Body(func() (io.ReadCloser, error) {
+					body, err := getter()
+					if err == nil {
+						file = body.(*os.File)
+						t.Cleanup(func() { file.Close() })
+					}
+					return body, err
+				}).
+				Request(tc.ctx)
+			be.True(t, req == nil)
+			be.True(t, errors.Is(err, requests.ErrRequest))
+			be.True(t, strings.Contains(err.Error(), tc.want))
+			if file == nil {
+				t.Fatal("body file was not opened")
+			}
+			_, err = file.Read(make([]byte, 1))
+			be.True(t, errors.Is(err, os.ErrClosed))
+		})
+	}
+}
+
+type requestBodyCloser struct {
+	io.Reader
+	closes int
+	err    error
+}
+
+func (body *requestBodyCloser) Close() error {
+	body.closes++
+	return body.err
+}
+
+func TestRequestBodyOwnership(t *testing.T) {
+	t.Parallel()
+	closeErr := errors.New("close failed")
+	for _, tc := range []struct {
+		name    string
+		method  string
+		wantErr bool
+	}{
+		{"success", "POST", false},
+		{"constructor error", "bad method", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			body := &requestBodyCloser{Reader: strings.NewReader("body"), err: closeErr}
+			req, err := requests.URL("https://example.com").
+				Method(tc.method).
+				BodyReader(body).
+				Request(context.Background())
+			if tc.wantErr {
+				be.True(t, req == nil)
+				be.True(t, errors.Is(err, requests.ErrRequest))
+				be.True(t, strings.Contains(err.Error(), "invalid method"))
+				be.False(t, errors.Is(err, closeErr))
+				be.Equal(t, 1, body.closes)
+				return
+			}
+			be.NilErr(t, err)
+			be.Equal(t, 0, body.closes)
+			be.True(t, req.Body == body)
+			be.Equal(t, closeErr, req.Body.Close())
+			be.Equal(t, 1, body.closes)
+		})
+	}
+}
+
+func TestRequestErrorStopsBodyWriter(t *testing.T) {
+	t.Parallel()
+	done := make(chan error, 1)
+	getter := requests.BodyWriter(func(w io.Writer) error {
+		_, err := io.WriteString(w, "body")
+		done <- err
+		return err
+	})
+	req, err := requests.URL("https://example.com").
+		Method("bad method").
+		Body(func() (io.ReadCloser, error) {
+			body, err := getter()
+			if err == nil {
+				t.Cleanup(func() { body.Close() })
+			}
+			return body, err
+		}).
+		Request(context.Background())
+	be.True(t, req == nil)
+	be.True(t, errors.Is(err, requests.ErrRequest))
+	select {
+	case err := <-done:
+		be.True(t, errors.Is(err, io.ErrClosedPipe))
+	case <-time.After(time.Second):
+		t.Fatal("body writer did not stop after request construction failed")
 	}
 }
