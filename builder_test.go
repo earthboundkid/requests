@@ -5,6 +5,9 @@ import (
 	"context"
 	"errors"
 	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
@@ -13,6 +16,7 @@ import (
 
 	"github.com/carlmjohnson/requests"
 	"github.com/carlmjohnson/requests/internal/be"
+	"github.com/carlmjohnson/requests/reqtest"
 )
 
 func TestClone(t *testing.T) {
@@ -184,6 +188,42 @@ func TestContentLength(t *testing.T) {
 			Request(context.Background())
 		be.NilErr(t, err)
 		be.Equal(t, len(qs) > 0, req.ContentLength > 0)
+	}
+}
+
+func TestBodyMultipartBoundary(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name, boundary string
+	}{
+		{"random", ""},
+		{"token", "simple"},
+		{"colon", "a:b"},
+		{"space", "a b"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if err := r.ParseMultipartForm(1024); err != nil {
+					t.Logf("Content-Type %q: %v", r.Header.Get("Content-Type"), err)
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+				defer r.MultipartForm.RemoveAll()
+				io.WriteString(w, r.FormValue("message"))
+			}))
+			defer srv.Close()
+
+			var got string
+			err := requests.
+				New(reqtest.Server(srv)).
+				Config(requests.BodyMultipart(tc.boundary, func(multi *multipart.Writer) error {
+					return multi.WriteField("message", "hello, world")
+				})).
+				ToString(&got).
+				Fetch(context.Background())
+			be.NilErr(t, err)
+			be.Equal(t, "hello, world", got)
+		})
 	}
 }
 
