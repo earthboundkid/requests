@@ -3,6 +3,7 @@ package requests_test
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"errors"
 	"io"
 	"mime/multipart"
@@ -191,7 +192,7 @@ func TestContentLength(t *testing.T) {
 	}
 }
 
-func TestBodyMultipartBoundary(t *testing.T) {
+func TestBodyMultipart_boundary(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct {
 		name, boundary string
@@ -202,7 +203,7 @@ func TestBodyMultipartBoundary(t *testing.T) {
 		{"space", "a b"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			srv := httptest.NewTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if err := r.ParseMultipartForm(1024); err != nil {
 					t.Logf("Content-Type %q: %v", r.Header.Get("Content-Type"), err)
 					http.Error(w, err.Error(), http.StatusBadRequest)
@@ -211,18 +212,20 @@ func TestBodyMultipartBoundary(t *testing.T) {
 				defer r.MultipartForm.RemoveAll()
 				io.WriteString(w, r.FormValue("message"))
 			}))
-			defer srv.Close()
 
 			var got string
+			message := rand.Text()
 			err := requests.
-				New(reqtest.Server(srv)).
-				Config(requests.BodyMultipart(tc.boundary, func(multi *multipart.Writer) error {
-					return multi.WriteField("message", "hello, world")
-				})).
+				New(
+					reqtest.Server(srv),
+					requests.BodyMultipart(tc.boundary, func(multi *multipart.Writer) error {
+						return multi.WriteField("message", message)
+					}),
+				).
 				ToString(&got).
-				Fetch(context.Background())
+				Fetch(t.Context())
 			be.NilErr(t, err)
-			be.Equal(t, "hello, world", got)
+			be.Equal(t, message, got)
 		})
 	}
 }
