@@ -92,6 +92,16 @@ var PathCases = map[string]struct {
 		[]string{"b/", "c/", "/d"},
 		"https://example/d",
 	},
+	"escaped-base-segment": {
+		"https://example/a%2Fb/",
+		[]string{"c"},
+		"https://example/a%2Fb/c",
+	},
+	"escaped-base-parent": {
+		"https://example/a%2Fb/c/",
+		[]string{"../d"},
+		"https://example/a%2Fb/d",
+	},
 }
 
 func TestCorePath(t *testing.T) {
