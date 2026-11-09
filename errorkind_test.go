@@ -8,6 +8,7 @@ import (
 
 	"github.com/gophertools/requests"
 	"github.com/gophertools/requests/internal/be"
+	"github.com/gophertools/requests/reqtest"
 )
 
 func TestErrorKind(t *testing.T) {
@@ -21,7 +22,7 @@ func TestErrorKind(t *testing.T) {
 		requests.ErrHandler,
 	}
 	ctx := t.Context()
-	res200 := requests.ReplayString("HTTP/1.1 200 OK\n\n")
+	res200 := reqtest.ReplayString("HTTP/1.1 200 OK\n\n")
 	for _, tc := range []struct {
 		ctx  context.Context
 		want requests.ErrorKind
@@ -61,11 +62,11 @@ func TestErrorKind(t *testing.T) {
 		},
 		{ctx, requests.ErrTransport, requests.
 			URL("").
-			Transport(requests.ReplayString("")),
+			Transport(reqtest.ReplayString("")),
 		},
 		{ctx, requests.ErrValidator, requests.
 			URL("").
-			Transport(requests.ReplayString("HTTP/1.1 404 Nope\n\n")),
+			Transport(reqtest.ReplayString("HTTP/1.1 404 Nope\n\n")),
 		},
 		{ctx, requests.ErrHandler, requests.
 			URL("").

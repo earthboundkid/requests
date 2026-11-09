@@ -8,8 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"golang.org/x/net/html"
 )
 
 // ResponseHandler is used to validate or handle the response to a request.
@@ -93,20 +91,6 @@ func ToBufioScanner(f func(r *bufio.Scanner) error) ResponseHandler {
 	}
 }
 
-// ToHTML parses the page with x/net/html.Parse.
-//
-// Deprecated: Use reqhtml.To.
-func ToHTML(n *html.Node) ResponseHandler {
-	return ToBufioReader(func(r *bufio.Reader) error {
-		n2, err := html.Parse(r)
-		if err != nil {
-			return err
-		}
-		*n = *n2
-		return nil
-	})
-}
-
 // ToWriter copies the response body to w.
 func ToWriter(w io.Writer) ResponseHandler {
 	return ToBufioReader(func(r *bufio.Reader) error {
@@ -132,8 +116,3 @@ func ToFile(name string) ResponseHandler {
 		return err
 	}
 }
-
-// ToHeaders is an alias for backwards compatibility.
-//
-// Deprecated: Use CopyHeaders
-var ToHeaders = CopyHeaders

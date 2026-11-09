@@ -14,7 +14,7 @@ import (
 )
 
 func TestRecordReplay(t *testing.T) {
-	baseTrans := requests.ReplayString(`HTTP/1.1 200 OK
+	baseTrans := reqtest.ReplayString(`HTTP/1.1 200 OK
 
 Test Document 1`)
 	dir := t.TempDir()

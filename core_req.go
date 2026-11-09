@@ -14,7 +14,7 @@ import (
 // nopCloser is like io.NopCloser(),
 // but it is a concrete type so we can strip it out
 // before setting a body on a request.
-// See https://github.com/carlmjohnson/requests/discussions/49
+// See https://github.com/gophertools/requests/discussions/49
 type nopCloser struct {
 	io.Reader
 }

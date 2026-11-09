@@ -6,7 +6,6 @@ import (
 	"io"
 	"mime"
 	"mime/multipart"
-	"net/http/httptest"
 )
 
 // Config allows Builder to be extended by setting several options at once.
@@ -31,22 +30,6 @@ func GzipConfig(level int, h func(gw *gzip.Writer) error) Config {
 				}
 				return gw.Close()
 			})
-	}
-}
-
-// TestServerConfig returns a Config
-// which sets the Builder's BaseURL to s.URL
-// and the Builder's Client to s.Client().
-//
-// Deprecated: Use reqtest.Server.
-func TestServerConfig(s *httptest.Server) Config {
-	return func(rb *Builder) {
-		// In memory servers don't set s.URL until after s.Client is called,
-		// so call that first.
-		cl := s.Client()
-		rb.
-			BaseURL(s.URL).
-			Client(cl)
 	}
 }
 

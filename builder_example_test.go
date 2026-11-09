@@ -17,10 +17,11 @@ import (
 	"strings"
 
 	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/reqtest"
 )
 
 func init() {
-	http.DefaultClient.Transport = requests.Replay("testdata")
+	http.DefaultClient.Transport = reqtest.ReplayFS(os.DirFS("testdata"))
 }
 
 func Example() {
@@ -541,7 +542,7 @@ func ExampleBuilder_Transport() {
 
 func ExampleBuilder_ErrorJSON() {
 	{
-		trans := requests.ReplayString(`HTTP/1.1 200 OK
+		trans := reqtest.ReplayString(`HTTP/1.1 200 OK
 
 	{"x": 1}`)
 
@@ -560,7 +561,7 @@ func ExampleBuilder_ErrorJSON() {
 		}
 	}
 	{
-		trans := requests.ReplayString(`HTTP/1.1 418 I'm a teapot
+		trans := reqtest.ReplayString(`HTTP/1.1 418 I'm a teapot
 
 	{"error": "brewing"}`)
 
@@ -620,7 +621,7 @@ func ExampleBuilder_BodySerializer() {
 }
 
 func ExampleBuilder_ToDeserializer() {
-	trans := requests.ReplayString(
+	trans := reqtest.ReplayString(
 		"HTTP/1.1 200 OK\r\n\r\nXYZ\x00\xde\xca\xff",
 	)
 	// Have some binary structure

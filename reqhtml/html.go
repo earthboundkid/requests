@@ -2,6 +2,7 @@
 package reqhtml
 
 import (
+	"bufio"
 	"io"
 
 	"github.com/gophertools/requests"
@@ -10,7 +11,14 @@ import (
 
 // To decodes a response as an html document.
 func To(n *html.Node) requests.ResponseHandler {
-	return requests.ToHTML(n)
+	return requests.ToBufioReader(func(r *bufio.Reader) error {
+		n2, err := html.Parse(r)
+		if err != nil {
+			return err
+		}
+		*n = *n2
+		return nil
+	})
 }
 
 // Body sets the requests.Builder's request body to the HTML document.
