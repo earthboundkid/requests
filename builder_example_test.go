@@ -20,10 +20,6 @@ import (
 	"github.com/gophertools/requests/reqtest"
 )
 
-func init() {
-	http.DefaultClient.Transport = reqtest.ReplayFS(os.DirFS("testdata"))
-}
-
 func Example() {
 	// Simple GET into a string
 	var s string
