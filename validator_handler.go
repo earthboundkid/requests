@@ -9,7 +9,7 @@ import (
 // ValidatorHandler composes a Validator and a Handler.
 // If the validation check fails, it triggers the handler.
 // Any errors from validator or handler will be joined to the error returned.
-// If the handler succeeds, the error will matching ErrInvalidHandled.
+// If the handler succeeds, the error will match [ErrInvalidHandled].
 func ValidatorHandler(v, h ResponseHandler) ResponseHandler {
 	return func(res *http.Response) error {
 		err1 := v(res)
@@ -26,7 +26,7 @@ func ValidatorHandler(v, h ResponseHandler) ResponseHandler {
 
 var ErrInvalidHandled = errors.New("handled recovery from invalid response")
 
-// ErrorJSON is a ValidatorHandler that applies DefaultValidator
+// ErrorJSON is a [ValidatorHandler] that applies DefaultValidator
 // and decodes the response as a JSON object
 // if the DefaultValidator check fails.
 func ErrorJSON(v any) ResponseHandler {

@@ -2,7 +2,7 @@ package reqxml
 
 import "github.com/gophertools/requests"
 
-// Error is a ValidatorHandler that applies DefaultValidator
+// Error is a [ValidatorHandler] that applies DefaultValidator
 // and decodes the response as an XML object
 // if the DefaultValidator check fails.
 func Error(v any) requests.ResponseHandler {
