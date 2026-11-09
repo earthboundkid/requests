@@ -1,6 +1,5 @@
 name: Go
-
-on: [ push, pull_request ]
+on: [push, pull_request]
 permissions:
   contents: read
 jobs:
@@ -8,16 +7,16 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
-      with:
-        go-version: stable
-    - name: Get dependencies
-      run: go mod download
-    - name: Check go.mod
-      run: go mod tidy -diff
-    - name: Test
-      run: go test -race -v -coverprofile=profile.cov ./...
-    - uses: shogo82148/actions-goveralls@v1
-      with:
-        path-to-profile: profile.cov
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "stable"
+      - name: Download modules
+        run: go mod download
+      - name: Check go.mod
+        run: go mod tidy -diff
+      - name: Test
+        run: go test -race -v -coverprofile=profile.cov ./...
+      - uses: shogo82148/actions-goveralls@v1
+        with:
+          path-to-profile: profile.cov
