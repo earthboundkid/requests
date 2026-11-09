@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/carlmjohnson/requests"
-	"github.com/carlmjohnson/requests/reqtest"
+	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/reqtest"
 )
 
 func ExampleReplayJSON() {

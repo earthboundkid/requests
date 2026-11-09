@@ -3,7 +3,7 @@ package reqxml
 import (
 	"encoding/xml"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
 )
 
 // To decodes a response as an XML object.

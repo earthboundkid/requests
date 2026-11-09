@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing/fstest"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
 )
 
 func ExampleReplayFS() {

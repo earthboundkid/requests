@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
 )
 
 // ReplayJSON returns a [requests.Transport]

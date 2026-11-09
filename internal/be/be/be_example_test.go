@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/carlmjohnson/requests/internal/be"
+	"github.com/gophertools/requests/internal/be"
 )
 
 type mockingT struct{ *testing.T }

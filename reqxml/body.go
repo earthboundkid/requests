@@ -3,7 +3,7 @@ package reqxml
 import (
 	"encoding/xml"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
 )
 
 // Body is a BodyGetter that marshals a XML object.

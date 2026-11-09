@@ -7,8 +7,8 @@ import (
 	"net/http/httputil"
 	"strings"
 
-	"github.com/carlmjohnson/requests"
-	"github.com/carlmjohnson/requests/reqxml"
+	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/reqxml"
 )
 
 func ExampleBody() {

@@ -6,8 +6,8 @@ import (
 	"io"
 	"testing"
 
-	"github.com/carlmjohnson/requests"
-	"github.com/carlmjohnson/requests/internal/be"
+	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/internal/be"
 )
 
 func TestErrorKind(t *testing.T) {
@@ -20,7 +20,7 @@ func TestErrorKind(t *testing.T) {
 		requests.ErrValidator,
 		requests.ErrHandler,
 	}
-	ctx := context.Background()
+	ctx := t.Context()
 	res200 := requests.ReplayString("HTTP/1.1 200 OK\n\n")
 	for _, tc := range []struct {
 		ctx  context.Context

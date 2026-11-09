@@ -4,7 +4,7 @@ package reqhtml
 import (
 	"io"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
 	"golang.org/x/net/html"
 )
 

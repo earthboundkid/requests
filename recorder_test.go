@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/carlmjohnson/requests"
-	"github.com/carlmjohnson/requests/internal/be"
+	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/internal/be"
 )
 
 func TestRecordReplay(t *testing.T) {

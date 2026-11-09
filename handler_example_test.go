@@ -8,7 +8,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )

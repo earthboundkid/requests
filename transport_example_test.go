@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
 )
 
 func ExampleReplayString() {

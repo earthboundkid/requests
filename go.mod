@@ -1,4 +1,4 @@
-module github.com/carlmjohnson/requests
+module github.com/gophertools/requests
 
 go 1.27
 

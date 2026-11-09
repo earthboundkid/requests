@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
 )
 
 // ReplayString returns an http.RoundTripper that always responds with a

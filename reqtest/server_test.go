@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/carlmjohnson/requests"
-	"github.com/carlmjohnson/requests/internal/be"
-	"github.com/carlmjohnson/requests/reqtest"
+	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/internal/be"
+	"github.com/gophertools/requests/reqtest"
 )
 
 func TestServer(t *testing.T) {

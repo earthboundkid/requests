@@ -1,6 +1,6 @@
 package reqxml
 
-import "github.com/carlmjohnson/requests"
+import "github.com/gophertools/requests"
 
 // Error is a ValidatorHandler that applies DefaultValidator
 // and decodes the response as an XML object
