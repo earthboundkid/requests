@@ -241,6 +241,8 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	return req, nil
 }
 
+func noOp(res *http.Response) (err error) { return nil }
+
 // Do calls the underlying http.Client and validates and handles any resulting response. The response body is closed after all validators and the handler run.
 func (rb *Builder) Do(req *http.Request) (err error) {
 	cl := cmp.Or(rb.cl, http.DefaultClient)
@@ -255,7 +257,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	h := minitrue.Cond(rb.handler != nil,
 		rb.handler,
-		consumeBody)
+		noOp)
 
 	code, err := do(cl, req, validators, h)
 	switch code {

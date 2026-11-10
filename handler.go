@@ -28,14 +28,6 @@ func ChainHandlers(handlers ...ResponseHandler) ResponseHandler {
 	}
 }
 
-func consumeBody(res *http.Response) (err error) {
-	const maxDiscardSize = 640 * 1 << 10
-	if _, err = io.CopyN(io.Discard, res.Body, maxDiscardSize); err == io.EOF {
-		err = nil
-	}
-	return err
-}
-
 // ToDeserializer decodes a response into v using a [Deserializer].
 func ToDeserializer(d Deserializer, v any) ResponseHandler {
 	return func(res *http.Response) error {
