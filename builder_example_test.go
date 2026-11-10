@@ -145,7 +145,7 @@ func ExampleBuilder_ToFile() {
 }
 
 type placeholder struct {
-	ID     int    `json:"id,omitempty"`
+	ID     int    `json:"id,omitzero"`
 	Title  string `json:"title"`
 	Body   string `json:"body"`
 	UserID int    `json:"userId"`
@@ -307,8 +307,8 @@ func ExampleBuilder_Bearer() {
 	}
 	// But our response is accepted when we provide a bearer token
 	var res struct {
-		Authenticated bool
-		Token         string
+		Authenticated bool   `json:"authenticated"`
+		Token         string `json:"token"`
 	}
 	err = requests.
 		URL("http://httpbin.org/bearer").
@@ -542,8 +542,12 @@ func ExampleBuilder_ErrorJSON() {
 
 	{"x": 1}`)
 
-		var goodJSON struct{ X int }
-		var errJSON struct{ Error string }
+		var goodJSON struct {
+			X int `json:"x"`
+		}
+		var errJSON struct {
+			Error string `json:"error"`
+		}
 		err := requests.
 			URL("http://example.com/").
 			Transport(trans).
@@ -561,8 +565,12 @@ func ExampleBuilder_ErrorJSON() {
 
 	{"error": "brewing"}`)
 
-		var goodJSON struct{ X int }
-		var errJSON struct{ Error string }
+		var goodJSON struct {
+			X int `json:"x"`
+		}
+		var errJSON struct {
+			Error string `json:"error"`
+		}
 		err := requests.
 			URL("http://example.com/").
 			Transport(trans).
