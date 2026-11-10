@@ -220,15 +220,15 @@ func (rb *Builder) ToFile(name string) *Builder {
 // if status code validation is desired.
 func (rb *Builder) CopyHeaders(h map[string][]string) *Builder {
 	return rb.
-		AddValidator(CopyHeaders(h))
+		AddValidator(copyHeaders(h))
 }
 
 // ToHeaders sets the method to HEAD and adds a handler which copies the response headers to h.
-// To just copy headers, see Builder.CopyHeaders.
+// To just copy headers, see [Builder.CopyHeaders].
 func (rb *Builder) ToHeaders(h map[string][]string) *Builder {
 	return rb.
 		Head().
-		Handle(ChainHandlers(CopyHeaders(h), consumeBody))
+		Handle(copyHeaders(h))
 }
 
 // ErrorJSON adds a validator that applies DefaultValidator
