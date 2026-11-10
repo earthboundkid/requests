@@ -1,7 +1,6 @@
 package requests
 
 import (
-	"bytes"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -120,17 +119,17 @@ func (rb *Builder) Bearer(token string) *Builder {
 
 // BodyReader sets the Builder's request body to r.
 func (rb *Builder) BodyReader(r io.Reader) *Builder {
-	return rb.Body(BodyReader(r))
+	return rb.Body(bodyReader(r))
 }
 
 // BodyWriter pipes writes from w to the Builder's request body.
 func (rb *Builder) BodyWriter(f func(w io.Writer) error) *Builder {
-	return rb.Body(BodyWriter(f))
+	return rb.Body(bodyWriter(f))
 }
 
 // BodyBytes sets the Builder's request body to b.
 func (rb *Builder) BodyBytes(b []byte) *Builder {
-	return rb.Body(BodyBytes(b))
+	return rb.Body(bodyBytes(b))
 }
 
 // BodySerializer sets the Builder's request body
@@ -146,7 +145,7 @@ func (rb *Builder) BodySerializer(s Serializer, v any) *Builder {
 // if it is not otherwise set.
 func (rb *Builder) BodyJSON(v any) *Builder {
 	return rb.
-		Body(BodyJSON(v)).
+		Body(bodyJSON(v)).
 		HeaderOptional("Content-Type", "application/json")
 }
 
@@ -154,13 +153,13 @@ func (rb *Builder) BodyJSON(v any) *Builder {
 // It also sets the ContentType to "application/x-www-form-urlencoded".
 func (rb *Builder) BodyForm(data url.Values) *Builder {
 	return rb.
-		Body(BodyForm(data)).
+		Body(bodyForm(data)).
 		ContentType("application/x-www-form-urlencoded")
 }
 
 // BodyFile sets the Builder's request body to read from the given file path.
 func (rb *Builder) BodyFile(name string) *Builder {
-	return rb.Body(BodyFile(name))
+	return rb.Body(bodyFile(name))
 }
 
 // CheckStatus adds a validator for status code of a response.
@@ -189,7 +188,7 @@ func (rb *Builder) ToDeserializer(d Deserializer, v any) *Builder {
 //
 // It uses [JSONDeserializer] to unmarshal the object.
 func (rb *Builder) ToJSON(v any) *Builder {
-	return rb.Handle(ToJSON(v))
+	return rb.Handle(toJSON(v))
 }
 
 // ToString sets the Builder to write the response body to the provided string pointer.
@@ -197,21 +196,16 @@ func (rb *Builder) ToString(sp *string) *Builder {
 	return rb.Handle(ToString(sp))
 }
 
-// ToBytesBuffer sets the Builder to write the response body to the provided bytes.Buffer.
-func (rb *Builder) ToBytesBuffer(buf *bytes.Buffer) *Builder {
-	return rb.Handle(ToBytesBuffer(buf))
-}
-
 // ToWriter sets the Builder to copy the response body into w.
 func (rb *Builder) ToWriter(w io.Writer) *Builder {
-	return rb.Handle(ToWriter(w))
+	return rb.Handle(toWriter(w))
 }
 
 // ToFile sets the Builder to write the response body to the given file name.
 // The file and its parent directories are created automatically.
-// For more advanced use cases, use ToWriter.
+// For more advanced use cases, use [Builder.ToWriter].
 func (rb *Builder) ToFile(name string) *Builder {
-	return rb.Handle(ToFile(name))
+	return rb.Handle(toFile(name))
 }
 
 // CopyHeaders adds a validator which copies the response headers to h.

@@ -30,5 +30,5 @@ var ErrInvalidHandled = errors.New("handled recovery from invalid response")
 // and decodes the response as a JSON object
 // if the DefaultValidator check fails.
 func ErrorJSON(v any) ResponseHandler {
-	return ValidatorHandler(DefaultValidator, ToJSON(v))
+	return ValidatorHandler(DefaultValidator, toJSON(v))
 }

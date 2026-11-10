@@ -74,12 +74,12 @@ func Example_postJSON() {
 	// {101 foo baz 1}
 }
 
-func ExampleBuilder_ToBytesBuffer() {
+func ExampleToBytesBuffer() {
 	// Simple GET into a buffer
 	var buf bytes.Buffer
 	err := requests.
 		URL("http://example.com").
-		ToBytesBuffer(&buf).
+		Handle(requests.ToBytesBuffer(&buf)).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("could not connect to example.com:", err)

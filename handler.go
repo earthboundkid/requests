@@ -42,10 +42,10 @@ func ToDeserializer(d Deserializer, v any) ResponseHandler {
 	}
 }
 
-// ToJSON decodes a response as a JSON object.
+// toJSON decodes a response as a JSON object.
 //
 // It uses [JSONDeserializer] to unmarshal the object.
-func ToJSON(v any) ResponseHandler {
+func toJSON(v any) ResponseHandler {
 	return ToDeserializer(JSONDeserializer, v)
 }
 
@@ -83,8 +83,8 @@ func ToBufioScanner(f func(r *bufio.Scanner) error) ResponseHandler {
 	}
 }
 
-// ToWriter copies the response body to w.
-func ToWriter(w io.Writer) ResponseHandler {
+// toWriter copies the response body to w.
+func toWriter(w io.Writer) ResponseHandler {
 	return ToBufioReader(func(r *bufio.Reader) error {
 		_, err := io.Copy(w, r)
 
@@ -92,9 +92,9 @@ func ToWriter(w io.Writer) ResponseHandler {
 	})
 }
 
-// ToFile writes the response body at the provided file path.
+// toFile writes the response body at the provided file path.
 // The file and its parent directories are created automatically.
-func ToFile(name string) ResponseHandler {
+func toFile(name string) ResponseHandler {
 	return func(res *http.Response) error {
 		_ = os.MkdirAll(filepath.Dir(name), 0777)
 
