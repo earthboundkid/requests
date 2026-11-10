@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/carlmjohnson/requests"
-	"github.com/carlmjohnson/requests/internal/be"
-	"github.com/carlmjohnson/requests/reqtest"
+	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/internal/be"
+	"github.com/gophertools/requests/reqtest"
 )
 
 func TestClone(t *testing.T) {
@@ -47,7 +47,7 @@ func TestClone(t *testing.T) {
 			Cookie("alternate", "value").
 			Param("b", "5").
 			Param("c", "6")
-		req1, err := rb1.Request(context.Background())
+		req1, err := rb1.Request(t.Context())
 		be.NilErr(t, err)
 		be.Equal(t, "example.com", req1.URL.Host)
 		be.Equal(t, "/a/", req1.URL.Path)
@@ -57,7 +57,7 @@ func TestClone(t *testing.T) {
 		be.Equal(t, "2", req1.URL.Query().Get("b"))
 		be.Equal(t, "", req1.URL.Query().Get("c"))
 
-		req2, err := rb2.Request(context.Background())
+		req2, err := rb2.Request(t.Context())
 		be.NilErr(t, err)
 		be.Equal(t, "host.example", req2.URL.Host)
 		be.Equal(t, "/a/b", req2.URL.Path)
@@ -243,7 +243,9 @@ func TestRequestClosesBodyOnError(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var file *os.File
-			getter := requests.BodyFile("go.mod")
+			getter := func() (r io.ReadCloser, err error) {
+				return os.Open("go.mod")
+			}
 			req, err := requests.URL("https://example.com").
 				Method(tc.method).
 				Body(func() (io.ReadCloser, error) {
@@ -315,11 +317,15 @@ func TestRequestBodyOwnership(t *testing.T) {
 func TestRequestErrorStopsBodyWriter(t *testing.T) {
 	t.Parallel()
 	done := make(chan error, 1)
-	getter := requests.BodyWriter(func(w io.Writer) error {
-		_, err := io.WriteString(w, "body")
-		done <- err
-		return err
-	})
+	getter := func() (io.ReadCloser, error) {
+		r, w := io.Pipe()
+		go func() {
+			var err error
+			defer func() { w.CloseWithError(err) }()
+			err = func(w io.Writer) error { _, err := io.WriteString(w, "body"); done <- err; return err }(w)
+		}()
+		return r, nil
+	}
 	req, err := requests.URL("https://example.com").
 		Method("bad method").
 		Body(func() (io.ReadCloser, error) {

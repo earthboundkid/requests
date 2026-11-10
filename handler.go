@@ -8,8 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"golang.org/x/net/html"
 )
 
 // ResponseHandler is used to validate or handle the response to a request.
@@ -30,14 +28,6 @@ func ChainHandlers(handlers ...ResponseHandler) ResponseHandler {
 	}
 }
 
-func consumeBody(res *http.Response) (err error) {
-	const maxDiscardSize = 640 * 1 << 10
-	if _, err = io.CopyN(io.Discard, res.Body, maxDiscardSize); err == io.EOF {
-		err = nil
-	}
-	return err
-}
-
 // ToDeserializer decodes a response into v using a [Deserializer].
 func ToDeserializer(d Deserializer, v any) ResponseHandler {
 	return func(res *http.Response) error {
@@ -52,10 +42,10 @@ func ToDeserializer(d Deserializer, v any) ResponseHandler {
 	}
 }
 
-// ToJSON decodes a response as a JSON object.
+// toJSON decodes a response as a JSON object.
 //
 // It uses [JSONDeserializer] to unmarshal the object.
-func ToJSON(v any) ResponseHandler {
+func toJSON(v any) ResponseHandler {
 	return ToDeserializer(JSONDeserializer, v)
 }
 
@@ -93,22 +83,8 @@ func ToBufioScanner(f func(r *bufio.Scanner) error) ResponseHandler {
 	}
 }
 
-// ToHTML parses the page with x/net/html.Parse.
-//
-// Deprecated: Use reqhtml.To.
-func ToHTML(n *html.Node) ResponseHandler {
-	return ToBufioReader(func(r *bufio.Reader) error {
-		n2, err := html.Parse(r)
-		if err != nil {
-			return err
-		}
-		*n = *n2
-		return nil
-	})
-}
-
-// ToWriter copies the response body to w.
-func ToWriter(w io.Writer) ResponseHandler {
+// toWriter copies the response body to w.
+func toWriter(w io.Writer) ResponseHandler {
 	return ToBufioReader(func(r *bufio.Reader) error {
 		_, err := io.Copy(w, r)
 
@@ -116,9 +92,9 @@ func ToWriter(w io.Writer) ResponseHandler {
 	})
 }
 
-// ToFile writes the response body at the provided file path.
+// toFile writes the response body at the provided file path.
 // The file and its parent directories are created automatically.
-func ToFile(name string) ResponseHandler {
+func toFile(name string) ResponseHandler {
 	return func(res *http.Response) error {
 		_ = os.MkdirAll(filepath.Dir(name), 0777)
 
@@ -132,8 +108,3 @@ func ToFile(name string) ResponseHandler {
 		return err
 	}
 }
-
-// ToHeaders is an alias for backwards compatibility.
-//
-// Deprecated: Use CopyHeaders
-var ToHeaders = CopyHeaders

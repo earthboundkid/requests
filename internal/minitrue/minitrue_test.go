@@ -3,8 +3,8 @@ package minitrue_test
 import (
 	"testing"
 
-	"github.com/carlmjohnson/requests/internal/be"
-	"github.com/carlmjohnson/requests/internal/minitrue"
+	"github.com/gophertools/requests/internal/be"
+	"github.com/gophertools/requests/internal/minitrue"
 )
 
 func TestCond(t *testing.T) {

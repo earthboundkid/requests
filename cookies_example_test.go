@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
 )
 
 func ExampleNewCookieJar() {
@@ -30,7 +30,7 @@ func ExampleNewCookieJar() {
 	}
 	// And we'll see that they're reused on subsequent requests
 	var cookies struct {
-		Cookies map[string]string
+		Cookies map[string]string `json:"cookies"`
 	}
 	err = requests.
 		URL("http://httpbin.org/cookies").

@@ -1,12 +1,10 @@
 package requests
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"net/http"
 	"regexp"
-	"strings"
 	"time"
 )
 
@@ -22,18 +20,6 @@ func (rtf RoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 var _ Transport = RoundTripFunc(nil)
-
-// ReplayString returns an http.RoundTripper that always responds with a
-// request built from rawResponse. It is intended for use in one-off tests.
-//
-// Deprecated: Use reqtest.ReplayString.
-func ReplayString(rawResponse string) Transport {
-	return RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
-		r := bufio.NewReader(strings.NewReader(rawResponse))
-		res, err = http.ReadResponse(r, req)
-		return
-	})
-}
 
 // UserAgentTransport returns a wrapped http.RoundTripper that sets the User-Agent header on requests to s.
 func UserAgentTransport(rt http.RoundTripper, s string) Transport {

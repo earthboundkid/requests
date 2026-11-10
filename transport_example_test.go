@@ -11,7 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/reqtest"
 )
 
 func ExampleReplayString() {
@@ -23,7 +24,7 @@ An example response.`
 	const expected = `An example response.`
 	if err := requests.
 		URL("http://response.example").
-		Transport(requests.ReplayString(res)).
+		Transport(reqtest.ReplayString(res)).
 		ToString(&s).
 		Fetch(context.Background()); err != nil {
 		panic(err)

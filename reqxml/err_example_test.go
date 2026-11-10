@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/carlmjohnson/requests"
-	"github.com/carlmjohnson/requests/reqxml"
+	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/reqxml"
 )
 
 func ExampleError() {

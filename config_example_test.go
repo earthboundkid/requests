@@ -6,14 +6,12 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
-	"net/http"
-	"net/http/httptest"
 	"net/http/httputil"
 	"net/textproto"
 	"strings"
 
-	"github.com/carlmjohnson/requests"
-	"github.com/carlmjohnson/requests/reqtest"
+	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/reqtest"
 )
 
 func ExampleNew() {
@@ -62,49 +60,6 @@ func ExampleGzipConfig() {
 	fmt.Println(echo.Data)
 	// Output:
 	// hello, world
-}
-
-func ExampleTestServerConfig() {
-	// Create an httptest.Server for your project's router
-	mux := http.NewServeMux()
-	mux.HandleFunc("/greeting", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, world!")
-	})
-	mux.HandleFunc("/salutation", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Howdy, planet!")
-	})
-
-	srv := httptest.NewServer(mux)
-	defer srv.Close()
-
-	// Now test that the handler has the expected return values
-	{
-		var s string
-		err := requests.
-			New(requests.TestServerConfig(srv)).
-			Path("/greeting").
-			ToString(&s).
-			Fetch(context.Background())
-		if err != nil {
-			fmt.Println("Error!", err)
-		}
-		fmt.Println(s) // Hello, world!
-	}
-	{
-		var s string
-		err := requests.
-			New(requests.TestServerConfig(srv)).
-			Path("/salutation").
-			ToString(&s).
-			Fetch(context.Background())
-		if err != nil {
-			fmt.Println("Error!", err)
-		}
-		fmt.Println(s) // Howdy, planet!
-	}
-	// Output:
-	// Hello, world!
-	// Howdy, planet!
 }
 
 func ExampleBodyMultipart() {

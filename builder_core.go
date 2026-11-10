@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/carlmjohnson/requests/internal/minitrue"
+	"github.com/gophertools/requests/internal/minitrue"
 )
 
 // Builder is a convenient way to build, send, and handle HTTP requests.
@@ -59,7 +59,7 @@ import (
 //
 // Set a handler for a response with [Builder.Handle]
 // or use the built in [Builder.ToHeaders], [Builder.ToJSON], [Builder.ToString],
-// [Builder.ToBytesBuffer], or [Builder.ToWriter].
+// or [Builder.ToWriter].
 //
 // [Builder.Fetch] creates an http.Request with [Builder.Request]
 // and validates and handles it with [Builder.Do].
@@ -241,6 +241,8 @@ func (rb *Builder) Request(ctx context.Context) (req *http.Request, err error) {
 	return req, nil
 }
 
+func noOp(res *http.Response) (err error) { return nil }
+
 // Do calls the underlying http.Client and validates and handles any resulting response. The response body is closed after all validators and the handler run.
 func (rb *Builder) Do(req *http.Request) (err error) {
 	cl := cmp.Or(rb.cl, http.DefaultClient)
@@ -255,7 +257,7 @@ func (rb *Builder) Do(req *http.Request) (err error) {
 	}
 	h := minitrue.Cond(rb.handler != nil,
 		rb.handler,
-		consumeBody)
+		noOp)
 
 	code, err := do(cl, req, validators, h)
 	switch code {

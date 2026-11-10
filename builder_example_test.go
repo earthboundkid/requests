@@ -16,12 +16,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/carlmjohnson/requests"
+	"github.com/gophertools/requests"
+	"github.com/gophertools/requests/reqtest"
 )
-
-func init() {
-	http.DefaultClient.Transport = requests.Replay("testdata")
-}
 
 func Example() {
 	// Simple GET into a string
@@ -77,12 +74,12 @@ func Example_postJSON() {
 	// {101 foo baz 1}
 }
 
-func ExampleBuilder_ToBytesBuffer() {
+func ExampleToBytesBuffer() {
 	// Simple GET into a buffer
 	var buf bytes.Buffer
 	err := requests.
 		URL("http://example.com").
-		ToBytesBuffer(&buf).
+		Handle(requests.ToBytesBuffer(&buf)).
 		Fetch(context.Background())
 	if err != nil {
 		fmt.Println("could not connect to example.com:", err)
@@ -148,7 +145,7 @@ func ExampleBuilder_ToFile() {
 }
 
 type placeholder struct {
-	ID     int    `json:"id,omitempty"`
+	ID     int    `json:"id,omitzero"`
 	Title  string `json:"title"`
 	Body   string `json:"body"`
 	UserID int    `json:"userId"`
@@ -310,8 +307,8 @@ func ExampleBuilder_Bearer() {
 	}
 	// But our response is accepted when we provide a bearer token
 	var res struct {
-		Authenticated bool
-		Token         string
+		Authenticated bool   `json:"authenticated"`
+		Token         string `json:"token"`
 	}
 	err = requests.
 		URL("http://httpbin.org/bearer").
@@ -541,12 +538,16 @@ func ExampleBuilder_Transport() {
 
 func ExampleBuilder_ErrorJSON() {
 	{
-		trans := requests.ReplayString(`HTTP/1.1 200 OK
+		trans := reqtest.ReplayString(`HTTP/1.1 200 OK
 
 	{"x": 1}`)
 
-		var goodJSON struct{ X int }
-		var errJSON struct{ Error string }
+		var goodJSON struct {
+			X int `json:"x"`
+		}
+		var errJSON struct {
+			Error string `json:"error"`
+		}
 		err := requests.
 			URL("http://example.com/").
 			Transport(trans).
@@ -560,12 +561,16 @@ func ExampleBuilder_ErrorJSON() {
 		}
 	}
 	{
-		trans := requests.ReplayString(`HTTP/1.1 418 I'm a teapot
+		trans := reqtest.ReplayString(`HTTP/1.1 418 I'm a teapot
 
 	{"error": "brewing"}`)
 
-		var goodJSON struct{ X int }
-		var errJSON struct{ Error string }
+		var goodJSON struct {
+			X int `json:"x"`
+		}
+		var errJSON struct {
+			Error string `json:"error"`
+		}
 		err := requests.
 			URL("http://example.com/").
 			Transport(trans).
@@ -620,7 +625,7 @@ func ExampleBuilder_BodySerializer() {
 }
 
 func ExampleBuilder_ToDeserializer() {
-	trans := requests.ReplayString(
+	trans := reqtest.ReplayString(
 		"HTTP/1.1 200 OK\r\n\r\nXYZ\x00\xde\xca\xff",
 	)
 	// Have some binary structure
