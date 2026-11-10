@@ -27,9 +27,9 @@ func To(n *html.Node) requests.ResponseHandler {
 func Body(n *html.Node) requests.Config {
 	return func(rb *requests.Builder) {
 		rb.
-			Body(requests.BodyWriter(func(w io.Writer) error {
+			BodyWriter(func(w io.Writer) error {
 				return html.Render(w, n)
-			})).
+			}).
 			HeaderOptional("context-type", "text/html")
 	}
 }
