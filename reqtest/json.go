@@ -2,7 +2,8 @@ package reqtest
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"io"
 	"net/http"
@@ -20,7 +21,7 @@ import (
 // wrapped marshaling error.
 func ReplayJSON(code int, obj any) requests.Transport {
 	return requests.RoundTripFunc(func(req *http.Request) (*http.Response, error) {
-		data, err := json.MarshalIndent(obj, "", "  ")
+		data, err := json.Marshal(obj, jsontext.WithIndent("  "))
 		if err != nil {
 			return nil, fmt.Errorf("marshal error in ReplayJSON: %v", err)
 		}

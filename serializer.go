@@ -1,7 +1,7 @@
 package requests
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 )
 
 // Serializer is a function
@@ -17,8 +17,12 @@ type Deserializer = func(data []byte, v any) error
 var (
 	// JSONSerializer is used by [BodyJSON] and [Builder.BodyJSON].
 	// The default serializer may be changed in a future version of requests.
-	JSONSerializer Serializer = json.Marshal
+	JSONSerializer Serializer = func(v any) ([]byte, error) {
+		return json.Marshal(v)
+	}
 	// JSONDeserializer is used by [ToJSON] and [Builder.ToJSON].
 	// The default deserializer may be changed in a future version of requests.
-	JSONDeserializer Deserializer = json.Unmarshal
+	JSONDeserializer Deserializer = func(data []byte, v any) error {
+		return json.Unmarshal(data, v)
+	}
 )
