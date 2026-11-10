@@ -10,8 +10,6 @@
 
 Requests also comes with tools for building custom http transports, include a request recorder and replayer for testing.
 
-*[See this note on the canonical project URL.](https://gist.github.com/earthboundkid/8915002ae0e531cecdfc58bc6453ac80)*
-
 ## Features
 
 - Simplifies HTTP client usage compared to net/http
