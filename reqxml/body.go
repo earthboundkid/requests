@@ -6,7 +6,7 @@ import (
 	"github.com/gophertools/requests"
 )
 
-// Body is a BodyGetter that marshals a XML object.
+// Body is a BodyGetter that marshals an XML object.
 func Body(v any) requests.BodyGetter {
 	return requests.BodySerializer(xml.Marshal, v)
 }
