@@ -59,7 +59,7 @@ import (
 //
 // Set a handler for a response with [Builder.Handle]
 // or use the built in [Builder.ToHeaders], [Builder.ToJSON], [Builder.ToString],
-// [Builder.ToBytesBuffer], or [Builder.ToWriter].
+// or [Builder.ToWriter].
 //
 // [Builder.Fetch] creates an http.Request with [Builder.Request]
 // and validates and handles it with [Builder.Do].
