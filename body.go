@@ -2,6 +2,7 @@ package requests
 
 import (
 	"bytes"
+	jsonv1 "encoding/json"
 	"io"
 	"net/url"
 	"os"
@@ -60,6 +61,14 @@ func BodySerializer(s Serializer, v any) BodyGetter {
 // that uses [JSONSerializer] to marshal the object.
 func BodyJSON(v any) BodyGetter {
 	return BodySerializer(JSONSerializer, v)
+}
+
+// BodyJSONV1 is a [BodySerializer]
+// that uses the encoding/json (v1) package to marshal the object.
+// Use it to keep the marshaling behavior of earlier versions of requests,
+// such as omitempty omitting zero numbers.
+func BodyJSONV1(v any) BodyGetter {
+	return BodySerializer(jsonv1.Marshal, v)
 }
 
 // BodyForm is a BodyGetter that builds an encoded form body.

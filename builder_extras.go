@@ -150,6 +150,14 @@ func (rb *Builder) BodyJSON(v any) *Builder {
 		HeaderOptional("Content-Type", "application/json")
 }
 
+// BodyJSONV1 is like [Builder.BodyJSON]
+// but marshals the object using [BodyJSONV1].
+func (rb *Builder) BodyJSONV1(v any) *Builder {
+	return rb.
+		Body(BodyJSONV1(v)).
+		HeaderOptional("Content-Type", "application/json")
+}
+
 // BodyForm sets the Builder's request body to the encoded form.
 // It also sets the ContentType to "application/x-www-form-urlencoded".
 func (rb *Builder) BodyForm(data url.Values) *Builder {
@@ -190,6 +198,12 @@ func (rb *Builder) ToDeserializer(d Deserializer, v any) *Builder {
 // It uses [JSONDeserializer] to unmarshal the object.
 func (rb *Builder) ToJSON(v any) *Builder {
 	return rb.Handle(ToJSON(v))
+}
+
+// ToJSONV1 is like [Builder.ToJSON]
+// but decodes the response using [ToJSONV1].
+func (rb *Builder) ToJSONV1(v any) *Builder {
+	return rb.Handle(ToJSONV1(v))
 }
 
 // ToString sets the Builder to write the response body to the provided string pointer.
@@ -236,4 +250,10 @@ func (rb *Builder) ToHeaders(h map[string][]string) *Builder {
 // if the DefaultValidator check fails.
 func (rb *Builder) ErrorJSON(v any) *Builder {
 	return rb.AddValidator(ErrorJSON(v))
+}
+
+// ErrorJSONV1 is like [Builder.ErrorJSON]
+// but decodes the response using [ToJSONV1].
+func (rb *Builder) ErrorJSONV1(v any) *Builder {
+	return rb.AddValidator(ErrorJSONV1(v))
 }

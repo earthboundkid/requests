@@ -3,6 +3,7 @@ package requests
 import (
 	"bufio"
 	"bytes"
+	jsonv1 "encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -55,6 +56,14 @@ func ToDeserializer(d Deserializer, v any) ResponseHandler {
 // It uses [JSONDeserializer] to unmarshal the object.
 func ToJSON(v any) ResponseHandler {
 	return ToDeserializer(JSONDeserializer, v)
+}
+
+// ToJSONV1 decodes a response as a JSON object
+// using the encoding/json (v1) package.
+// Use it to keep the unmarshaling behavior of earlier versions of requests,
+// such as case-insensitive matching of object keys to struct fields.
+func ToJSONV1(v any) ResponseHandler {
+	return ToDeserializer(jsonv1.Unmarshal, v)
 }
 
 // ToString writes the response body to the provided string pointer.
