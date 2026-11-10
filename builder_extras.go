@@ -150,11 +150,12 @@ func (rb *Builder) BodyJSON(v any) *Builder {
 }
 
 // BodyForm sets the Builder's request body to the encoded form.
-// It also sets the ContentType to "application/x-www-form-urlencoded".
+// It also sets the ContentType to "application/x-www-form-urlencoded"
+// if it is not otherwise set.
 func (rb *Builder) BodyForm(data url.Values) *Builder {
 	return rb.
 		Body(bodyForm(data)).
-		ContentType("application/x-www-form-urlencoded")
+		HeaderOptional("Content-Type", "application/x-www-form-urlencoded")
 }
 
 // BodyFile sets the Builder's request body to read from the given file path.
